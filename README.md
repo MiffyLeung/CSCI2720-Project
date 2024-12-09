@@ -55,6 +55,16 @@ Follow these steps to set up the project:
 - **Node.js**: Ensure Node.js is installed on your system.
 - **MongoDB**: A running instance of MongoDB is required for the backend.
 
+## Development Environment
+
+The following software and versions are used to ensure consistency during development and testing:
+
+- **Node.js**: v18.17.0
+- **npm**: 8.19.2
+- **MongoDB**: v7.0.2
+
+---
+
 ### Steps
 
 1. Clone the repository:
@@ -62,12 +72,14 @@ Follow these steps to set up the project:
     git clone https://github.com/MiffyLeung/CSCI2720-Project.git
     ```
 
-2. Navigate to the project directory:
+2. **Edit** the content inside sample.env to meet your enivorment, and then **Rename** sample.env as **.env**
+
+3. Navigate to the project directory:
     ```bash
     cd CSCI2720-Project
     ```
 
-3. Install dependencies in each folder:
+4. Install dependencies in each folder:
    - **Root**:
      ```bash
      npm install
@@ -85,13 +97,13 @@ Follow these steps to set up the project:
      cd ..
      ```
 
-4. Start the backend server:
+5. Start the backend server:
     ```bash
     cd backend
     npm start
     ```
 
-5. Start the frontend development server:
+6. Start the frontend development server:
     ```bash
     cd ../frontend
     npm start
@@ -127,16 +139,6 @@ Once the project is running:
   - **Reason**: Leaflet is an open-source map library that does not require an API key or account registration, unlike Google Maps or Mapbox, which both require a credit card for their free-tier accounts.
 - **Utilities**: **Concurrently**
   - Used to simultaneously run both the frontend and backend servers, simplifying development workflows.
-
----
-
-## Development Environment
-
-The following software and versions are used to ensure consistency during development and testing:
-
-- **Node.js**: v18.17.0
-- **npm**: 8.19.2
-- **MongoDB**: v7.0.2
 
 ---
 
