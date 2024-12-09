@@ -37,7 +37,7 @@ Provide a brief introduction to your project, the problem it solves, and its obj
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/your-repo-url.git
+    git clone https://github.com/MiffyLeung/CSCI2720-Project
     ```
 2. Navigate to the project directory:
     ```bash
@@ -45,6 +45,8 @@ Provide a brief introduction to your project, the problem it solves, and its obj
     ```
 3. Install the required dependencies:
     ```bash
+    npm install
+    npm install
     npm install
     ```
 4. Run the project:
