@@ -6,13 +6,33 @@ const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Username:', username);
-    console.log('Password:', password);
-
-    // TODO: Integrate with backend API
+  
+    try {
+      const response = await fetch(process.env.API_BASE_URL + '/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        console.log('Login successful:', data);
+        // 可以在此處存儲令牌或導航到其他頁面
+      } else {
+        console.error('Login failed:', data.message);
+        alert(data.message); // 向用戶顯示錯誤訊息
+      }
+    } catch (error) {
+      console.error('An error occurred:', error);
+      alert('An error occurred. Please try again.');
+    }
   };
+  
 
   return (
     <div style={{ maxWidth: '400px', margin: 'auto', padding: '20px' }}>

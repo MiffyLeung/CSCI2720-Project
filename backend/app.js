@@ -1,30 +1,57 @@
 // backend/app.js
-
 const express = require('express');
-const connectDB = require('./config/db');
-const locationRoutes = require('./routes/locationRoutes');
-const bodyParser = require('body-parser');
+const dotenv = require('dotenv');
+const connectDB = require('./utils/connectDB'); // Import the connectDB function
+const routesConfig = require('./config/routesConfig');
+const checkAccounts = require('./utils/checkAccounts');
+
+dotenv.config(); // Load environment variables
 
 const app = express();
 
-// Connect to MongoDB
-connectDB();
+// Middleware for parsing request body
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// API Routes
-app.use('/api/locations', locationRoutes);
-
-// Error Handling Middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something went wrong!');
+// Mount routes dynamically based on routesConfig
+routesConfig.forEach(({ basePath, router }) => {
+    app.use(basePath, router);
 });
 
 // Start the server
-const PORT = 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+const PORT = process.env.BACKEND_PORT || 5000;
+
+const startServer = async () => {
+    try {
+        // Connect to MongoDB
+        await connectDB();
+
+        // Start Express server
+        app.listen(PORT, async () => {
+            console.log(`Server running at http://localhost:${PORT}\n`);
+
+            // Check for accounts
+            await checkAccounts();
+
+            // Display routes
+            console.log('Available routes:');
+            routesConfig.forEach(({ name, routes }) => {
+                console.log(`  - ${name}:`);
+                routes.forEach(({ method, path, requiresAuth, adminOnly }) => {
+                    const authNote = requiresAuth
+                        ? adminOnly
+                            ? ' (Admin Only)'
+                            : ' (Authenticated)'
+                        : '';
+                    console.log(`    - ${method} ${path}${authNote}`);
+                });
+            });
+        });
+    } catch (error) {
+        console.error('Error starting the server:', error.message);
+    }
+};
+
+startServer();
+
+module.exports = app;

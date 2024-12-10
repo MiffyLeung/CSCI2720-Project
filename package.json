@@ -7,11 +7,25 @@
   "author": "",
   "license": "ISC",
   "scripts": {
+    "create-users": "npm --prefix backend run create-users",
+    "create-users-with-force": "npm --prefix backend run create-users-with-force",
     "start": "concurrently \"npm --prefix backend start\" \"npm --prefix frontend start\"",
     "start-frontend": "npm --prefix frontend start",
     "start-backend": "npm --prefix backend start"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"
-  }
+  },
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MiffyLeung/CSCI2720-Project.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MiffyLeung/CSCI2720-Project/issues"
+  },
+  "homepage": "https://github.com/MiffyLeung/CSCI2720-Project#readme"
 }

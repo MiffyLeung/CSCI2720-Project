@@ -1,21 +1,30 @@
 {
-    "name": "csci2720-backend",
-    "version": "1.0.0",
-    "description": "Backend Express API",
-    "type": "module",
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "dependencies": {
-      "express": "^4.21.2",
-      "mongoose": "^8.8.4",
-      "dotenv": "^16.4.7",
-      "cors": "^2.8.5",
-      "body-parser": "^1.20.3",
-      "axios": "^1.7.9"
-    },
-    "scripts": {
-      "start": "node app.js"
-    }
+  "name": "csci2720-backend",
+  "version": "1.0.0",
+  "description": "Backend Express API",
+  "type": "commonjs",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.8.4"
+  },
+  "scripts": {
+    "start": "node app.js",
+    "create-users": "node createPrimaryUsers.js",
+    "create-users-with-force": "node createPrimaryUsers.js --force-update"
+  },
+  "main": "app.js",
+  "devDependencies": {
+    "@eslint/js": "^8.57.1",
+    "eslint": "^8.57.1",
+    "globals": "^15.13.0"
   }
-  
+}
