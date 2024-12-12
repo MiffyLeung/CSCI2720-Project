@@ -1,41 +1,67 @@
+// src/App.tsx
+
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
-import LocationList from './pages/LocationList';
-import LocationMap from './pages/LocationMap';
-import LocationSearch from './pages/LocationSearch';
-import LocationDetails from './pages/LocationDetails';
-import Favorites from './pages/Favorites';
-import Profile from './pages/Profile';
-import AdminLocations from './pages/AdminLocations';
-import AdminUsers from './pages/AdminUsers';
-import AdminHome from './pages/AdminHome';
+import ErrorPage from './pages/ErrorPage';
+import WhatsNewPage from './pages/WhatsNewPage';
+import HotestPage from './pages/HotestPage';
+import MapViewPage from './pages/MapViewPage';
+import MyFavoritesPage from './pages/MyFavoritesPage';
+import MyProfilePage from './pages/MyProfilePage';
+import UserDashboardPage from './pages/UserDashboardPage';
+import ProgrammeDetailsPage from './pages/ProgrammeDetailsPage';
+import VenueDetailsPage from './pages/VenueDetailsPage';
+import AdminProgrammesPage from './pages/AdminProgrammesPage';
+import AdminUsersPage from './pages/AdminUsersPage';
+import AdminVenuesPage from './pages/AdminVenuesPage';
+import { useAuthState } from './utils/secure';
+const App: React.FC = () => {
+  
+  const { isAdmin, isAuthenticated } = useAuthState();
+  const requireAuth = (element: React.JSX.Element) => {
+    return isAuthenticated() ? element : <Navigate to="/login" />;
+  };
 
-function App() {
-    return (
-        <Router>
-            <Routes>
-                {/* 非用戶訪問路由 */}
-                <Route path="/login" element={<LoginPage />} />
+  const requireAdmin = (element: React.JSX.Element) => {
+    if (isAuthenticated === null) {
+      return null; // Show nothing until authentication state is resolved
+    }
+    return isAdmin() ? element : <Navigate to="/" />;
+  };
 
-                {/* 用戶訪問路由 */}
-                <Route path="/locations" element={<LocationList />} />
-                <Route path="/locations/map" element={<LocationMap />} />
-                <Route path="/locations/search" element={<LocationSearch />} />
-                <Route path="/locations/:id" element={<LocationDetails />} />
-                <Route path="/favorites" element={<Favorites />} />
-                <Route path="/profile" element={<Profile />} />
+  return (
+    <Router>
+      <Routes>
+        {/* Public Route */}
+        <Route path="/login" element={<LoginPage />} />
 
-                {/* 管理員訪問路由 */}
-                <Route path="/admin/locations" element={<AdminLocations />} />
-                <Route path="/admin/users" element={<AdminUsers />} />
-                <Route path="/admin" element={<AdminHome />} />
+        {/* Common Routes */}
+        <Route path="/recent" element={requireAuth(<WhatsNewPage />)} />
+        <Route path="/hotest" element={requireAuth(<HotestPage />)} />
+        <Route path="/map" element={requireAuth(<MapViewPage />)} />
+        <Route path="/myfavorites" element={requireAuth(<MyFavoritesPage />)} />
+        <Route path="/myprofile" element={requireAuth(<MyProfilePage />)} />
+        <Route path="/programmes/:id" element={requireAuth(<ProgrammeDetailsPage />)} />
+        <Route path="/venues/:id" element={requireAuth(<VenueDetailsPage />)} />
 
-                {/* 默認路由 */}
-                <Route path="*" element={<Navigate to="/login" replace />} />
-            </Routes>
-        </Router>
-    );
-}
+        {/* User-Specific Routes */}
+        <Route path="/dashboard" element={requireAuth(<UserDashboardPage />)} />
+
+        {/* Admin-Specific Routes */}
+        <Route path="/admin/" element={requireAdmin(<AdminProgrammesPage />)} />
+        <Route path="/admin/programmes" element={requireAdmin(<AdminProgrammesPage />)} />
+        <Route path="/admin/users" element={requireAdmin(<AdminUsersPage />)} />
+        <Route path="/admin/venues" element={requireAdmin(<AdminVenuesPage />)} />
+
+        {/* Home page according to differnt account role */}
+        <Route path="/" element={requireAuth(isAdmin() ? <AdminProgrammesPage /> : <UserDashboardPage /> )} />
+
+        {/* Catch-All for Undefined Routes */}
+        <Route path="*" element={<ErrorPage />} />
+      </Routes>
+    </Router>
+  );
+};
 
 export default App;

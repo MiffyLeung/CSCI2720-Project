@@ -5,6 +5,11 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config(); // Load environment variables from .env
 
+// Validate that JWT_SECRET is defined
+if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET is not defined in the environment variables');
+}
+
 // Helper to generate a JWT token
 const generateToken = (user) => {
     return jwt.sign(
@@ -113,7 +118,8 @@ const changePassword = async (req, res) => {
             return res.status(400).json({ message: 'Password is required' });
         }
 
-        req.user.password = password; // Password hashing handled by the pre-save hook
+        // Assuming req.user is set by authentication middleware
+        req.user.password = password; // Password hashing handled by pre-save hook
         await req.user.save();
 
         res.status(200).json({ message: 'Password updated successfully' });

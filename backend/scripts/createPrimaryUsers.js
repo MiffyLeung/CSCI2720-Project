@@ -1,6 +1,6 @@
 // backend/createPrimaryUsers.js
-const connectDB = require('./utils/connectDB'); // Correct relative path
-const User = require('./models/UserSchema');
+const connectDB = require('../utils/connectDB'); // Correct relative path
+const User = require('../models/UserSchema');
 const mongoose = require('mongoose');
 
 const run = () => {

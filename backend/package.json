@@ -14,12 +14,13 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.8.4"
+    "mongoose": "^8.8.4",
+    "on-headers": "^1.0.2"
   },
   "scripts": {
     "start": "node app.js",
-    "create-users": "node createPrimaryUsers.js",
-    "create-users-with-force": "node createPrimaryUsers.js --force-update"
+    "create-users": "node scripts/createPrimaryUsers.js",
+    "create-users-with-force": "node scripts/createPrimaryUsers.js --force-update"
   },
   "main": "app.js",
   "devDependencies": {
