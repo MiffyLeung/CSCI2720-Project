@@ -26,16 +26,20 @@ const VenueForm: React.FC<VenueFormProps> = ({ initialData, onSave, onCancel }) 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="venue-form">
+    <form onSubmit={handleSubmit} className="needs-validation">
       {Object.keys(venueFields).map((fieldKey) => {
         const field = fieldKey as keyof Venue;
         const fieldMeta = venueFields[field];
         return (
-          <div key={field}>
-            <label>{fieldMeta.label}</label>
+          <div key={field} className="mb-3">
+            <label htmlFor={field} className="form-label">
+              {fieldMeta.label}
+            </label>
             <input
+              id={field}
               type={fieldMeta.type}
               name={field}
+              className="form-control"
               value={formData[field] || ''}
               onChange={handleInputChange}
               required={fieldMeta.required}
@@ -43,9 +47,11 @@ const VenueForm: React.FC<VenueFormProps> = ({ initialData, onSave, onCancel }) 
           </div>
         );
       })}
-      <div className="form-actions">
-        <button type="submit">Save</button>
-        <button type="button" onClick={onCancel}>
+      <div className="d-flex justify-content-end gap-2">
+        <button type="submit" className="btn btn-primary">
+          Save
+        </button>
+        <button type="button" className="btn btn-secondary" onClick={onCancel}>
           Cancel
         </button>
       </div>

@@ -1,14 +1,26 @@
 // backend/utils/checkAccounts.js
-const User = require('../models/UserSchema'); // Import the User model
 
+const Account = require('../models/AccountSchema'); // Import the Account model
+
+/**
+ * Checks if there are any accounts in the database.
+ * 
+ * If no accounts are found, logs a warning message to the console,
+ * prompting the user to create primary accounts using a specific script.
+ * 
+ * @function checkAccounts
+ * @returns {Promise<void>} - Resolves when the check is complete
+ */
 const checkAccounts = async () => {
     try {
-        const userCount = await User.countDocuments();
-        if (userCount === 0) {
+        const accountCount = await Account.countDocuments();
+        if (accountCount === 0) {
             console.warn(
                 '\nWARNING: No accounts found in the database.\n' +
-                'Please run "npm run create-users" to create the primary accounts.\n'
+                'Please run "npm run create-accounts" to create the primary accounts.\n'
             );
+        } else {
+            console.log(`\nINFO: ${accountCount} account(s) found in the database.\n`);
         }
     } catch (error) {
         console.error('Error checking accounts:', error.message);

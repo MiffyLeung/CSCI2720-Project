@@ -2,35 +2,34 @@
 
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
-import { Programme } from '../types/Programme'; // Use shared type
+import { Programme } from '../types/Programme';
 import ProgrammeList from '../components/ProgrammeList';
 import ProgrammeForm from '../components/ProgrammeForm';
 import ProgrammeFilter from '../components/ProgrammeFilter';
+import { apiRequest } from '../utils/api'; // Reusable API request
+import { useAuthState } from '../utils/secure'; // Authentication handling
 
 const AdminProgrammesPage: React.FC = () => {
   const [programmes, setProgrammes] = useState<Programme[]>([]);
   const [filteredProgrammes, setFilteredProgrammes] = useState<Programme[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProgramme, setEditingProgramme] = useState<Programme | undefined>(undefined);
-  const REACT_APP_API = process.env.REACT_APP_API || 'http://localhost:5000/api';
+  const { cleanAuth } = useAuthState(); // Get cleanAuth from secure.ts
 
-  // Fetch initial programmes
+  // Fetch programmes on mount
   useEffect(() => {
     const fetchProgrammes = async () => {
       try {
-        const response = await fetch(`${REACT_APP_API}/programmes`);
-        if (response.ok) {
-          const data: Programme[] = await response.json();
-          setProgrammes(data);
-          setFilteredProgrammes(data);
-        }
+        const data = await apiRequest('/programmes', {}, cleanAuth);
+        setProgrammes(data);
+        setFilteredProgrammes(data);
       } catch (error) {
         console.error('Error fetching programmes:', error);
       }
     };
 
     fetchProgrammes();
-  }, [REACT_APP_API]);
+  }, [cleanAuth]);
 
   const openModal = (programme?: Programme) => {
     setEditingProgramme(programme);
@@ -44,51 +43,49 @@ const AdminProgrammesPage: React.FC = () => {
 
   const handleSave = async (data: Programme) => {
     const method = editingProgramme ? 'PUT' : 'POST';
-    const url = editingProgramme
-      ? `${REACT_APP_API}/programmes/${editingProgramme.event_id}`
-      : `${REACT_APP_API}/programmes`;
+    const endpoint = editingProgramme
+      ? `/programmes/${editingProgramme.event_id}`
+      : '/programmes';
 
     try {
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+      const savedProgramme = await apiRequest(
+        endpoint,
+        {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        },
+        cleanAuth
+      );
 
-      if (response.ok) {
-        alert(editingProgramme ? 'Programme updated successfully!' : 'Programme created successfully!');
-        closeModal();
-        setProgrammes((prevProgrammes) =>
-          editingProgramme
-            ? prevProgrammes.map((p) => (p.event_id === editingProgramme.event_id ? data : p))
-            : [...prevProgrammes, data]
-        );
-        setFilteredProgrammes((prevProgrammes) =>
-          editingProgramme
-            ? prevProgrammes.map((p) => (p.event_id === editingProgramme.event_id ? data : p))
-            : [...prevProgrammes, data]
-        );
-      } else {
-        alert('Failed to save programme.');
-      }
+      alert(editingProgramme ? 'Programme updated successfully!' : 'Programme created successfully!');
+      closeModal();
+
+      setProgrammes((prevProgrammes) =>
+        editingProgramme
+          ? prevProgrammes.map((p) => (p.event_id === editingProgramme.event_id ? savedProgramme : p))
+          : [...prevProgrammes, savedProgramme]
+      );
+      setFilteredProgrammes((prevProgrammes) =>
+        editingProgramme
+          ? prevProgrammes.map((p) => (p.event_id === editingProgramme.event_id ? savedProgramme : p))
+          : [...prevProgrammes, savedProgramme]
+      );
     } catch (error) {
       console.error('Error saving programme:', error);
+      alert('Failed to save programme.');
     }
   };
 
-  // Handle filtering of programmes
   const handleFilterChange = async (query: string) => {
     if (!query) {
-      setFilteredProgrammes(programmes); // Reset if query is empty
+      setFilteredProgrammes(programmes);
       return;
     }
 
     try {
-      const response = await fetch(`${REACT_APP_API}/programmes?search=${query}`);
-      if (response.ok) {
-        const data: Programme[] = await response.json();
-        setFilteredProgrammes(data);
-      }
+      const data = await apiRequest(`/programmes?search=${query}`, {}, cleanAuth);
+      setFilteredProgrammes(data);
     } catch (error) {
       console.error('Error filtering programmes:', error);
     }
@@ -97,18 +94,42 @@ const AdminProgrammesPage: React.FC = () => {
   return (
     <div>
       <Navbar />
-      <div style={{ padding: '20px' }}>
-        <h1>Manage Programmes</h1>
-        <button onClick={() => openModal()}>Add Programme</button>
-        <ProgrammeFilter onFilterChange={handleFilterChange} />
+      <div className="container mt-5">
+        <h1 className="mb-4">Manage Programmes</h1>
+        <button className="btn btn-primary mb-4" onClick={() => openModal()}>
+          Add Programme
+        </button>
+        <div className="mb-4">
+          <ProgrammeFilter onFilterChange={handleFilterChange} />
+        </div>
         <ProgrammeList programmes={filteredProgrammes} onEdit={openModal} />
         {isModalOpen && (
-          <div className="modal">
-            <ProgrammeForm
-              initialData={editingProgramme}
-              onSave={handleSave}
-              onCancel={closeModal}
-            />
+          <div
+            className="modal fade show d-block"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+          >
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">
+                    {editingProgramme ? 'Edit Programme' : 'Add Programme'}
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    aria-label="Close"
+                    onClick={closeModal}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <ProgrammeForm
+                    initialData={editingProgramme}
+                    onSave={handleSave}
+                    onCancel={closeModal}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

@@ -5,52 +5,40 @@ import { Link } from 'react-router-dom';
 import { Programme } from '../types/Programme';
 
 interface ProgrammeInfoProps {
-    programme: Programme;
-    onClose?: () => void; // Optional: For modals or additional interactions
+  programme: Programme;
+  onClose?: () => void; // Optional: For modals or additional interactions
 }
 
 const ProgrammeInfo: React.FC<ProgrammeInfoProps> = ({ programme, onClose }) => {
-    return (
-        <div style={{ border: '1px solid #ccc', padding: '10px', borderRadius: '5px' }}>
-            <h3>{programme.title}</h3>
-            <p><strong>Presenter:</strong> {programme.presenter}</p>
-            <p><strong>Date:</strong> {programme.dateline}</p>
-            <p><strong>Venue:</strong> {programme.venue?.name}</p>
-            {programme.description && (
-                <p><strong>Description:</strong> {programme.description}</p>
-            )}
-            <Link to={`/programmes/${programme.event_id}`}>
-                <button
-                    style={{
-                        padding: '5px 10px',
-                        backgroundColor: '#007bff',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                    }}
-                >
-                    View Full Details
-                </button>
-            </Link>
-            {onClose && (
-                <button
-                    onClick={onClose}
-                    style={{
-                        padding: '5px 10px',
-                        backgroundColor: '#dc3545',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '5px',
-                        marginLeft: '10px',
-                        cursor: 'pointer',
-                    }}
-                >
-                    Close
-                </button>
-            )}
-        </div>
-    );
+  return (
+    <div className="card">
+      <div className="card-body">
+        <h3 className="card-title">{programme.title}</h3>
+        <p className="card-text">
+          <strong>Presenter:</strong> {programme.presenter}
+        </p>
+        <p className="card-text">
+          <strong>Date:</strong> {programme.dateline}
+        </p>
+        <p className="card-text">
+          <strong>Venue:</strong> {programme.venue?.name || 'Not specified'}
+        </p>
+        {programme.description && (
+          <p className="card-text">
+            <strong>Description:</strong> {programme.description}
+          </p>
+        )}
+        <Link to={`/programmes/${programme.event_id}`}>
+          <button className="btn btn-primary">View Full Details</button>
+        </Link>
+        {onClose && (
+          <button className="btn btn-danger ms-2" onClick={onClose}>
+            Close
+          </button>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default ProgrammeInfo;

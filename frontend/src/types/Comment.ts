@@ -1,10 +1,10 @@
 // frontend/src/types/Comment.ts
-import { User } from './User';
+import { Account } from './Account';
 
 export interface Comment {
     id: string; // Unique ID for the comment
     content: string; // The comment text
-    user: User; // The ID of the user who made the comment
+    account: Account; // The ID of the account who made the comment
     relatedId: string; // ID of the related programme or venue
     createdAt: string; // Timestamp when the comment was created
   }

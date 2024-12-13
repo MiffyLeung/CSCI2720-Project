@@ -27,10 +27,10 @@ const HotestPage: React.FC = () => {
   return (
     <div>
       <Navbar />
-      <div style={{ padding: '20px' }}>
-        <h1>Hotest Events</h1>
-        <table>
-          <thead>
+      <div className="container mt-5">
+        <h1 className="mb-4">Hotest Events</h1>
+        <table className="table table-striped table-hover">
+          <thead className="table-dark">
             <tr>
               <th>Title</th>
               <th>Ranking</th>
@@ -45,6 +45,11 @@ const HotestPage: React.FC = () => {
             ))}
           </tbody>
         </table>
+        {programmes.length === 0 && (
+          <div className="alert alert-info" role="alert">
+            No hotest events available at the moment.
+          </div>
+        )}
       </div>
     </div>
   );

@@ -7,8 +7,9 @@
   "author": "",
   "license": "ISC",
   "scripts": {
-    "create-users": "npm --prefix backend run create-users",
-    "create-users-with-force": "npm --prefix backend run create-users-with-force",
+    "create-data": "npm --prefix backend run create-data",
+    "create-accounts": "npm --prefix backend run create-accounts",
+    "create-accounts-with-force": "npm --prefix backend run create-accounts-with-force",
     "start": "concurrently \"npm --prefix backend start\" \"npm --prefix frontend start\"",
     "start-frontend": "npm --prefix frontend start",
     "start-backend": "npm --prefix backend start"

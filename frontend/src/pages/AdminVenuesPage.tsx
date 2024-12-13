@@ -6,32 +6,29 @@ import { Venue } from '../types/Venue';
 import VenueList from '../components/VenueList';
 import VenueForm from '../components/VenueForm';
 import VenueFilter from '../components/VenueFilter';
-import VenueSort from '../components/VenueSort';
+import { apiRequest } from '../utils/api'; // Centralized API request handler
+import { useAuthState } from '../utils/secure'; // Authentication handling
 
 const AdminVenuesPage: React.FC = () => {
   const [venues, setVenues] = useState<Venue[]>([]);
   const [filteredVenues, setFilteredVenues] = useState<Venue[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingVenue, setEditingVenue] = useState<Venue | undefined>(undefined);
-  const REACT_APP_API = process.env.REACT_APP_API || 'http://localhost:5000/api';
+  const { cleanAuth } = useAuthState(); // Get cleanAuth for token management
 
-  // Fetch all venues from the backend
   useEffect(() => {
     const fetchVenues = async () => {
       try {
-        const response = await fetch(`${REACT_APP_API}/venues`);
-        if (response.ok) {
-          const data: Venue[] = await response.json();
-          setVenues(data);
-          setFilteredVenues(data); // Set initial filtered venues
-        }
+        const data = await apiRequest('/venues', {}, cleanAuth);
+        setVenues(data);
+        setFilteredVenues(data);
       } catch (error) {
         console.error('Error fetching venues:', error);
       }
     };
 
     fetchVenues();
-  }, [REACT_APP_API]);
+  }, [cleanAuth]);
 
   // Open modal to add/edit venue
   const openModal = (venue?: Venue) => {
@@ -48,87 +45,94 @@ const AdminVenuesPage: React.FC = () => {
   // Handle save (add/edit venue)
   const handleSave = async (data: Venue) => {
     const method = editingVenue ? 'PUT' : 'POST';
-    const url = editingVenue
-      ? `${REACT_APP_API}/venues/${editingVenue.id}`
-      : `${REACT_APP_API}/venues`;
+    const endpoint = editingVenue
+      ? `/venues/${editingVenue.id}`
+      : '/venues';
 
     try {
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+      const savedVenue = await apiRequest(
+        endpoint,
+        {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        },
+        cleanAuth
+      );
 
-      if (response.ok) {
-        alert(editingVenue ? 'Venue updated successfully!' : 'Venue created successfully!');
-        closeModal();
-        setVenues((prevVenues) =>
-          editingVenue
-            ? prevVenues.map((v) => (v.id === editingVenue.id ? data : v))
-            : [...prevVenues, data]
-        );
-        setFilteredVenues((prevVenues) =>
-          editingVenue
-            ? prevVenues.map((v) => (v.id === editingVenue.id ? data : v))
-            : [...prevVenues, data]
-        );
-      } else {
-        alert('Failed to save venue.');
-      }
+      alert(editingVenue ? 'Venue updated successfully!' : 'Venue created successfully!');
+      closeModal();
+
+      setVenues((prevVenues) =>
+        editingVenue
+          ? prevVenues.map((v) => (v.id === editingVenue.id ? savedVenue : v))
+          : [...prevVenues, savedVenue]
+      );
+      setFilteredVenues((prevVenues) =>
+        editingVenue
+          ? prevVenues.map((v) => (v.id === editingVenue.id ? savedVenue : v))
+          : [...prevVenues, savedVenue]
+      );
     } catch (error) {
       console.error('Error saving venue:', error);
+      alert('Failed to save venue.');
     }
   };
 
   // Handle filter change
   const handleFilterChange = async (query: string) => {
     if (!query) {
-      setFilteredVenues(venues); // Reset to full list if query is empty
+      setFilteredVenues(venues);
       return;
     }
 
     try {
-      const response = await fetch(`${REACT_APP_API}/venues?search=${query}`);
-      if (response.ok) {
-        const data: Venue[] = await response.json();
-        setFilteredVenues(data);
-      }
+      const data = await apiRequest(`/venues?search=${query}`, {}, cleanAuth);
+      setFilteredVenues(data);
     } catch (error) {
       console.error('Error filtering venues:', error);
-    }
-  };
-
-  // Handle sort change
-  const handleSortChange = async (sortField: string, sortOrder: string) => {
-    try {
-      const response = await fetch(`${REACT_APP_API}/venues?sortField=${sortField}&sortOrder=${sortOrder}`);
-      if (response.ok) {
-        const data: Venue[] = await response.json();
-        setFilteredVenues(data);
-      }
-    } catch (error) {
-      console.error('Error sorting venues:', error);
     }
   };
 
   return (
     <div>
       <Navbar />
-      <div style={{ padding: '20px' }}>
-        <h1>Manage Venues</h1>
-        <button onClick={() => openModal()}>Add Venue</button>
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center', marginTop: '20px' }}>
+      <div className="container mt-5">
+        <h1 className="mb-4">Manage Venues</h1>
+        <button className="btn btn-primary mb-4" onClick={() => openModal()}>
+          Add Venue
+        </button>
+        <div className="mb-4">
           <VenueFilter onFilterChange={handleFilterChange} />
-          <VenueSort onSortChange={handleSortChange} />
         </div>
         <VenueList venues={filteredVenues} onEdit={openModal} />
         {isModalOpen && (
-          <div className="modal">
-            <VenueForm
-              initialData={editingVenue}
-              onSave={handleSave}
-              onCancel={closeModal}
-            />
+          <div
+            className="modal fade show d-block"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+          >
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">
+                    {editingVenue ? 'Edit Venue' : 'Add Venue'}
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    aria-label="Close"
+                    onClick={closeModal}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <VenueForm
+                    initialData={editingVenue}
+                    onSave={handleSave}
+                    onCancel={closeModal}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

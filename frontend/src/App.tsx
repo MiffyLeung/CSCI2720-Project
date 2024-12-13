@@ -13,21 +13,22 @@ import UserDashboardPage from './pages/UserDashboardPage';
 import ProgrammeDetailsPage from './pages/ProgrammeDetailsPage';
 import VenueDetailsPage from './pages/VenueDetailsPage';
 import AdminProgrammesPage from './pages/AdminProgrammesPage';
-import AdminUsersPage from './pages/AdminUsersPage';
+import AdminAccountsPage from './pages/AdminAccountsPage';
 import AdminVenuesPage from './pages/AdminVenuesPage';
 import { useAuthState } from './utils/secure';
+
 const App: React.FC = () => {
-  
   const { isAdmin, isAuthenticated } = useAuthState();
+
   const requireAuth = (element: React.JSX.Element) => {
-    return isAuthenticated() ? element : <Navigate to="/login" />;
+    return isAuthenticated ? element : <Navigate to="/login" />;
   };
 
   const requireAdmin = (element: React.JSX.Element) => {
     if (isAuthenticated === null) {
       return null; // Show nothing until authentication state is resolved
     }
-    return isAdmin() ? element : <Navigate to="/" />;
+    return isAdmin ? element : <Navigate to="/" />;
   };
 
   return (
@@ -40,10 +41,9 @@ const App: React.FC = () => {
         <Route path="/recent" element={requireAuth(<WhatsNewPage />)} />
         <Route path="/hotest" element={requireAuth(<HotestPage />)} />
         <Route path="/map" element={requireAuth(<MapViewPage />)} />
-        <Route path="/myfavorites" element={requireAuth(<MyFavoritesPage />)} />
-        <Route path="/myprofile" element={requireAuth(<MyProfilePage />)} />
-        <Route path="/programmes/:id" element={requireAuth(<ProgrammeDetailsPage />)} />
-        <Route path="/venues/:id" element={requireAuth(<VenueDetailsPage />)} />
+        <Route path="/myFavorites" element={requireAuth(<MyFavoritesPage />)} />
+        <Route path="/myProfile" element={requireAuth(<MyProfilePage />)} />
+        <Route path="/programme/:id" element={requireAuth(<ProgrammeDetailsPage />)} />
 
         {/* User-Specific Routes */}
         <Route path="/dashboard" element={requireAuth(<UserDashboardPage />)} />
@@ -51,11 +51,11 @@ const App: React.FC = () => {
         {/* Admin-Specific Routes */}
         <Route path="/admin/" element={requireAdmin(<AdminProgrammesPage />)} />
         <Route path="/admin/programmes" element={requireAdmin(<AdminProgrammesPage />)} />
-        <Route path="/admin/users" element={requireAdmin(<AdminUsersPage />)} />
+        <Route path="/admin/accounts" element={requireAdmin(<AdminAccountsPage />)} />
         <Route path="/admin/venues" element={requireAdmin(<AdminVenuesPage />)} />
 
         {/* Home page according to differnt account role */}
-        <Route path="/" element={requireAuth(isAdmin() ? <AdminProgrammesPage /> : <UserDashboardPage /> )} />
+        <Route path="/" element={requireAuth(isAdmin ? <AdminProgrammesPage /> : <UserDashboardPage /> )} />
 
         {/* Catch-All for Undefined Routes */}
         <Route path="*" element={<ErrorPage />} />

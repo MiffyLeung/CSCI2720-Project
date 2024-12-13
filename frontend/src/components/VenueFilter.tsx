@@ -16,15 +16,17 @@ const VenueFilter: React.FC<VenueFilterProps> = ({ onFilterChange }) => {
   };
 
   return (
-    <div style={{ marginBottom: '20px' }}>
-      <label htmlFor="venue-filter">Filter Venues: </label>
+    <div className="mb-3">
+      <label htmlFor="venue-filter" className="form-label">
+        Filter Venues:
+      </label>
       <input
         type="text"
         id="venue-filter"
+        className="form-control"
         value={query}
         onChange={handleInputChange}
         placeholder="Type to search..."
-        style={{ padding: '8px', width: '300px' }}
       />
     </div>
   );

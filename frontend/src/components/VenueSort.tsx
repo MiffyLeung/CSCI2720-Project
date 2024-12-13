@@ -20,15 +20,29 @@ const VenueSort: React.FC<VenueSortProps> = ({ onSortChange }) => {
   };
 
   return (
-    <div style={{ marginBottom: '20px' }}>
-      <label htmlFor="sort-field">Sort By: </label>
-      <select id="sort-field" onChange={handleSortFieldChange} style={{ marginRight: '10px' }}>
+    <div className="mb-3">
+      <label htmlFor="sort-field" className="form-label">
+        Sort By:
+      </label>
+      <select
+        id="sort-field"
+        className="form-select"
+        onChange={handleSortFieldChange}
+        style={{ maxWidth: '200px' }}
+      >
         <option value="name">Name</option>
         <option value="latitude">Latitude</option>
         <option value="longitude">Longitude</option>
       </select>
-      <label htmlFor="sort-order">Order: </label>
-      <select id="sort-order" onChange={handleSortOrderChange}>
+      <label htmlFor="sort-order" className="form-label ms-3">
+        Order:
+      </label>
+      <select
+        id="sort-order"
+        className="form-select"
+        onChange={handleSortOrderChange}
+        style={{ maxWidth: '150px' }}
+      >
         <option value="asc">Ascending</option>
         <option value="desc">Descending</option>
       </select>

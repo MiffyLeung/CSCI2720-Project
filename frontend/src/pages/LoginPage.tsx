@@ -1,79 +1,90 @@
-// src/pages/LoginPage.tsx
-import React, { useState } from 'react';
+// frontend/src/pages/LoginPage.tsx
+
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthState } from '../utils/secure';
 import { apiRequest } from '../utils/api';
 
 const LoginPage: React.FC = () => {
-  // const [username, setUsername] = useState('');
-  // const [username, setUsername] = useState('user'); // for development only
-  const [username, setUsername] = useState('admin'); // for development only
-  // const [password, setPassword] = useState('');
-  const [password, setPassword] = useState('password123'); // for development only
-
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const [username, setUsername] = React.useState(isDevelopment ? 'admin' : '');
+  const [password, setPassword] = React.useState(isDevelopment ? 'password123' : '');
+  const [error, setError] = React.useState<string | null>(null);
+  const { isAuthenticated, setAuth, cleanAuth } = useAuthState();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      // Redirect to homepage if the user is already authenticated
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
+
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
 
     try {
-      const data = await apiRequest('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ username, password }),
-      });
+      // Send login request
+      const data = await apiRequest(
+        '/login',
+        {
+          method: 'POST',
+          body: JSON.stringify({ username, password }),
+        },
+        cleanAuth // Inject cleanAuth for handling token errors
+      );
 
-      console.log('Login successful:', data);
-
-      // Store user info in local storage
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('username', data.user.username);
-      localStorage.setItem('role', data.user.role);
-
-      // Redirect based on role
-      navigate('/'); // Homepage (User Dashboard / Admin Dashboard)
-
-    } catch (error) {
-
-      const err = error as Error; 
-      console.error('Login failed:', err);
-      alert(err.message || 'Login failed. Please try again.');
-
+      setAuth(data.token, data.username, data.role);
+      navigate('/'); // Redirect to homepage after successful login
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
     }
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: 'auto', padding: '20px' }}>
-      <h1>Login</h1>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="username" style={{ display: 'block', marginBottom: '5px' }}>
-            Username:
-          </label>
-          <input
-            id="username"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            style={{ width: '100%', padding: '8px' }}
-            required
-          />
+    <div className="container mt-5">
+      <div className="row justify-content-center">
+        <div className="col-md-6">
+          <div className="card shadow">
+            <div className="card-body">
+              <h2 className="card-title text-center text-primary mb-4">Login</h2>
+              <form onSubmit={handleLogin}>
+                <div className="mb-3">
+                  <label htmlFor="username" className="form-label">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    id="username"
+                    className="form-control"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="password" className="form-label">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    id="password"
+                    className="form-control"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                {error && <div className="alert alert-danger">{error}</div>}
+                <button type="submit" className="btn btn-primary w-100">
+                  Login
+                </button>
+              </form>
+            </div>
+          </div>
         </div>
-        <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="password" style={{ display: 'block', marginBottom: '5px' }}>
-            Password:
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ width: '100%', padding: '8px' }}
-            required
-          />
-        </div>
-        <button type="submit" style={{ padding: '10px 20px' }}>
-          Login
-        </button>
-      </form>
+      </div>
     </div>
   );
 };

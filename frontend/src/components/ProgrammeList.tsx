@@ -10,8 +10,8 @@ interface ProgrammeListProps {
 
 const ProgrammeList: React.FC<ProgrammeListProps> = ({ programmes, onEdit }) => {
   return (
-    <table>
-      <thead>
+    <table className="table table-striped">
+      <thead className="table-dark">
         <tr>
           <th>Title</th>
           <th>Date Range</th>
@@ -26,7 +26,9 @@ const ProgrammeList: React.FC<ProgrammeListProps> = ({ programmes, onEdit }) => 
             <td>{programme.dateline}</td>
             <td>{programme.presenter}</td>
             <td>
-              <button onClick={() => onEdit(programme)}>Edit</button>
+              <button className="btn btn-primary btn-sm" onClick={() => onEdit(programme)}>
+                Edit
+              </button>
             </td>
           </tr>
         ))}

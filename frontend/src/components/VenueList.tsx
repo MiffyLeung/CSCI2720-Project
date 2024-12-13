@@ -10,37 +10,30 @@ interface VenueListProps {
 
 const VenueList: React.FC<VenueListProps> = ({ venues, onEdit }) => {
   return (
-    <div>
+    <div className="table-responsive">
       <h2>Venues</h2>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
+      <table className="table table-striped table-bordered">
+        <thead className="table-dark">
           <tr>
-            <th style={{ border: '1px solid #ddd', padding: '8px' }}>ID</th>
-            <th style={{ border: '1px solid #ddd', padding: '8px' }}>Name</th>
-            <th style={{ border: '1px solid #ddd', padding: '8px' }}>Latitude</th>
-            <th style={{ border: '1px solid #ddd', padding: '8px' }}>Longitude</th>
-            {onEdit && <th style={{ border: '1px solid #ddd', padding: '8px' }}>Actions</th>}
+            <th>ID</th>
+            <th>Name</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            {onEdit && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
           {venues.map((venue) => (
             <tr key={venue.id}>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>{venue.id}</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>{venue.name}</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>{venue.latitude}</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px' }}>{venue.longitude}</td>
+              <td>{venue.id}</td>
+              <td>{venue.name}</td>
+              <td>{venue.latitude}</td>
+              <td>{venue.longitude}</td>
               {onEdit && (
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                <td>
                   <button
+                    className="btn btn-primary btn-sm"
                     onClick={() => onEdit(venue)}
-                    style={{
-                      padding: '5px 10px',
-                      backgroundColor: '#007bff',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '5px',
-                      cursor: 'pointer',
-                    }}
                   >
                     Edit
                   </button>

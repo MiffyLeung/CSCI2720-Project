@@ -1,63 +1,54 @@
-// src/components/CommentsSection.tsx
+// frontend/src/components/CommentsSection.tsx
+
 import React, { useEffect, useState } from 'react';
+import { apiRequest } from '../utils/api'; // Centralized API handler
+import { useAuthState } from '../utils/secure'; // Authentication handler
 
 interface Comment {
   id: string;
   text: string;
-  user: string;
+  account: string;
+  createdAt: string;
 }
 
 interface CommentsSectionProps {
-  locationId: string;
+  programmeId: string;
 }
 
-const CommentsSection: React.FC<CommentsSectionProps> = ({ locationId }) => {
+const CommentsSection: React.FC<CommentsSectionProps> = ({ programmeId }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
-  const token = localStorage.getItem('token');
-  const REACT_APP_API = process.env.REACT_APP_API || 'http://localhost:5000/api';
+  const { cleanAuth } = useAuthState(); // Token management
 
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const response = await fetch(`${REACT_APP_API}/locations/${locationId}/comments`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setComments(data);
-        } else {
-          console.error('Failed to fetch comments');
-        }
+        const data = await apiRequest(`/programmes/${programmeId}/comments`, {}, cleanAuth);
+        setComments(data);
       } catch (error) {
         console.error('Error fetching comments:', error);
       }
     };
 
     fetchComments();
-  }, [locationId, token, REACT_APP_API]);
+  }, [programmeId, cleanAuth]);
 
   const handleAddComment = async () => {
-    if (!newComment) return;
+    if (!newComment.trim()) return;
 
     try {
-      const response = await fetch(`${REACT_APP_API}/locations/${locationId}/comments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+      const data = await apiRequest(
+        `/programmes/${programmeId}/comments`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: newComment }),
         },
-        body: JSON.stringify({ text: newComment }),
-      });
+        cleanAuth
+      );
 
-      if (response.ok) {
-        const data = await response.json();
-        setComments([...comments, data]);
-        setNewComment('');
-      } else {
-        console.error('Failed to add comment');
-      }
+      setComments([...comments, data]);
+      setNewComment('');
     } catch (error) {
       console.error('Error adding comment:', error);
     }
@@ -66,21 +57,24 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ locationId }) => {
   return (
     <div>
       <h3>Comments</h3>
-      <ul>
+      <ul className="list-group mb-3">
         {comments.map((comment) => (
-          <li key={comment.id}>
-            <strong>{comment.user}:</strong> {comment.text}
+          <li key={comment.id} className="list-group-item">
+            <strong>{comment.account}:</strong> {comment.text}
+            <div className="text-muted small">{new Date(comment.createdAt).toLocaleString()}</div>
           </li>
         ))}
       </ul>
       <textarea
+        className="form-control mb-2"
         value={newComment}
         onChange={(e) => setNewComment(e.target.value)}
         placeholder="Add a comment"
         rows={4}
-        style={{ width: '100%', marginBottom: '10px' }}
       />
-      <button onClick={handleAddComment}>Add Comment</button>
+      <button className="btn btn-primary" onClick={handleAddComment}>
+        Add Comment
+      </button>
     </div>
   );
 };

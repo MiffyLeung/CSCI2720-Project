@@ -1,6 +1,7 @@
 // frontend/src/utils/secure.ts
 
-import { useState, useEffect } from 'react';
+// This file contains the `useAuthState` hook implementation
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Cookies from 'js-cookie';
 import md5 from 'md5';
 
@@ -10,56 +11,8 @@ export const useAuthState = () => {
   const [role, setRole] = useState<string | null>(null);
   const [authInitialized, setAuthInitialized] = useState(false);
 
-  const validateAuth = (): boolean => {
-    const storedToken = localStorage.getItem('token');
-    const storedUsername = localStorage.getItem('username');
-    const storedRole = localStorage.getItem('role');
-    const storedHash = Cookies.get('auth_hash');
-    const computedHash = md5(`${storedUsername}${storedRole}${storedToken}`);
-
-    const isConsistent =
-      token === storedToken &&
-      username === storedUsername &&
-      role === storedRole &&
-      storedHash === computedHash;
-
-    if (!isConsistent) {
-      cleanAuth(); // Clear all data if inconsistent
-      return false;
-    }
-
-    return true;
-  };
-
-  const setAuth = (newToken: string, newUsername: string, newRole: string) => {
-    const hash = md5(`${newUsername}${newRole}${newToken}`);
-
-    // Update localStorage and cookies
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('username', newUsername);
-    localStorage.setItem('role', newRole);
-    Cookies.set('auth_hash', hash, { secure: true, sameSite: 'strict' });
-
-    // Update React state immediately
-    setToken(newToken);
-    setUsername(newUsername);
-    setRole(newRole);
-  };
-
-  const cleanAuth = () => {
-    // Clear localStorage and cookies
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
-    localStorage.removeItem('role');
-    Cookies.remove('auth_hash');
-
-    // Clear React state immediately
-    setToken(null);
-    setUsername(null);
-    setRole(null);
-  };
-
-  const initializeAuth = () => {
+  // Check if the current authentication is valid
+  const validateAuth = useCallback((): boolean => {
     const storedToken = localStorage.getItem('token');
     const storedUsername = localStorage.getItem('username');
     const storedRole = localStorage.getItem('role');
@@ -67,46 +20,84 @@ export const useAuthState = () => {
     const computedHash = md5(`${storedUsername}${storedRole}${storedToken}`);
 
     if (
-      storedToken &&
-      storedUsername &&
-      storedRole &&
-      storedHash === computedHash &&
-      token === null &&
-      username === null &&
-      role === null
+      token !== storedToken ||
+      username !== storedUsername ||
+      role !== storedRole ||
+      storedHash !== computedHash
     ) {
-      // Only initialize React state if all are null and data is valid
+      cleanAuth();
+      return false;
+    }
+    return true;
+  }, [token, username, role]);
+
+  // Set new authentication data
+  const setAuth = useCallback((newToken: string, newUsername: string, newRole: string) => {
+    const hash = md5(`${newUsername}${newRole}${newToken}`);
+
+    localStorage.setItem('token', newToken);
+    localStorage.setItem('username', newUsername);
+    localStorage.setItem('role', newRole);
+    Cookies.set('auth_hash', hash, { secure: true, sameSite: 'strict' });
+
+    setToken(newToken);
+    setUsername(newUsername);
+    setRole(newRole);
+  }, []);
+
+  // Clear all authentication data
+  const cleanAuth = useCallback(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('role');
+    Cookies.remove('auth_hash');
+
+    setToken(null);
+    setUsername(null);
+    setRole(null);
+    alert('Login status cleared');
+  }, []);
+
+  // Initialize the authentication state
+  const initializeAuth = useCallback(() => {
+    const storedToken = localStorage.getItem('token');
+    const storedUsername = localStorage.getItem('username');
+    const storedRole = localStorage.getItem('role');
+    const storedHash = Cookies.get('auth_hash');
+    const computedHash = md5(`${storedUsername}${storedRole}${storedToken}`);
+
+    if (
+      storedToken && storedUsername && storedRole &&
+      storedHash === computedHash &&
+      !token && !username && !role
+    ) {
       setToken(storedToken);
       setUsername(storedUsername);
       setRole(storedRole);
-    } else if (!validateAuth()) {
-      cleanAuth();
     }
 
-    setAuthInitialized(true); // Mark as initialized
-  };
+    setAuthInitialized(true);
+  }, [validateAuth, cleanAuth, token, username, role]);
 
   useEffect(() => {
-    initializeAuth(); // Run initialization on mount
-  }, []);
+    initializeAuth();
+  }, [initializeAuth]);
+
+  // Derived state for authentication status
+  const isAuthenticated = useMemo((): boolean => {
+    return !!(authInitialized && token && username && role && validateAuth());
+  }, [authInitialized, token, username, role, validateAuth]);
+
+  // Derived state for admin status
+  const isAdmin = useMemo((): boolean => {
+    return isAuthenticated && role === 'admin';
+  }, [isAuthenticated, role]);
 
   return {
-    token,
     username,
-    role,
-    authInitialized,
-    isAuthenticated: () => {
-      if (!authInitialized || token === null || username === null || role === null) {
-        return false;
-      }
-      return validateAuth();
-    },
-    isAdmin: () => {
-      return validateAuth() && role === 'admin';
-    },
-    getToken: () => {
-      return validateAuth() ? token : null;
-    },
+    isAuthenticated,
+    isAdmin,
+    getToken: () => (validateAuth() ? token : null),
     setAuth,
     cleanAuth,
   };

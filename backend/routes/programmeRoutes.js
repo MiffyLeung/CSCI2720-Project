@@ -1,39 +1,97 @@
-// routes/programmeRoutes.js
+// backend/routes/programmeRoutes.js
+
+const { authenticate, authorize } = require('../middleware/authMiddleware');
 const express = require('express');
-const Programme = require('../models/Programme');
+const {
+    getAllProgrammes,
+    getProgrammeById,
+    createProgramme,
+    updateProgrammeById,
+    deleteProgrammeById,
+    likeProgramme,
+    commentOnProgramme,
+} = require('../controllers/programmeController');
 
 const router = express.Router();
 
-// Get All Programmes with Pagination and Filters
-router.get('/', async (req, res) => {
-  try {
-    const { type, language, page = 1, limit = 10 } = req.query;
+/**
+ * Protected routes: Require authentication for all routes below.
+ */
+router.use(authenticate);
 
-    const query = {};
-    if (type) query.type = type;
-    if (language) query.language = language;
+/**
+ * List all programmes with parameters (e.g., recent, hottest).
+ * Matches route: GET /api/programmes
+ */
+router.get(
+    's',
+    getAllProgrammes
+);
 
-    const programmes = await Programme.find(query)
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
-    const total = await Programme.countDocuments(query);
+/**
+ * View details of a specific programme.
+ * Matches route: GET /api/programme/:id
+ */
+router.get(
+    '/:id',
+    getProgrammeById
+);
 
-    res.status(200).json({ programmes, total, page, pages: Math.ceil(total / limit) });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+/**
+ * User actions on programmes.
+ */
 
-// Add Programme
-router.post('/', async (req, res) => {
-    try {
-        const programme = new Programme(req.body);
-        await programme.save();
-        res.status(201).json(programme);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-});
+/**
+ * Like a specific programme by ID.
+ * Matches route: PUT /api/programme/:id/like
+ */
+router.put(
+    '/:id/like',
+    likeProgramme // Todo: Add this to programmeController if missing
+);
+
+/**
+ * Leave a comment on a specific programme by ID.
+ * Matches route: PUT /api/programme/:id/comment
+ */
+router.put(
+    '/:id/comment',
+    commentOnProgramme // Todo: Add this to programmeController if missing
+);
+
+/**
+ * Admin-only routes for programme management.
+ * Protected by 'admin' authorization middleware.
+ */
+
+/**
+ * Create a new programme.
+ * Matches route: PUT /api/programme
+ */
+router.put(
+    '',
+    authorize('admin'),
+    createProgramme
+);
+
+/**
+ * Update a specific programme by ID.
+ * Matches route: PUT /api/programme/:id
+ */
+router.put(
+    '/:id',
+    authorize('admin'),
+    updateProgrammeById
+);
+
+/**
+ * Delete a specific programme by ID.
+ * Matches route: DELETE /api/programme/:id
+ */
+router.delete(
+    '/:id',
+    authorize('admin'),
+    deleteProgrammeById
+);
 
 module.exports = router;
-

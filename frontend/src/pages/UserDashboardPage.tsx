@@ -3,33 +3,30 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import ProgrammeList from '../components/ProgrammeList';
-import ProgrammeInfo from '../components/ProgrammeInfo'; // Updated reference
+import ProgrammeInfo from '../components/ProgrammeInfo';
 import { Programme } from '../types/Programme';
+import { apiRequest } from '../utils/api'; // Centralized API request handler
+import { useAuthState } from '../utils/secure'; // Authentication handler
 
 const UserDashboardPage: React.FC = () => {
   const [programmes, setProgrammes] = useState<Programme[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProgramme, setSelectedProgramme] = useState<Programme | null>(null);
-  const REACT_APP_API = process.env.REACT_APP_API || 'http://localhost:5000/api';
+  const { cleanAuth } = useAuthState(); // Handle token management
 
   // Fetch programmes from API on mount
   useEffect(() => {
     const fetchProgrammes = async () => {
       try {
-        const response = await fetch(`${REACT_APP_API}/programmes`);
-        if (response.ok) {
-          const data: Programme[] = await response.json();
-          setProgrammes(data);
-        } else {
-          console.error(`Failed to fetch programmes: ${response.status}`);
-        }
+        const data = await apiRequest('/programmes', {}, cleanAuth);
+        setProgrammes(data);
       } catch (error) {
         console.error('Error fetching programmes:', error);
       }
     };
 
     fetchProgrammes();
-  }, [REACT_APP_API]);
+  }, [cleanAuth]);
 
   // Open modal with selected programme
   const openModal = (programme: Programme) => {
@@ -46,12 +43,29 @@ const UserDashboardPage: React.FC = () => {
   return (
     <div>
       <Navbar />
-      <div style={{ padding: '20px' }}>
-        <h1>User Dashboard</h1>
+      <div className="container mt-5">
+        <h1 className="mb-4">User Dashboard</h1>
         <ProgrammeList programmes={programmes} onEdit={openModal} />
         {isModalOpen && selectedProgramme && (
-          <div className="modal">
-            <ProgrammeInfo programme={selectedProgramme} onClose={closeModal} />
+          <div
+            className="modal fade show d-block"
+            style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+          >
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Programme Details</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={closeModal}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <ProgrammeInfo programme={selectedProgramme} />
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

@@ -1,22 +1,20 @@
 // frontend/src/utils/api.ts
-
 const REACT_APP_API = process.env.REACT_APP_API || 'http://localhost:5000/api';
 
 /**
  * Handles API requests with token-based authentication and error handling.
  * @param endpoint API endpoint to call.
  * @param options Additional fetch options.
+ * @param cleanAuth Function to clear authentication (injected from useAuthState).
  * @returns Parsed response data.
-*/
-export const apiRequest = async (endpoint: string, options: RequestInit = {}): Promise<any> => {
+ */
+export const apiRequest = async (
+  endpoint: string,
+  options: RequestInit = {},
+  cleanAuth: () => void
+): Promise<any> => {
   const token = localStorage.getItem('token');
-  const cleanAuth = () => {
-    // Clear localStorage and cookies
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
-    localStorage.removeItem('role');
-  };
-  
+
   const headers = {
     'Content-Type': 'application/json',
     ...options.headers,
@@ -28,13 +26,9 @@ export const apiRequest = async (endpoint: string, options: RequestInit = {}): P
     headers,
   };
 
-//   console.log(`Requesting: ${endpoint}`, requestOptions); // Log request details
-
   try {
     const response = await fetch(`${REACT_APP_API}${endpoint}`, requestOptions);
     const data = await response.json();
-
-    // console.log(`Response from: ${endpoint}`, data); // Log response details
 
     if (!response.ok) {
       // Handle known error codes from authMiddleware
@@ -55,7 +49,7 @@ export const apiRequest = async (endpoint: string, options: RequestInit = {}): P
           break;
         case 404:
           if (data.code === 'USER_NOT_FOUND') {
-            alert('User not found. Please contact support.');
+            alert('Account not found. Please contact support.');
             cleanAuth();
             window.location.href = '/login';
           }

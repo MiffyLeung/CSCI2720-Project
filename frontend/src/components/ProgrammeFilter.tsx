@@ -16,15 +16,17 @@ const ProgrammeFilter: React.FC<ProgrammeFilterProps> = ({ onFilterChange }) => 
   };
 
   return (
-    <div style={{ marginBottom: '20px' }}>
-      <label htmlFor="programme-filter">Filter Programmes: </label>
+    <div className="mb-3">
+      <label htmlFor="programme-filter" className="form-label">
+        Filter Programmes:
+      </label>
       <input
         type="text"
         id="programme-filter"
+        className="form-control"
         value={query}
         onChange={handleInputChange}
         placeholder="Type to search..."
-        style={{ padding: '8px', width: '300px' }}
       />
     </div>
   );

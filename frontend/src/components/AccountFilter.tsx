@@ -1,12 +1,12 @@
-// frontend/src/components/UserFilter.tsx
+// frontend/src/components/AccountFilter.tsx
 
 import React, { useState } from 'react';
 
-interface UserFilterProps {
+interface AccountFilterProps {
   onFilterChange: (query: string) => void;
 }
 
-const UserFilter: React.FC<UserFilterProps> = ({ onFilterChange }) => {
+const AccountFilter: React.FC<AccountFilterProps> = ({ onFilterChange }) => {
   const [query, setQuery] = useState('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -16,18 +16,18 @@ const UserFilter: React.FC<UserFilterProps> = ({ onFilterChange }) => {
   };
 
   return (
-    <div style={{ marginBottom: '20px' }}>
-      <label htmlFor="user-filter">Filter Users: </label>
+    <div className="mb-3">
+      <label htmlFor="account-filter">Filter Accounts: </label>
       <input
         type="text"
-        id="user-filter"
+        id="account-filter"
         value={query}
         onChange={handleInputChange}
         placeholder="Type to search..."
-        style={{ padding: '8px', width: '300px' }}
+        className="form-control"
       />
     </div>
   );
 };
 
-export default UserFilter;
+export default AccountFilter;

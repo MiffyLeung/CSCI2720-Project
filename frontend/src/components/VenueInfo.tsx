@@ -1,14 +1,14 @@
-// frontend/src/components/VenueDetails.tsx
+// frontend/src/components/VenueInfo.tsx
 
 import React from 'react';
 import { Venue } from '../types/Venue';
 
-interface VenueDetailsProps {
+interface VenueInfoProps {
   venue: Venue;
   onClose: () => void;
 }
 
-const VenueDetails: React.FC<VenueDetailsProps> = ({ venue, onClose }) => {
+const VenueInfo: React.FC<VenueInfoProps> = ({ venue, onClose }) => {
   return (
     <div className="modal">
       <h2>{venue.name}</h2>
@@ -19,4 +19,4 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ venue, onClose }) => {
   );
 };
 
-export default VenueDetails;
+export default VenueInfo;

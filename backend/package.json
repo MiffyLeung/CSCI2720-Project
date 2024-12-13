@@ -19,8 +19,9 @@
   },
   "scripts": {
     "start": "node app.js",
-    "create-users": "node scripts/createPrimaryUsers.js",
-    "create-users-with-force": "node scripts/createPrimaryUsers.js --force-update"
+    "create-accounts": "node scripts/createPrimaryAccounts.js",
+    "create-accounts-with-force": "node scripts/createPrimaryAccounts.js --force-update",
+    "create-data": "node scripts/populateDB.js"
   },
   "main": "app.js",
   "devDependencies": {

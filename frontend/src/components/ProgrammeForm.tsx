@@ -26,38 +26,41 @@ const ProgrammeForm: React.FC<ProgrammeFormProps> = ({ initialData, onSave, onCa
       case 'text':
       case 'number':
         return (
-          <div key={fieldKey}>
-            <label>{fieldMeta.label}</label>
+          <div key={fieldKey} className="mb-3">
+            <label className="form-label">{fieldMeta.label}</label>
             <input
               type={fieldMeta.type}
+              className="form-control"
               name={fieldKey}
-              value={value as string}
+              value={value as string | number}
               onChange={(e) => handleInputChange(fieldKey, e.target.value)}
-              required
+              required={fieldMeta.required}
             />
           </div>
         );
       case 'textarea':
         return (
-          <div key={fieldKey}>
-            <label>{fieldMeta.label}</label>
+          <div key={fieldKey} className="mb-3">
+            <label className="form-label">{fieldMeta.label}</label>
             <textarea
+              className="form-control"
               name={fieldKey}
               value={value as string}
               onChange={(e) => handleInputChange(fieldKey, e.target.value)}
-              required
+              required={fieldMeta.required}
             />
           </div>
         );
       case 'select':
         return (
-          <div key={fieldKey}>
-            <label>{fieldMeta.label}</label>
+          <div key={fieldKey} className="mb-3">
+            <label className="form-label">{fieldMeta.label}</label>
             <select
+              className="form-select"
               name={fieldKey}
               value={value as string}
               onChange={(e) => handleInputChange(fieldKey, e.target.value)}
-              required
+              required={fieldMeta.required}
             >
               {fieldMeta.options?.map((option) => (
                 <option key={option} value={option}>
@@ -69,9 +72,10 @@ const ProgrammeForm: React.FC<ProgrammeFormProps> = ({ initialData, onSave, onCa
         );
       case 'multi-select':
         return (
-          <div key={fieldKey}>
-            <label>{fieldMeta.label}</label>
+          <div key={fieldKey} className="mb-3">
+            <label className="form-label">{fieldMeta.label}</label>
             <select
+              className="form-select"
               multiple
               name={fieldKey}
               value={value as string[]}
@@ -81,7 +85,7 @@ const ProgrammeForm: React.FC<ProgrammeFormProps> = ({ initialData, onSave, onCa
                   Array.from(e.target.selectedOptions, (opt) => opt.value)
                 )
               }
-              required
+              required={fieldMeta.required}
             >
               {fieldMeta.options?.map((option) => (
                 <option key={option} value={option}>
@@ -102,13 +106,15 @@ const ProgrammeForm: React.FC<ProgrammeFormProps> = ({ initialData, onSave, onCa
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="needs-validation">
       {Object.keys(programmeFields).map((fieldKey) =>
         renderField(fieldKey as keyof Programme)
       )}
-      <div className="form-actions">
-        <button type="submit">Save</button>
-        <button type="button" onClick={onCancel}>
+      <div className="d-flex justify-content-end gap-2">
+        <button type="submit" className="btn btn-primary">
+          Save
+        </button>
+        <button type="button" className="btn btn-secondary" onClick={onCancel}>
           Cancel
         </button>
       </div>
