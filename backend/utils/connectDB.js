@@ -5,34 +5,43 @@ const dotenv = require('dotenv');
 
 dotenv.config(); // Load environment variables
 
-let isConnected = false; // Track connection status
-
 // MongoDB connection URI
 const dbUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/csci2720-project';
 
 /**
+ * Tracks the connection status to prevent redundant connections.
+ * 
+ * @type {boolean}
+ */
+let isConnected = false;
+
+/**
  * Connects to the MongoDB database.
  * 
- * If the database is already connected, logs a message and resolves immediately.
+ * If already connected, logs the status and resolves immediately.
  * Otherwise, establishes a new connection.
  * 
  * @function connectDB
- * @returns {Promise<void>} - Resolves when the database connection is established
- * @throws {Error} - Throws an error if the connection fails
+ * @returns {Promise<void>} Resolves when the database connection is established.
  */
 const connectDB = async () => {
     if (isConnected) {
         console.log('MongoDB connection is already established.');
-        return Promise.resolve(); // Return a resolved promise if already connected
+        return; // Exit early if already connected
     }
 
     try {
-        await mongoose.connect(dbUri);
+        console.log('Connecting to MongoDB...');
+        await mongoose.connect(dbUri, {
+            // Recommended MongoDB driver options
+            maxPoolSize: 10, // Maximum number of concurrent connections
+            serverSelectionTimeoutMS: 5000, // Timeout after 5 seconds if server is not found
+        });
         isConnected = true; // Update connection status
-        console.log('Connected to MongoDB');
+        console.log(`MongoDB connected successfully to: ${dbUri}`);
     } catch (error) {
         console.error('Error connecting to MongoDB:', error.message);
-        throw error; // Re-throw the error for the caller to handle
+        throw new Error('Failed to connect to MongoDB'); // Provide a clear error message
     }
 };
 

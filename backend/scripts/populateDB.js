@@ -1,8 +1,7 @@
 // backend/scripts/populateDB.js
-
 require('dotenv').config(); // Load environment variables from .env
-const fs = require('fs');
-const xml2js = require('xml2js');
+const axios = require('axios'); // For HTTP requests
+const xml2js = require('xml2js'); // For XML parsing
 const mongoose = require('mongoose');
 const Programme = require('../models/ProgrammeSchema');
 const Venue = require('../models/VenueSchema');
@@ -28,19 +27,35 @@ const connectDB = async () => {
 };
 
 /**
- * Parses an XML file and converts it to a JavaScript object.
+ * Downloads XML content from a given URL.
+ * 
+ * @function fetchXML
+ * @param {string} url - URL to fetch XML content from
+ * @returns {Promise<string>} - The XML content as a string
+ */
+const fetchXML = async (url) => {
+    try {
+        const response = await axios.get(url);
+        return response.data; // Return XML data as string
+    } catch (error) {
+        console.error(`Error fetching XML from ${url}:`, error.message);
+        throw error;
+    }
+};
+
+/**
+ * Parses XML content and converts it to a JavaScript object.
  * 
  * @function parseXML
- * @param {string} filePath - Path to the XML file
+ * @param {string} xmlContent - XML content as a string
  * @returns {Promise<Object>} - Parsed XML as a JavaScript object
  */
-const parseXML = async (filePath) => {
+const parseXML = async (xmlContent) => {
     try {
-        const data = fs.readFileSync(filePath, 'utf-8');
         const parser = new xml2js.Parser();
-        return await parser.parseStringPromise(data);
+        return await parser.parseStringPromise(xmlContent);
     } catch (error) {
-        console.error(`Error parsing XML file (${filePath}):`, error.message);
+        console.error('Error parsing XML:', error.message);
         throw error;
     }
 };
@@ -82,7 +97,7 @@ const upsertVenues = async (venues) => {
 };
 
 /**
- * Populates the database with programme and venue data from XML.
+ * Populates the database with programme and venue data from online XML files.
  * 
  * @function populateDB
  * @returns {Promise<void>} - Resolves when the database is populated
@@ -91,8 +106,14 @@ const populateDB = async () => {
     try {
         await connectDB();
 
-        // Parse programmes
-        const eventXML = await parseXML('./data/events.xml');
+        // URLs of the XML files
+        const eventXMLUrl = 'https://www.lcsd.gov.hk/datagovhk/event/events.xml';
+        const venueXMLUrl = 'https://www.lcsd.gov.hk/datagovhk/event/venues.xml';
+
+        // Fetch and parse programmes
+        console.log('Fetching event data...');
+        const eventXMLContent = await fetchXML(eventXMLUrl);
+        const eventXML = await parseXML(eventXMLContent);
         const programmes = eventXML.events.event.map(event => ({
             event_id: event.$.id,
             title: event.titlee[0],
@@ -113,8 +134,10 @@ const populateDB = async () => {
 
         await upsertProgrammes(programmes);
 
-        // Parse venues
-        const venueXML = await parseXML('./data/venues.xml');
+        // Fetch and parse venues
+        console.log('Fetching venue data...');
+        const venueXMLContent = await fetchXML(venueXMLUrl);
+        const venueXML = await parseXML(venueXMLContent);
         const venues = venueXML.venues.venue.map(venue => ({
             venue_id: venue.$.id,
             name: venue.venuee[0],

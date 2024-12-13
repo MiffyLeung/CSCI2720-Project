@@ -20,28 +20,28 @@ const accountRoutes = require('./accountRoutes');
 module.exports = [
     {
         name: 'Programmes',
-        basePath: '/api/programme',
+        basePath: '/api',
         router: programmeRoutes,
         routes: [
-            { method: 'GET', path: 's', requiresAuth: true }, // List programmes with parameters (Recent / Hotest)
-            { method: 'GET', path: '/:id', requiresAuth: true }, // View programme in detail
-            { method: 'POST', path: '/:id/like', requiresAuth: true }, // User clicks like
-            { method: 'POST', path: '/:id/comment', requiresAuth: true }, // User leaves comment
-            { method: 'POST', path: '', requiresAuth: true, adminOnly: true }, // Create new programme
-            { method: 'PATCH', path: '/:id', requiresAuth: true, adminOnly: true }, // Update a programme
-            { method: 'DELETE', path: '/:id', requiresAuth: true, adminOnly: true }, // Delete a programme
+            { method: 'GET', path: '/programmes', requiresAuth: true }, // List programmes with parameters (Recent / Hotest)
+            { method: 'GET', path: '/programme/:id', requiresAuth: true }, // View programme in detail
+            { method: 'POST', path: '/programme/:id/like', requiresAuth: true }, // User clicks like
+            { method: 'POST', path: '/programme/:id/comment', requiresAuth: true }, // User leaves comment
+            { method: 'POST', path: '/programme', requiresAuth: true, adminOnly: true }, // Create new programme
+            { method: 'PATCH', path: '/programme/:id', requiresAuth: true, adminOnly: true }, // Update a programme
+            { method: 'DELETE', path: '/programme/:id', requiresAuth: true, adminOnly: true }, // Delete a programme
         ],
     },
     {
         name: 'Venues',
-        basePath: '/api/venue',
+        basePath: '/api',
         router: venueRoutes,
         routes: [
-            { method: 'GET', path: 's', requiresAuth: true }, // List venues with recent programmes (for map view)
-            { method: 'GET', path: '/:id', requiresAuth: true }, // View a venue and its programmes
-            { method: 'POST', path: '', requiresAuth: true, adminOnly: true }, // Create a venue
-            { method: 'PATCH', path: '/:id', requiresAuth: true, adminOnly: true }, // Update a venue
-            { method: 'DELETE', path: '/:id', requiresAuth: true, adminOnly: true }, // Delete a venue
+            { method: 'GET', path: '/venues', requiresAuth: true }, // List venues with recent programmes (for map view)
+            { method: 'GET', path: '/venue/:id', requiresAuth: true }, // View a venue and its programmes
+            { method: 'POST', path: '/venue', requiresAuth: true, adminOnly: true }, // Create a venue
+            { method: 'PATCH', path: '/venue/:id', requiresAuth: true, adminOnly: true }, // Update a venue
+            { method: 'DELETE', path: '/venue/:id', requiresAuth: true, adminOnly: true }, // Delete a venue
         ],
     },
     {

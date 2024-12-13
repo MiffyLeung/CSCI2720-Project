@@ -24,7 +24,7 @@ router.use(authenticate);
  * Matches route: GET /api/programmes
  */
 router.get(
-    's',
+    '/programmes',
     getAllProgrammes
 );
 
@@ -33,7 +33,7 @@ router.get(
  * Matches route: GET /api/programme/:id
  */
 router.get(
-    '/:id',
+    '/programme/:id',
     getProgrammeById
 );
 
@@ -46,7 +46,7 @@ router.get(
  * Matches route: PUT /api/programme/:id/like
  */
 router.put(
-    '/:id/like',
+    '/programme/:id/like',
     likeProgramme // Todo: Add this to programmeController if missing
 );
 
@@ -55,7 +55,7 @@ router.put(
  * Matches route: PUT /api/programme/:id/comment
  */
 router.put(
-    '/:id/comment',
+    '/programme/:id/comment',
     commentOnProgramme // Todo: Add this to programmeController if missing
 );
 
@@ -69,7 +69,7 @@ router.put(
  * Matches route: PUT /api/programme
  */
 router.put(
-    '',
+    '/programme',
     authorize('admin'),
     createProgramme
 );
@@ -79,7 +79,7 @@ router.put(
  * Matches route: PUT /api/programme/:id
  */
 router.put(
-    '/:id',
+    '/programme/:id',
     authorize('admin'),
     updateProgrammeById
 );
@@ -89,7 +89,7 @@ router.put(
  * Matches route: DELETE /api/programme/:id
  */
 router.delete(
-    '/:id',
+    '/programme/:id',
     authorize('admin'),
     deleteProgrammeById
 );

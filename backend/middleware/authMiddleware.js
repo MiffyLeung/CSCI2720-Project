@@ -6,7 +6,7 @@ const Account = require('../models/AccountSchema');
 const dotenv = require('dotenv');
 dotenv.config();
 
-
+const whitelist = ['/api/login'];
 /**
  * Middleware to authenticate users by verifying their JWT token.
  * 
@@ -18,6 +18,11 @@ dotenv.config();
  * @returns {void} - Sends a JSON response on failure or proceeds to next middleware
  */
 const authenticate = async (req, res, next) => {
+    // console.debug(req);
+    if (whitelist.includes(req.originalUrl)) {
+        return next(); // Skip authentication for whitelisted routes
+    }
+    
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {

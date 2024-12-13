@@ -72,7 +72,7 @@ export const apiRequest = async (
       throw new Error(data.message || 'Request failed.');
     }
 
-    return data; // Return the response data if successful
+    return data.data; // Return the response data if successful
   } catch (error) {
     console.error('API error:', error);
     throw error;

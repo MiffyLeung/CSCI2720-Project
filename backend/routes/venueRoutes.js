@@ -22,7 +22,7 @@ router.use(authenticate);
  * Matches route: GET /api/venues
  */
 router.get(
-    's',
+    '/venues',
     getAllVenues
 );
 
@@ -31,7 +31,7 @@ router.get(
  * Matches route: GET /api/venue/:id
  */
 router.get(
-    '/:id',
+    '/venue/:id',
     getVenueById
 );
 
@@ -45,7 +45,7 @@ router.get(
  * Matches route: PUT /api/venue
  */
 router.put(
-    '',
+    '/venue',
     authorize('admin'),
     createVenue
 );
@@ -55,7 +55,7 @@ router.put(
  * Matches route: PUT /api/venue/:id
  */
 router.put(
-    '/:id',
+    '/venue/:id',
     authorize('admin'),
     updateVenueById
 );
@@ -65,7 +65,7 @@ router.put(
  * Matches route: DELETE /api/venue/:id
  */
 router.delete(
-    '/:id',
+    '/venue/:id',
     authorize('admin'),
     deleteVenueById
 );
