@@ -94,30 +94,32 @@ Once the project is running:
    - Import data from the most updated XML online to MangoDB.
 
 4. Routes
-| **Feature**              | **Frontend Route**         | **Backend API Route**                                      | **HTTP Method** |
-|--------------------------|----------------------------|-----------------------------------------------------------|-----------------|
-| Login                   | `/login`                  | `/api/login`                                              | `POST`          |
-| Recent Programmes       | `/recent`                 | `/api/programmes?type=recent`                             | `GET`           |
-| Hottest Programmes      | `/hotest`                 | `/api/programmes?type=hotest`                             | `GET`           |
-| My Favourites           | `/myfavorites`            | `/api/myFavourite`                                        | `GET`           |
-| My Profile              | `/myprofile`              | `/api/myAccount`                                          | `GET`           |
-| Change Password         | `/myprofile (Ajax)`       | `/api/password`                                           | `GET`           |
-| View Programme Details  | `/programme/:id`          | `/api/programmes/:id`                                     | `GET`           |
-| Manage Programmes       | `/admin/programmes`       | `/api/programmes?search=STRING&orderby=FIELD`             | `GET`           |
-| Add Programme           | `/admin/programmes (Ajax)`| `/api/programmes`                                         | `POST`          |
-| Edit Programme          | `/admin/programmes/:id (Ajax)`| `/api/programmes/:id`                                   | `PATCH`         |
-| Delete Programme        | `/admin/programmes/:id (Ajax)`| `/api/programmes/:id`                                   | `DELETE`        |
-| Manage Venues           | `/admin/venues`           | `/api/venues?search=STRING&orderby=FIELD`                | `GET`           |
-| Add Venue               | `/admin/venues (Ajax)`    | `/api/venues`                                            | `POST`          |
-| Edit Venue              | `/admin/venues/:id (Ajax)`| `/api/venues/:id`                                        | `PATCH`         |
-| Delete Venue            | `/admin/venues/:id (Ajax)`| `/api/venues/:id`                                        | `DELETE`        |
-| Manage Accounts         | `/admin/accounts`         | `/api/accounts`                                          | `GET`           |
-| View Account Details    | `/admin/account/:id`      | `/api/account/:id`                                       | `GET`           |
-| Create Account          | `/admin/accounts (Ajax)`  | `/api/accounts`                                          | `POST`          |
-| Edit Account            | `/admin/account/:id (Ajax)`| `/api/accounts/:id`                                      | `PATCH`         |
-| Ban Account             | `/admin/account/:id (Ajax)`| `/api/accounts/:id/ban`                                  | `PATCH`         |
-| Like a Programme        | `/programme/:id (Ajax)`   | `/api/programmes/:id/like`                               | `POST`          |
-| Comment on Programme    | `/programme/:id (Ajax)`   | `/api/programmes/:id/comment`                            | `POST`          |
+
+| **Feature**              | **Frontend Route**            | **Backend API Route**                           | **HTTP Method** |
+|--------------------------|-------------------------------|-------------------------------------------------|-----------------|
+| Login                    | `/login`                      | `/api/login`                                    | `POST`          |
+| Recent Programmes        | `/recent`                     | `/api/programmes?type=recent`                   | `GET`           |
+| Hottest Programmes       | `/hotest`                     | `/api/programmes?type=hotest`                   | `GET`           |
+| Bookmarked Programmes    | `/myfavorites`                | `/api/myFavourite`                              | `GET`           |
+| My Profile               | `/myprofile`                  | `/api/myAccount`                                | `GET`           |
+| Change Password          | `/myprofile (Ajax)`           | `/api/password`                                 | `PATCH`         |
+| View Programme Details   | `/programme/:id`              | `/api/programmes/:id`                           | `GET`           |
+| Like a Programme         | `/programme/:id (Ajax)`       | `/api/programmes/:id/like`                      | `POST`          |
+| Comment on Programme     | `/programme/:id (Ajax)`       | `/api/programmes/:id/comment`                   | `POST`          |
+| Bookmark a Programme     | `/programme/:id (Ajax)`       | `/api/programmes/:id/bookmark`                  | `POST`          |
+| Manage Programmes        | `/admin/programmes`           | `/api/programmes?search=STRING&orderby=FIELD`   | `GET`           |
+| Add Programme            | `/admin/programmes (Ajax)`    | `/api/programmes`                               | `POST`          |
+| Edit Programme           | `/admin/programmes/:id (Ajax)`| `/api/programmes/:id`                           | `PATCH`         |
+| Delete Programme         | `/admin/programmes/:id (Ajax)`| `/api/programmes/:id`                           | `DELETE`        |
+| Manage Venues            | `/admin/venues`               | `/api/venues?search=STRING&orderby=FIELD`       | `GET`           |
+| Add Venue                | `/admin/venues (Ajax)`        | `/api/venues`                                   | `POST`          |
+| Edit Venue               | `/admin/venues/:id (Ajax)`    | `/api/venues/:id`                               | `PATCH`         |
+| Delete Venue             | `/admin/venues/:id (Ajax)`    | `/api/venues/:id`                               | `DELETE`        |
+| Manage Accounts          | `/admin/accounts`             | `/api/accounts`                                 | `GET`           |
+| View Account Details     | `/admin/account/:id`          | `/api/account/:id`                              | `GET`           |
+| Create Account           | `/admin/accounts (Ajax)`      | `/api/accounts`                                 | `POST`          |
+| Edit Account             | `/admin/account/:id (Ajax)`   | `/api/accounts/:id`                             | `PATCH`         |
+| Ban Account              | `/admin/account/:id (Ajax)`   | `/api/accounts/:id/ban`                         | `PATCH`         |
 
 
 ## Data Source
