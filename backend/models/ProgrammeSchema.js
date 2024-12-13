@@ -28,7 +28,7 @@ const mongoose = require('mongoose');
 const ProgrammeSchema = new mongoose.Schema({
   event_id: { type: String, required: true, unique: true }, // Unique primary key
   title: { type: String, required: true },
-  venue_id: { type: Number, required: true }, // Link to VenueSchema
+  venue: { type: mongoose.Schema.Types.ObjectId, ref: 'Venue', required: true }, // Date of the most recent event
   dateline: { type: String, required: true }, // Original datetime range for display
   dateStart: { type: Date, required: true }, // Start datetime of the programme
   dateEnd: { type: Date, required: true }, // End datetime of the programme

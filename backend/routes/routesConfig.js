@@ -37,8 +37,9 @@ module.exports = [
         basePath: '/api',
         router: venueRoutes,
         routes: [
-            { method: 'GET', path: '/venues', requiresAuth: true }, // List venues with recent programmes (for map view)
+            { method: 'GET', path: '/venues/forMap', requiresAuth: true }, // List all venues with getLocation (for map view)
             { method: 'GET', path: '/venue/:id', requiresAuth: true }, // View a venue and its programmes
+            { method: 'GET', path: '/venues', requiresAuth: true, adminOnly: true }, // List all venues for Admin Panel
             { method: 'POST', path: '/venue', requiresAuth: true, adminOnly: true }, // Create a venue
             { method: 'PATCH', path: '/venue/:id', requiresAuth: true, adminOnly: true }, // Update a venue
             { method: 'DELETE', path: '/venue/:id', requiresAuth: true, adminOnly: true }, // Delete a venue
@@ -52,7 +53,7 @@ module.exports = [
             { method: 'POST', path: '/login', requiresAuth: false }, // Login to an account
             { method: 'PATCH', path: '/password', requiresAuth: true }, // Change password
             { method: 'GET', path: '/myAccount', requiresAuth: true }, // Get user details
-            { method: 'GET', path: '/myFavourite', requiresAuth: true }, // Get bookmarked programmes
+            { method: 'GET', path: '/myFavorites', requiresAuth: true }, // Get bookmarked programmes
             { method: 'GET', path: '/accounts', requiresAuth: true, adminOnly: true }, // List all accounts with filters
             { method: 'GET', path: '/account/:id', requiresAuth: true, adminOnly: true }, // Get account details
             { method: 'POST', path: '/account', requiresAuth: true, adminOnly: true }, // Create new account

@@ -18,7 +18,6 @@ const whitelist = ['/api/login'];
  * @returns {void} - Sends a JSON response on failure or proceeds to next middleware
  */
 const authenticate = async (req, res, next) => {
-    // console.debug(req);
     if (whitelist.includes(req.originalUrl)) {
         return next(); // Skip authentication for whitelisted routes
     }

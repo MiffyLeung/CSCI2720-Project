@@ -37,7 +37,7 @@ router.get(
  * Route for users to get their bookmarked programmes.
  */
 router.get(
-    '/myFavourite', // Matches basePath '/api/myFavourite'
+    '/myFavorites', // Matches basePath '/api/myFavorites'
     accountController.getFavourites // Add this to accountController if missing
 );
 

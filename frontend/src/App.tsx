@@ -18,17 +18,14 @@ import AdminVenuesPage from './pages/AdminVenuesPage';
 import { useAuthState } from './utils/secure';
 
 const App: React.FC = () => {
-  const { isAdmin, isAuthenticated } = useAuthState();
+  const { isAdmin, isAuthenticated, authInitialized } = useAuthState();
 
   const requireAuth = (element: React.JSX.Element) => {
-    return isAuthenticated ? element : <Navigate to="/login" />;
+    return isAuthenticated ? element : null;
   };
 
   const requireAdmin = (element: React.JSX.Element) => {
-    if (isAuthenticated === null) {
-      return null; // Show nothing until authentication state is resolved
-    }
-    return isAdmin ? element : <Navigate to="/" />;
+    return isAdmin ? element : null;
   };
 
   return (
@@ -44,6 +41,7 @@ const App: React.FC = () => {
         <Route path="/myFavorites" element={requireAuth(<MyFavoritesPage />)} />
         <Route path="/myProfile" element={requireAuth(<MyProfilePage />)} />
         <Route path="/programme/:id" element={requireAuth(<ProgrammeDetailsPage />)} />
+        <Route path="/venue/:id" element={requireAuth(<VenueDetailsPage />)} />
 
         {/* User-Specific Routes */}
         <Route path="/dashboard" element={requireAuth(<UserDashboardPage />)} />
@@ -54,8 +52,8 @@ const App: React.FC = () => {
         <Route path="/admin/accounts" element={requireAdmin(<AdminAccountsPage />)} />
         <Route path="/admin/venues" element={requireAdmin(<AdminVenuesPage />)} />
 
-        {/* Home page according to differnt account role */}
-        <Route path="/" element={requireAuth(isAdmin ? <AdminProgrammesPage /> : <UserDashboardPage /> )} />
+        {/* Home page according to different account roles */}
+        <Route path="/" element={!authInitialized ? null : isAuthenticated ? (isAdmin ? <AdminProgrammesPage /> : <UserDashboardPage />) : <Navigate to="/login" />} />
 
         {/* Catch-All for Undefined Routes */}
         <Route path="*" element={<ErrorPage />} />

@@ -23,7 +23,7 @@ const login = async (req, res) => {
         const account = await Account.findOne({ username });
         if (!account) {
             const error = new Error('User not found');
-            return res.status(404).json({
+            return res.status(410).json({
                 code: 'LOGIN_USER_NOT_FOUND',
                 message: 'Invalid username or password',
                 debug: generateDebugInfo(error),
@@ -58,9 +58,11 @@ const login = async (req, res) => {
         res.status(200).json({
             code: 'LOGIN_SUCCESS',
             message: 'Login successful',
-            token: token,
-            username: account.username,
-            role: account.role,
+            data: {
+                token: token,
+                username: account.username,
+                role: account.role,
+            }
         });
     } catch (error) {
         console.error('Login error:', error.message);
@@ -120,7 +122,7 @@ const updateAccount = async (req, res) => {
         const account = await Account.findByIdAndUpdate(accountId, updates, { new: true });
         if (!account) {
             const error = new Error('Account not found');
-            return res.status(404).json({
+            return res.status(410).json({
                 code: 'USER_NOT_FOUND',
                 message: 'Account not found',
                 debug: generateDebugInfo(error),
@@ -158,7 +160,7 @@ const changePassword = async (req, res) => {
         const account = await Account.findById(accountId);
         if (!account) {
             const error = new Error('Account not found');
-            return res.status(404).json({
+            return res.status(410).json({
                 code: 'USER_NOT_FOUND',
                 message: 'Account not found',
                 debug: generateDebugInfo(error),

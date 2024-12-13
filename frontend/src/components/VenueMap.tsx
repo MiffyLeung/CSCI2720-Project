@@ -3,9 +3,10 @@
 import React from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import { Venue } from 'types/Venue';
 
 export interface VenueMapProps {
-  venues: { id: string; name: string; latitude: number; longitude: number }[];
+  venues: Venue[];
   onMarkerClick: (id: string) => void;
   onMarkerHover?: (id: string) => void;
   renderPopup?: (id: string) => React.ReactNode;

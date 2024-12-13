@@ -55,7 +55,7 @@ export const useAuthState = () => {
     setToken(null);
     setUsername(null);
     setRole(null);
-    alert('Login status cleared');
+    // alert('Login status cleared');
   }, []);
 
   // Initialize the authentication state
@@ -95,6 +95,7 @@ export const useAuthState = () => {
 
   return {
     username,
+    authInitialized,
     isAuthenticated,
     isAdmin,
     getToken: () => (validateAuth() ? token : null),

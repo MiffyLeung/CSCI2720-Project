@@ -23,6 +23,7 @@ const AppNavbar: React.FC = () => {
 
   const handleLogout = () => {
     cleanAuth();
+    alert(`Bye ~`);
     navigate('/login'); // Redirect to login page after logout
   };
 
@@ -52,10 +53,10 @@ const AppNavbar: React.FC = () => {
             <LinkContainer to="/map">
               <Nav.Link>Map</Nav.Link>
             </LinkContainer>
-            <LinkContainer to="/myfavorites">
+            <LinkContainer to="/myFavorites">
               <Nav.Link>My Favourites</Nav.Link>
             </LinkContainer>
-            <LinkContainer to="/myprofile">
+            <LinkContainer to="/myProfile">
               <Nav.Link>My Profile</Nav.Link>
             </LinkContainer>
             {isAdmin && (

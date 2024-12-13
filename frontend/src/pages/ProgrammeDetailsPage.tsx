@@ -15,7 +15,7 @@ const ProgrammeDetailsPage: React.FC = () => {
     const fetchProgramme = async () => {
       const id = window.location.pathname.split('/').pop();
       try {
-        const data: Programme = await apiRequest(`/programmes/${id}`, {}, cleanAuth);
+        const data: Programme = await apiRequest(`/programme/${id}`, {}, cleanAuth);
         setProgramme(data);
       } catch (error) {
         console.error('Error fetching programme:', error);

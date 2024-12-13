@@ -13,7 +13,7 @@ const MyFavoritesPage: React.FC = () => {
   useEffect(() => {
     const fetchFavorites = async () => {
       try {
-        const data = await apiRequest('/favorites', {}, cleanAuth);
+        const data = await apiRequest('/myFavorites', {}, cleanAuth);
         setFavorites(data);
       } catch (error) {
         console.error('Error fetching favorites:', error);

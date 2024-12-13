@@ -14,7 +14,7 @@ const MyProfilePage: React.FC = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const data = await apiRequest('/profile', {}, cleanAuth);
+        const data = await apiRequest('/myAccount', {}, cleanAuth);
         setName(data.name);
         setEmail(data.email);
       } catch (error) {

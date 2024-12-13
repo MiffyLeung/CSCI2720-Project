@@ -14,10 +14,53 @@ const { generateDebugInfo } = require('../utils/debugUtils'); // Import the debu
 const getAllVenues = async (req, res) => {
     try {
         const venues = await Venue.find();
+        const transformedVenues = venues.map((venue) => ({
+            venue_id: venue.venue_id,
+            name: venue.name,
+            latitude: venue.coordinates?.latitude,
+            longitude: venue.coordinates?.longitude,
+            programmes: venue.programmes || [],
+        }));
         res.status(200).json({
             code: 'GET_ALL_VENUES_SUCCESS',
             message: 'Venues retrieved successfully',
-            data: venues,
+            data: transformedVenues,
+        });
+    } catch (error) {
+        console.error('Error fetching venues:', error.message);
+        res.status(500).json({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'An unexpected error occurred',
+            debug: generateDebugInfo(error),
+        });
+    }
+};
+
+/**
+ * Retrieves all venues that contain geolocation.
+ * 
+ * @function getMapVenues
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {void} - Sends a JSON response with all venues or an error message
+ */
+const getMapVenues = async (req, res) => {
+    try {
+        const venues = await Venue.find({
+            'coordinates.latitude': { $ne: null },
+            'coordinates.longitude': { $ne: null }
+        });
+        const transformedVenues = venues.map((venue) => ({
+            venue_id: venue.venue_id,
+            name: venue.name,
+            latitude: venue.coordinates?.latitude,
+            longitude: venue.coordinates?.longitude,
+            programmes: venue.programmes || [],
+        }));
+        res.status(200).json({
+            code: 'GET_ALL_VENUES_SUCCESS',
+            message: 'Venues retrieved successfully',
+            data: transformedVenues,
         });
     } catch (error) {
         console.error('Error fetching venues:', error.message);
@@ -41,17 +84,23 @@ const getVenueById = async (req, res) => {
     try {
         const venue = await Venue.findById(req.params.id);
         if (!venue) {
-            const error = new Error('Venue not found');
             return res.status(404).json({
                 code: 'VENUE_NOT_FOUND',
                 message: 'Venue not found',
-                debug: generateDebugInfo(error),
+                debug: generateDebugInfo(new Error('Venue not found')),
             });
         }
+        const transformedVenue = {
+            venue_id: venue.venue_id,
+            name: venue.name,
+            latitude: venue.coordinates?.latitude,
+            longitude: venue.coordinates?.longitude,
+            programmes: venue.programmes || [],
+        };
         res.status(200).json({
             code: 'GET_VENUE_SUCCESS',
             message: 'Venue retrieved successfully',
-            data: venue,
+            data: transformedVenue,
         });
     } catch (error) {
         console.error('Error fetching venue:', error.message);
@@ -73,7 +122,12 @@ const getVenueById = async (req, res) => {
  */
 const createVenue = async (req, res) => {
     try {
-        const venue = new Venue(req.body);
+        const { latitude, longitude, ...rest } = req.body;
+        const venueData = {
+            ...rest,
+            coordinates: { latitude, longitude },
+        };
+        const venue = new Venue(venueData);
         const savedVenue = await venue.save();
         res.status(201).json({
             code: 'CREATE_VENUE_SUCCESS',
@@ -100,17 +154,17 @@ const createVenue = async (req, res) => {
  */
 const updateVenueById = async (req, res) => {
     try {
-        const updatedVenue = await Venue.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true }
-        );
+        const { latitude, longitude, ...rest } = req.body;
+        const venueData = {
+            ...rest,
+            coordinates: { latitude, longitude },
+        };
+        const updatedVenue = await Venue.findByIdAndUpdate(req.params.id, venueData, { new: true });
         if (!updatedVenue) {
-            const error = new Error('Venue not found');
             return res.status(404).json({
                 code: 'VENUE_NOT_FOUND',
                 message: 'Venue not found',
-                debug: generateDebugInfo(error),
+                debug: generateDebugInfo(new Error('Venue not found')),
             });
         }
         res.status(200).json({
@@ -129,23 +183,19 @@ const updateVenueById = async (req, res) => {
 };
 
 /**
- * Deletes a venue by its ID (Admin Only).
- * 
- * @function deleteVenueById
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {void} - Sends a JSON response indicating success or an error message
+ * Deletes a venue by ID.
  */
 const deleteVenueById = async (req, res) => {
     try {
         const deletedVenue = await Venue.findByIdAndDelete(req.params.id);
         if (!deletedVenue) {
             const error = new Error('Venue not found');
-            return res.status(404).json({
+            res.status(404).json({
                 code: 'VENUE_NOT_FOUND',
                 message: 'Venue not found',
                 debug: generateDebugInfo(error),
             });
+            return; // Explicitly terminate the function
         }
         res.status(200).json({
             code: 'DELETE_VENUE_SUCCESS',
@@ -163,6 +213,7 @@ const deleteVenueById = async (req, res) => {
 
 module.exports = {
     getAllVenues,
+    getMapVenues,
     getVenueById,
     createVenue,
     updateVenueById,

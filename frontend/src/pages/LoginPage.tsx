@@ -10,31 +10,30 @@ const LoginPage: React.FC = () => {
   const [username, setUsername] = React.useState(isDevelopment ? 'admin' : '');
   const [password, setPassword] = React.useState(isDevelopment ? 'password123' : '');
   const [error, setError] = React.useState<string | null>(null);
-  const { isAuthenticated, setAuth, cleanAuth } = useAuthState();
+  const { isAuthenticated, authInitialized, isAdmin, setAuth, cleanAuth } = useAuthState();
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    if (isAuthenticated) {
-      // Redirect to homepage if the user is already authenticated
+    if (authInitialized && isAuthenticated) {
       navigate('/');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, authInitialized, navigate]);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
 
-    try {
-      // Send login request
-      const data = await apiRequest(
-        '/login',
-        {
-          method: 'POST',
-          body: JSON.stringify({ username, password }),
-        },
-        cleanAuth // Inject cleanAuth for handling token errors
-      );
+    // Send login request
+    const data = await apiRequest(
+      '/login',
+      {
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      },
+      cleanAuth // Inject cleanAuth for handling token errors
+    );
 
+    try {
       setAuth(data.token, data.username, data.role);
       navigate('/'); // Redirect to homepage after successful login
     } catch (err) {

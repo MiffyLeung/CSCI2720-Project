@@ -14,7 +14,7 @@ const VenueDetailsPage: React.FC = () => {
     const fetchVenue = async () => {
       const id = window.location.pathname.split('/').pop();
       try {
-        const data: Venue = await apiRequest(`/venues/${id}`, {}, cleanAuth);
+        const data: Venue = await apiRequest(`/venue/${id}`, {}, cleanAuth);
         setVenue(data);
       } catch (error) {
         console.error('Error fetching venue:', error);

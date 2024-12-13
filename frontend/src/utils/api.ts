@@ -13,13 +13,17 @@ export const apiRequest = async (
   options: RequestInit = {},
   cleanAuth: () => void
 ): Promise<any> => {
-  const token = localStorage.getItem('token');
-
-  const headers = {
+  
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
-    Authorization: token ? `Bearer ${token}` : '',
+    ...options.headers as Record<string, string>,
   };
+  
+  // Add Authorization header only if the token exists
+  if (typeof localStorage !== 'undefined' && endpoint !== '/login') {
+    const token = localStorage.getItem('token');
+    headers['Authorization'] = `Bearer ${token}`;
+  }
 
   const requestOptions = {
     ...options,
@@ -29,7 +33,6 @@ export const apiRequest = async (
   try {
     const response = await fetch(`${REACT_APP_API}${endpoint}`, requestOptions);
     const data = await response.json();
-
     if (!response.ok) {
       // Handle known error codes from authMiddleware
       switch (response.status) {
@@ -40,14 +43,14 @@ export const apiRequest = async (
             window.location.href = '/login';
           }
           break;
-        case 403:
+        case 401:
           if (data.code === 'INVALID_TOKEN') {
             alert('Invalid token. Please log in again.');
             cleanAuth();
             window.location.href = '/login';
           }
           break;
-        case 404:
+        case 410:
           if (data.code === 'USER_NOT_FOUND') {
             alert('Account not found. Please contact support.');
             cleanAuth();
@@ -61,7 +64,7 @@ export const apiRequest = async (
             window.location.href = '/login';
           }
           break;
-        case 401:
+        case 403:
           if (data.code === 'INSUFFICIENT_PERMISSIONS') {
             alert('You do not have sufficient permissions to perform this action.');
           }
@@ -71,7 +74,7 @@ export const apiRequest = async (
       }
       throw new Error(data.message || 'Request failed.');
     }
-
+    
     return data.data; // Return the response data if successful
   } catch (error) {
     console.error('API error:', error);

@@ -8,6 +8,7 @@ const {
     createVenue,
     updateVenueById,
     deleteVenueById,
+    getMapVenues,
 } = require('../controllers/venueController');
 
 const router = express.Router();
@@ -18,12 +19,21 @@ const router = express.Router();
 router.use(authenticate);
 
 /**
- * Get a list of all venues with recent programmes (for map view).
+ * Get a list of all venues for Admin Panel.
  * Matches route: GET /api/venues
  */
 router.get(
     '/venues',
     getAllVenues
+);
+
+/**
+ * Get a list all venues with getLocation (for map view).
+ * Matches route: GET /api/venues/forMap
+ */
+router.get(
+    '/venues/forMap',
+    getMapVenues
 );
 
 /**
