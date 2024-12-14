@@ -54,7 +54,9 @@ To streamline development, the `concurrently` library is used to run both fronte
 
 ### Steps for setup
 
-1. Clone the repository:
+1. Open your VS Code
+   - Click `Source Control` tab
+   - Clone the repository:
    ```bash
    git clone https://github.com/MiffyLeung/CSCI2720-Project.git
    ```
@@ -62,9 +64,15 @@ To streamline development, the `concurrently` library is used to run both fronte
 2. Navigate to the project directory: `cd Y:\\path\to\CSCI2720-Project`
 
 3. Install dependencies in each folder:
-   - **Root**:   `npm install`
-   - **Backend**:     `cd backend`       `npm install`    `cd ..`
-   - **Frontend**:     `cd frontend`      `npm install`    `cd ..`
+   - **Root**:   `sudo npm install`çç
+   - **Backend**:     
+      - `cd backend`       
+      - `sudo npm install`    
+      - `cd ..`
+   - **Frontend**:     
+      - `cd frontend`      
+      - `sudo npm install`    
+      - `cd ..`
 
 4. **Edit** the config file inside `backend/.env` and `frontend/.env` to meet your enivorment.
 
