@@ -7,20 +7,22 @@ import { Programme } from '../types/Programme';
 import { useApi } from '../core/useApi'; // Centralized API handler
 import { useAuth } from '../core/AuthContext'; // Authentication handler
 
+/**
+ * A page to display the details of a specific programme.
+ * It fetches the programme details based on the ID in the URL.
+ */
 const ProgrammeDetailsPage: React.FC = () => {
     const [programme, setProgramme] = useState<Programme | null>(null); // State to hold programme details
     const apiRequest = useApi(); // Use centralized API handler
     const { isAuthenticated } = useAuth(); // Check authentication state
+    const [hasFetched, setHasFetched] = useState(false); // Prevent duplicate fetches
 
     useEffect(() => {
         /**
          * Fetch programme details based on the programme ID in the URL.
          */
-        const fetchProgramme = () => {
-            if (!isAuthenticated) {
-                console.error('User is not authenticated');
-                return;
-            }
+        const fetchProgramme = async () => {
+            if (!isAuthenticated || hasFetched) return;
 
             const id = window.location.pathname.split('/').pop();
             if (!id) {
@@ -28,15 +30,19 @@ const ProgrammeDetailsPage: React.FC = () => {
                 return;
             }
 
-            apiRequest(`/programme/${id}`, {}, (data: Programme) => {
+            console.log('Fetching programme details...');
+            try {
+                const data: Programme = await apiRequest(`/programme/${id}`);
+                console.log('Fetched programme:', data);
                 setProgramme(data); // Update state with fetched programme details
-            }).catch((error) => {
+                setHasFetched(true); // Mark as fetched
+            } catch (error) {
                 console.error('Error fetching programme:', error);
-            });
+            }
         };
 
         fetchProgramme();
-    }, [isAuthenticated, apiRequest]);
+    }, [isAuthenticated, apiRequest, hasFetched]);
 
     if (!programme) {
         return (

@@ -16,6 +16,7 @@ const AdminProgrammesPage: React.FC = () => {
     const [editingProgramme, setEditingProgramme] = useState<Programme | undefined>(undefined);
     const apiRequest = useApi(); // Centralized API request handler
     const { isAuthenticated } = useAuth(); // Check authentication status
+    const [hasFetched, setHasFetched] = useState(false); // Prevent duplicate requests
 
     useEffect(() => {
         /**
@@ -23,6 +24,7 @@ const AdminProgrammesPage: React.FC = () => {
          * Calls the API and updates the state with the fetched data.
          */
         const fetchProgrammes = async () => {
+		if ( hasFetched) return;
             if (!isAuthenticated) {
                 console.error('User is not authenticated');
                 return;
@@ -38,8 +40,11 @@ const AdminProgrammesPage: React.FC = () => {
             }
         };
 
-        fetchProgrammes();
-    }, [isAuthenticated, apiRequest]);
+        if (!hasFetched) {
+		setHasFetched(true);
+		fetchProgrammes();
+	}
+    }, [isAuthenticated, apiRequest, hasFetched]);
 
     /**
      * Opens the modal for adding or editing a programme.

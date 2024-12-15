@@ -7,6 +7,7 @@ import { useApi } from '../core/useApi';
 
 /**
  * Login page component for user authentication.
+ * Provides username and password inputs and handles login API requests.
  */
 const LoginPage: React.FC = () => {
     const [username, setUsername] = useState(''); // State for username input
@@ -19,28 +20,31 @@ const LoginPage: React.FC = () => {
 
     /**
      * Handles the login form submission.
-     * @param e - Form event
+     * @param e - Form submission event
      */
-    const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError(null); // Reset error state
 
-        apiRequest(
-            '/login',
-            {
+        console.log('Attempting login...');
+
+        try {
+            const data = await apiRequest('/login', {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
-            },
-            (data) => {
-                // Callback to handle successful login
-                updateAuth(data.token, data.username, data.role);
-                navigate('/recent'); // Redirect to recent programmes
-            }
-        ).catch((err) => {
-            // Handle errors during API request
+            });
+
+            console.log('Login successful:', data);
+
+            // Update authentication state and navigate to the recent programmes page
+            updateAuth(data.token, data.username, data.role);
+            navigate('/recent');
+        } catch (err) {
+            // Handle API errors
             console.error('Login error:', err);
             setError(err instanceof Error ? err.message : 'Login failed');
-        });
+        }
     };
 
     return (
@@ -52,9 +56,12 @@ const LoginPage: React.FC = () => {
                             <h2 className="card-title text-center text-primary mb-4">Login</h2>
                             <form onSubmit={handleLogin}>
                                 <div className="mb-3">
-                                    <label className="form-label">Username</label>
+                                    <label htmlFor="username" className="form-label">
+                                        Username
+                                    </label>
                                     <input
                                         type="text"
+                                        id="username"
                                         className="form-control"
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
@@ -62,9 +69,12 @@ const LoginPage: React.FC = () => {
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label className="form-label">Password</label>
+                                    <label htmlFor="password" className="form-label">
+                                        Password
+                                    </label>
                                     <input
                                         type="password"
+                                        id="password"
                                         className="form-control"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}

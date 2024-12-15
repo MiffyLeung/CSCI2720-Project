@@ -8,33 +8,40 @@ import { Venue } from '../types/Venue';
 import { useApi } from '../core/useApi'; // Centralized API handler
 import { useAuth } from '../core/AuthContext'; // Authentication handler
 
+/**
+ * A page displaying a map with markers for upcoming programmes at various venues.
+ * Allows interaction with map markers to display venue-specific details.
+ */
 const MapViewPage: React.FC = () => {
     const [venues, setVenues] = useState<Venue[]>([]); // State to hold venue data
     const apiRequest = useApi(); // Use centralized API handler
     const { isAuthenticated } = useAuth(); // Check authentication status
+    const [hasFetched, setHasFetched] = useState(false); // Prevent multiple fetches
 
     useEffect(() => {
         /**
-         * Fetch venues data for the map.
+         * Fetches venue data for the map.
+         * Ensures data is only fetched once and user is authenticated.
          */
-        const fetchVenues = () => {
-            if (!isAuthenticated) {
-                console.error('User is not authenticated');
-                return;
-            }
+        const fetchVenues = async () => {
+            if (!isAuthenticated || hasFetched) return;
 
-            apiRequest('/venues/forMap', {}, (data: Venue[]) => {
+            console.log('Fetching venues data...');
+            try {
+                const data: Venue[] = await apiRequest('/venues/forMap');
+                console.log('Fetched venues:', data);
                 setVenues(data); // Update state with fetched venue data
-            }).catch((error) => {
+                setHasFetched(true); // Mark as fetched
+            } catch (error) {
                 console.error('Error fetching venues:', error);
-            });
+            }
         };
 
         fetchVenues();
-    }, [isAuthenticated, apiRequest]);
+    }, [isAuthenticated, apiRequest, hasFetched]);
 
     /**
-     * Handle click events on a map marker.
+     * Handles click events on a map marker.
      * @param venue - The clicked venue object.
      */
     const handleMarkerClick = (venue: Venue) => {

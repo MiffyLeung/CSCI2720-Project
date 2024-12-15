@@ -1,6 +1,6 @@
 // src/App.tsx
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import ErrorPage from './pages/ErrorPage';

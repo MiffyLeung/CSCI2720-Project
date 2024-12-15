@@ -10,105 +10,125 @@ import AccountSort from '../components/AccountSort';
 import { useApi } from '../core/useApi'; // Centralized API request handler
 import { useAuth } from '../core/AuthContext'; // Authentication handling
 
+/**
+ * A page to manage user accounts. Allows administrators to view,
+ * filter, sort, add, and edit accounts.
+ */
 const AdminAccountsPage: React.FC = () => {
-    const [accounts, setAccounts] = useState<Account[]>([]);
-    const [filteredAccounts, setFilteredAccounts] = useState<Account[]>([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingAccount, setEditingAccount] = useState<Account | undefined>(undefined);
+    const [accounts, setAccounts] = useState<Account[]>([]); // State to hold all accounts
+    const [filteredAccounts, setFilteredAccounts] = useState<Account[]>([]); // State to hold filtered accounts
+    const [isModalOpen, setIsModalOpen] = useState(false); // Modal state for adding/editing accounts
+    const [editingAccount, setEditingAccount] = useState<Account | undefined>(undefined); // Account being edited
     const apiRequest = useApi(); // Centralized API handler
     const { isAuthenticated } = useAuth(); // Check authentication state
+    const [hasFetched, setHasFetched] = useState(false); // Prevent duplicate fetches
 
-    // Fetch all accounts on mount
     useEffect(() => {
-        if (!isAuthenticated) {
-            console.error('User is not authenticated');
-            return;
-        }
+        /**
+         * Fetch all accounts from the API.
+         * Ensures the user is authenticated and data is only fetched once.
+         */
+        const fetchAccounts = async () => {
+            if (!isAuthenticated || hasFetched) return;
 
-        apiRequest('/accounts', {}, (data: Account[]) => {
-            setAccounts(data);
-            setFilteredAccounts(data);
-        });
-    }, [isAuthenticated, apiRequest]);
+            console.log('Fetching accounts...');
+            try {
+                const data: Account[] = await apiRequest('/accounts');
+                console.log('Fetched accounts:', data);
+                setAccounts(data); // Update accounts state
+                setFilteredAccounts(data); // Initialize filtered accounts
+                setHasFetched(true); // Mark as fetched
+            } catch (error) {
+                console.error('Error fetching accounts:', error);
+            }
+        };
 
-    // Open modal to add/edit account
+        fetchAccounts();
+    }, [isAuthenticated, apiRequest, hasFetched]);
+
+    /**
+     * Open the modal to add or edit an account.
+     * @param account Optional account to edit; if not provided, the modal is used for adding.
+     */
     const openModal = (account?: Account) => {
         setEditingAccount(account);
         setIsModalOpen(true);
     };
 
-    // Close modal
+    /**
+     * Close the modal and reset the editing account state.
+     */
     const closeModal = () => {
         setEditingAccount(undefined);
         setIsModalOpen(false);
     };
 
-    // Save account (add/edit)
+    /**
+     * Handle saving an account (either adding or editing).
+     * @param data The account data to save.
+     */
     const handleSave = async (data: Account) => {
         const method = editingAccount ? 'PUT' : 'POST';
         const endpoint = editingAccount ? `/accounts/${editingAccount.id}` : '/accounts';
 
-        apiRequest(
-            endpoint,
-            {
+        try {
+            const savedAccount: Account = await apiRequest(endpoint, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
-            },
-            (savedAccount: Account) => {
-                alert(editingAccount ? 'Account updated successfully!' : 'Account created successfully!');
-                closeModal();
+            });
+            alert(editingAccount ? 'Account updated successfully!' : 'Account created successfully!');
+            closeModal();
 
-                // Update state based on whether it's an edit or new addition
-                setAccounts((prevAccounts) =>
-                    editingAccount
-                        ? prevAccounts.map((u) => (u.id === editingAccount.id ? savedAccount : u))
-                        : [...prevAccounts, savedAccount]
-                );
-                setFilteredAccounts((prevAccounts) =>
-                    editingAccount
-                        ? prevAccounts.map((u) => (u.id === editingAccount.id ? savedAccount : u))
-                        : [...prevAccounts, savedAccount]
-                );
-            },
-            (error: any) => {
-                console.error('Error saving account:', error);
-                alert('Failed to save account.');
-            }
-        );
+            // Update state based on whether it's an edit or a new addition
+            setAccounts((prevAccounts) =>
+                editingAccount
+                    ? prevAccounts.map((u) => (u.id === editingAccount.id ? savedAccount : u))
+                    : [...prevAccounts, savedAccount]
+            );
+            setFilteredAccounts((prevAccounts) =>
+                editingAccount
+                    ? prevAccounts.map((u) => (u.id === editingAccount.id ? savedAccount : u))
+                    : [...prevAccounts, savedAccount]
+            );
+        } catch (error) {
+            console.error('Error saving account:', error);
+            alert('Failed to save account.');
+        }
     };
 
-    // Handle filtering accounts
+    /**
+     * Handle filtering accounts based on a search query.
+     * @param query The search query to filter accounts.
+     */
     const handleFilterChange = async (query: string) => {
         if (!query) {
-            setFilteredAccounts(accounts);
+            setFilteredAccounts(accounts); // Reset filter when query is empty
             return;
         }
 
-        apiRequest(
-            `/accounts?search=${query}`,
-            {},
-            (data: Account[]) => {
-                setFilteredAccounts(data);
-            },
-            (error: any) => {
-                console.error('Error filtering accounts:', error);
-            }
-        );
+        try {
+            const data: Account[] = await apiRequest(`/accounts?search=${query}`);
+            setFilteredAccounts(data); // Update filtered accounts
+        } catch (error) {
+            console.error('Error filtering accounts:', error);
+        }
     };
 
-    // Handle sorting accounts
+    /**
+     * Handle sorting accounts based on a field and order.
+     * @param sortField The field to sort by.
+     * @param sortOrder The order of sorting (ascending/descending).
+     */
     const handleSortChange = async (sortField: string, sortOrder: string) => {
-        apiRequest(
-            `/accounts?sortField=${sortField}&sortOrder=${sortOrder}`,
-            {},
-            (data: Account[]) => {
-                setFilteredAccounts(data);
-            },
-            (error: any) => {
-                console.error('Error sorting accounts:', error);
-            }
-        );
+        try {
+            const data: Account[] = await apiRequest(
+                `/accounts?sortField=${sortField}&sortOrder=${sortOrder}`
+            );
+            setFilteredAccounts(data); // Update sorted accounts
+        } catch (error) {
+            console.error('Error sorting accounts:', error);
+        }
     };
 
     return (

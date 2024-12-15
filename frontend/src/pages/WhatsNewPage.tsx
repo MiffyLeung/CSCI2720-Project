@@ -6,30 +6,37 @@ import { Programme } from '../types/Programme';
 import { useApi } from '../core/useApi'; // Centralized API handler
 import { useAuth } from '../core/AuthContext'; // Authentication handler
 
+/**
+ * A page to display the latest programmes sorted by release date.
+ * Fetches programmes from the backend and renders them in a grid layout.
+ */
 const WhatsNewPage: React.FC = () => {
     const [programmes, setProgrammes] = useState<Programme[]>([]); // State to hold programmes
     const apiRequest = useApi(); // Use centralized API handler
     const { isAuthenticated } = useAuth(); // Check authentication state
+    const [hasFetched, setHasFetched] = useState(false); // Prevent multiple fetches
 
     useEffect(() => {
         /**
          * Fetch the latest programmes from the API.
+         * Only executes if the user is authenticated and data has not been fetched yet.
          */
-        const fetchProgrammes = () => {
-            if (!isAuthenticated) {
-                console.error('User is not authenticated');
-                return;
-            }
+        const fetchProgrammes = async () => {
+            if (!isAuthenticated || hasFetched) return;
+            setHasFetched(true); // Mark as fetched
 
-            apiRequest('/programmes?sort=releaseDate_desc', {}, (data: Programme[]) => {
+            console.log('Fetching latest programmes...');
+            try {
+                const data: Programme[] = await apiRequest('/programmes?sort=releaseDate_desc');
+                console.log('Fetched programmes:', data);
                 setProgrammes(data); // Update state with fetched programmes
-            }).catch((error) => {
+            } catch (error) {
                 console.error('Error fetching programmes:', error);
-            });
+            }
         };
 
-        fetchProgrammes();
-    }, [isAuthenticated, apiRequest]);
+        if (!hasFetched) fetchProgrammes();
+    }, [isAuthenticated, apiRequest, hasFetched]);
 
     return (
         <div>

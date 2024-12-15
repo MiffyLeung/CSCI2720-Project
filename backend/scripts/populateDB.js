@@ -200,7 +200,6 @@ const populateDB = async () => {
         await upsertVenues(venues);
         await updateVenueEventCounts();
 
-        mongoose.connection.close();
         console.log('Database population completed.');
     } catch (error) {
         console.error('Error populating database:', error.message);
@@ -212,6 +211,7 @@ const populateDB = async () => {
 // Execute populateDB only if this script is run directly
 if (require.main === module) {
     populateDB();
+    mongoose.connection.close();
 }
 
 // Export populateDB function for external use

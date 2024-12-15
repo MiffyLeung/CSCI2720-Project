@@ -6,20 +6,23 @@ import { Venue } from '../types/Venue';
 import { useApi } from '../core/useApi'; // Centralized API handler
 import { useAuth } from '../core/AuthContext'; // Authentication handler
 
+/**
+ * A page that displays the details of a specific venue.
+ * Fetches the venue details based on the ID in the URL.
+ */
 const VenueDetailsPage: React.FC = () => {
     const [venue, setVenue] = useState<Venue | null>(null); // State to hold venue details
     const apiRequest = useApi(); // Use centralized API handler
     const { isAuthenticated } = useAuth(); // Check authentication state
+    const [hasFetched, setHasFetched] = useState(false); // Prevent duplicate fetches
 
     useEffect(() => {
         /**
          * Fetch venue details from the API.
+         * Ensures the user is authenticated and the data is fetched only once.
          */
-        const fetchVenue = () => {
-            if (!isAuthenticated) {
-                console.error('User is not authenticated');
-                return;
-            }
+        const fetchVenue = async () => {
+            if (!isAuthenticated || hasFetched) return;
 
             const id = window.location.pathname.split('/').pop();
             if (!id) {
@@ -27,15 +30,19 @@ const VenueDetailsPage: React.FC = () => {
                 return;
             }
 
-            apiRequest(`/venue/${id}`, {}, (data: Venue) => {
+            console.log('Fetching venue details...');
+            try {
+                const data: Venue = await apiRequest(`/venue/${id}`);
+                console.log('Fetched venue:', data);
                 setVenue(data); // Update state with fetched venue details
-            }).catch((error) => {
+                setHasFetched(true); // Mark as fetched
+            } catch (error) {
                 console.error('Error fetching venue:', error);
-            });
+            }
         };
 
         fetchVenue();
-    }, [isAuthenticated, apiRequest]);
+    }, [isAuthenticated, apiRequest, hasFetched]);
 
     if (!venue) {
         return (

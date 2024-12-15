@@ -13,7 +13,7 @@ router.get('/updateData', async (req, res) => {
     try {
         // Call the populateDB function to update data
         await populateDB();
-        res.status(200).json({ message: 'Data updated successfully.' });
+        res.status(200).json({ data:{message: 'Data updated successfully.' }});
     } catch (error) {
         console.error('Error updating data:', error);
         res.status(500).json({

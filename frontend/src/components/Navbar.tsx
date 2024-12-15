@@ -7,57 +7,83 @@ import { useAuth } from '../core/AuthContext';
 import { useApi } from '../core/useApi';
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * AppNavbar displays the navigation bar with links, user menu, and admin options.
+ */
 const AppNavbar: React.FC = () => {
     const { isAuthenticated, isAdmin, resetAuth, username } = useAuth();
     const apiRequest = useApi();
     const navigate = useNavigate();
 
     const [isDarkMode, setIsDarkMode] = useState(() => {
-        // Load initial theme from localStorage or default to false
         return localStorage.getItem('theme') === 'dark';
     });
-    const [loading, setLoading] = useState(false); // Loading state for updating data
-    const [message, setMessage] = useState<string | null>(null); // Feedback message
-    const [messageType, setMessageType] = useState<'success' | 'danger' | null>(null); // Message type
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState<string | null>(null);
+    const [messageType, setMessageType] = useState<'success' | 'danger' | null>(null);
+    const [isWideScreen, setIsWideScreen] = useState(window.innerWidth > 1200); // State for screen width
+
+    // Update screen width state on resize
+    useEffect(() => {
+        const handleResize = () => setIsWideScreen(window.innerWidth > 1200);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
-        // Apply theme to document body
         document.body.className = isDarkMode ? 'bg-dark text-white' : 'bg-light text-dark';
-        // Save the current theme to localStorage
         localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
     }, [isDarkMode]);
 
     const handleLogout = () => {
         resetAuth();
         alert('You have been logged out.');
-        navigate('/login'); // Redirect to login page after logout
+        navigate('/login');
     };
 
     const toggleTheme = () => {
         setIsDarkMode((prev) => !prev);
     };
 
-    /**
-     * Sends a GET request to update the database via backend API and handles feedback.
-     */
     const handleUpdateData = async () => {
         setLoading(true);
         setMessage(null);
         setMessageType(null);
         try {
-            const response = await apiRequest('/admin/update-data', { method: 'GET' });
+            const response = await apiRequest('/updateData', { method: 'GET' });
             setMessage(response.message || 'Data updated successfully.');
             setMessageType('success');
         } catch (error: unknown) {
-            if (error instanceof Error) {
-                setMessage(error.message || 'An unknown error occurred.');
-            } else {
-                setMessage('An unknown error occurred.');
-            }
+            setMessage(error instanceof Error ? error.message : 'An unknown error occurred.');
             setMessageType('danger');
         } finally {
             setLoading(false);
         }
+    };
+
+    /**
+     * Renders the user's profile avatar with initials.
+     * @param name User's name for extracting initials.
+     */
+    const renderAvatar = (name: string) => {
+        const initials = name ? name[0].toUpperCase() : '?';
+        return (
+            <div
+                style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    backgroundColor: '#007bff',
+                    color: '#fff',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginRight: '8px',
+                }}
+            >
+                {initials}
+            </div>
+        );
     };
 
     return (
@@ -65,29 +91,92 @@ const AppNavbar: React.FC = () => {
             <Navbar
                 bg={isDarkMode ? 'dark' : 'light'}
                 variant={isDarkMode ? 'dark' : 'light'}
-                expand="lg"
+                expand="md"
+                className="px-3"
             >
-                <Container>
-                    <LinkContainer to="/">
-                        <Navbar.Brand>My App</Navbar.Brand>
-                    </LinkContainer>
-                    <Navbar.Toggle aria-controls="navbarNav" />
-                    <Navbar.Collapse id="navbarNav">
-                        <Nav className="me-auto">
+                <Container fluid>
+                    <div className="d-flex justify-content-between align-items-center">
+                        <LinkContainer to="/">
+                            <Navbar.Brand className="me-0">
+                                <img src="/logo.png" alt="Logo" style={{ height: '3.5rem' }} />
+                            </Navbar.Brand>
+                        </LinkContainer>
+                        <div className="d-flex flex-row flex-nowrap align-items-center">
                             <LinkContainer to="/recent">
-                                <Nav.Link>Recent</Nav.Link>
+                                <Nav.Link className="px-2">Recent</Nav.Link>
                             </LinkContainer>
                             <LinkContainer to="/hotest">
-                                <Nav.Link>Hottest</Nav.Link>
+                                <Nav.Link className="px-2">Hottest</Nav.Link>
                             </LinkContainer>
                             <LinkContainer to="/map">
-                                <Nav.Link>Map</Nav.Link>
+                                <Nav.Link className="px-2">Map</Nav.Link>
                             </LinkContainer>
-                        </Nav>
+                        </div>
+                    </div>
+                    <Navbar.Toggle aria-controls="navbarNav" />
+                    <Navbar.Collapse id="navbarNav" className="justify-content-end">
+                        <Nav className="d-flex flex-row flex-wrap flex-grow-1 align-items-start">
+                            {isAdmin && (
+                                <>
+                                    {isWideScreen ? (
+                                        <div className="d-flex flex-row align-items-center flex-grow-1 py-2">
+                                            <LinkContainer to="/admin/programmes">
+                                                <Nav.Link className="px-2">Manage Programmes</Nav.Link>
+                                            </LinkContainer>
+                                            <LinkContainer to="/admin/venues">
+                                                <Nav.Link className="px-2">Manage Venues</Nav.Link>
+                                            </LinkContainer>
+                                            <LinkContainer to="/admin/accounts">
+                                                <Nav.Link className="px-2">Manage Accounts</Nav.Link>
+                                            </LinkContainer>
+                                            <Nav.Link
+                                                onClick={handleUpdateData}
+                                                className="px-2"
+                                            >
+                                                {loading ? 'Updating...' : 'Update Data'}
+                                            </Nav.Link>
+                                        </div>
+                                    ) : (
+                                        <NavDropdown title="Admin Menu" id="adminMenu" className="p-2 me-auto">
+                                            <LinkContainer to="/admin/programmes">
+                                                <NavDropdown.Item>Manage Programmes</NavDropdown.Item>
+                                            </LinkContainer>
+                                            <LinkContainer to="/admin/venues">
+                                                <NavDropdown.Item>Manage Venues</NavDropdown.Item>
+                                            </LinkContainer>
+                                            <LinkContainer to="/admin/accounts">
+                                                <NavDropdown.Item>Manage Accounts</NavDropdown.Item>
+                                            </LinkContainer>
+                                            <NavDropdown.Divider />
+                                            <NavDropdown.Item onClick={handleUpdateData}>
+                                                {loading ? 'Updating...' : 'Update Data'}
+                                            </NavDropdown.Item>
+                                        </NavDropdown>
+                                    )}
+                                </>
+                            )}
+                            <Form className="d-flex align-items-center me-3 py-3">
+                                <Form.Check
+                                    type="switch"
+                                    id="dark-mode-switch"
+                                    label="Dark Mode"
+                                    checked={isDarkMode}
+                                    onChange={toggleTheme}
+                                    className="me-2"
+                                />
+                            </Form>
 
-                        <Nav className="ms-auto">
                             {isAuthenticated && (
-                                <NavDropdown title={username || 'User'} id="userMenu" align="end">
+                                <NavDropdown
+                                    title={
+                                        <div className="d-inline-flex align-items-center py-1">
+                                            {renderAvatar(username || 'U')}
+                                            <span className="fw-bold">{username}</span>
+                                        </div>
+                                    }
+                                    id="userMenu"
+                                    align="end"
+                                >
                                     <LinkContainer to="/myProfile">
                                         <NavDropdown.Item>My Profile</NavDropdown.Item>
                                     </LinkContainer>
@@ -100,36 +189,7 @@ const AppNavbar: React.FC = () => {
                                     </NavDropdown.Item>
                                 </NavDropdown>
                             )}
-
-                            {isAdmin && (
-                                <NavDropdown title="Admin Menu" id="adminMenu">
-                                    <LinkContainer to="/admin/programmes">
-                                        <NavDropdown.Item>Manage Programmes</NavDropdown.Item>
-                                    </LinkContainer>
-                                    <LinkContainer to="/admin/venues">
-                                        <NavDropdown.Item>Manage Venues</NavDropdown.Item>
-                                    </LinkContainer>
-                                    <LinkContainer to="/admin/accounts">
-                                        <NavDropdown.Item>Manage Accounts</NavDropdown.Item>
-                                    </LinkContainer>
-                                    <NavDropdown.Divider />
-                                    <NavDropdown.Item onClick={handleUpdateData}>
-                                        {loading ? 'Updating...' : 'Update Data'}
-                                    </NavDropdown.Item>
-                                </NavDropdown>
-                            )}
                         </Nav>
-
-                        <Form className="d-flex align-items-center ms-3">
-                            <Form.Check
-                                type="switch"
-                                id="dark-mode-switch"
-                                label="Dark Mode"
-                                checked={isDarkMode}
-                                onChange={toggleTheme}
-                                className="me-3"
-                            />
-                        </Form>
                     </Navbar.Collapse>
                 </Container>
             </Navbar>

@@ -8,32 +8,39 @@ import { Programme } from '../types/Programme';
 import { useApi } from '../core/useApi'; // Centralized API request handler
 import { useAuth } from '../core/AuthContext'; // Authentication handler
 
+/**
+ * The UserDashboardPage displays a list of programmes available to the user.
+ * Users can view detailed information about a programme in a modal.
+ */
 const UserDashboardPage: React.FC = () => {
     const [programmes, setProgrammes] = useState<Programme[]>([]); // State to hold programmes
     const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility state
     const [selectedProgramme, setSelectedProgramme] = useState<Programme | null>(null); // Selected programme
     const apiRequest = useApi(); // Use centralized API handler
     const { isAuthenticated } = useAuth(); // Check authentication status
+    const [hasFetched, setHasFetched] = useState(false); // Prevent duplicate fetches
 
     useEffect(() => {
         /**
          * Fetch programmes from the API.
+         * Ensures data is fetched only once and the user is authenticated.
          */
-        const fetchProgrammes = () => {
-            if (!isAuthenticated) {
-                console.error('User is not authenticated');
-                return;
-            }
+        const fetchProgrammes = async () => {
+            if (!isAuthenticated || hasFetched) return;
 
-            apiRequest('/programmes', {}, (data: Programme[]) => {
+            console.log('Fetching programmes...');
+            try {
+                const data: Programme[] = await apiRequest('/programmes');
+                console.log('Fetched programmes:', data);
                 setProgrammes(data); // Update state with fetched programmes
-            }).catch((error) => {
+                setHasFetched(true); // Mark data as fetched
+            } catch (error) {
                 console.error('Error fetching programmes:', error);
-            });
+            }
         };
 
         fetchProgrammes();
-    }, [isAuthenticated, apiRequest]);
+    }, [isAuthenticated, apiRequest, hasFetched]);
 
     /**
      * Open modal with selected programme.
@@ -45,7 +52,7 @@ const UserDashboardPage: React.FC = () => {
     };
 
     /**
-     * Close the modal.
+     * Close the modal and reset the selected programme state.
      */
     const closeModal = () => {
         setSelectedProgramme(null);

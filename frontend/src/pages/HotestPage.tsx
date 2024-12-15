@@ -5,24 +5,36 @@ import Navbar from '../components/Navbar';
 import { Programme } from '../types/Programme';
 import { useApi } from '../core/useApi'; // Centralized API handler
 
+/**
+ * A page to display the hottest programmes, sorted by ranking.
+ * Data is fetched from the backend and rendered in a table format.
+ */
 const HotestPage: React.FC = () => {
-    const [programmes, setProgrammes] = useState<Programme[]>([]);
+    const [programmes, setProgrammes] = useState<Programme[]>([]); // State to hold programmes data
     const apiRequest = useApi(); // Use centralized API handler
+    const [hasFetched, setHasFetched] = useState(false); // Prevent duplicate fetches
 
     useEffect(() => {
         /**
-         * Fetch the hottest programmes sorted by ranking.
+         * Fetches the hottest programmes sorted by ranking.
+         * Ensures that the data is only fetched once.
          */
-        const fetchHotestProgrammes = () => {
-            apiRequest('/programmes?sort=ranking_desc', {}, (data: Programme[]) => {
+        const fetchHotestProgrammes = async () => {
+            if (hasFetched) return;
+
+            console.log('Fetching hottest programmes...');
+            try {
+                const data: Programme[] = await apiRequest('/programmes?sort=ranking_desc');
+                console.log('Fetched programmes:', data);
                 setProgrammes(data); // Update state with fetched programmes
-            }).catch((error) => {
+                setHasFetched(true); // Mark as fetched
+            } catch (error) {
                 console.error('Error fetching hottest programmes:', error);
-            });
+            }
         };
 
         fetchHotestProgrammes();
-    }, [apiRequest]);
+    }, [apiRequest, hasFetched]);
 
     return (
         <div>
@@ -40,7 +52,7 @@ const HotestPage: React.FC = () => {
                         {programmes.map((programme) => (
                             <tr key={programme.event_id}>
                                 <td>{programme.title}</td>
-                                <td>{programme.likes + programme.comments.length * 5}</td> {/* Compute ranking */}
+                                <td>{programme.likes + (programme.comments?.length||0) * 5}</td> {/* Compute ranking */}
                             </tr>
                         ))}
                     </tbody>

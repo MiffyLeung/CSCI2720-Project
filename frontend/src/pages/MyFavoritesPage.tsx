@@ -10,18 +10,19 @@ const MyFavoritesPage: React.FC = () => {
     const [favorites, setFavorites] = useState<Programme[]>([]); // State to hold favorite programmes
     const { isAuthenticated } = useAuth(); // Access authentication status
     const apiRequest = useApi(); // Use centralized API handler
+    const [hasFetched, setHasFetched] = useState(false); // Prevent multiple fetches
 
     useEffect(() => {
         /**
          * Fetch the user's favorite programmes.
          */
         const fetchFavorites = () => {
-            if (!isAuthenticated) {
-                console.error('User is not authenticated');
-                return;
-            }
+            if (!isAuthenticated || hasFetched) return; // Skip if already fetched or not authenticated
+            setHasFetched(true); // Mark as fetched
 
+            console.log('Fetching favorite programmes...');
             apiRequest('/myFavorites', {}, (data: Programme[]) => {
+                console.log('Fetched favorites:', data);
                 setFavorites(data); // Update state with fetched favorites
             }).catch((error) => {
                 console.error('Error fetching favorites:', error);
@@ -29,7 +30,7 @@ const MyFavoritesPage: React.FC = () => {
         };
 
         fetchFavorites();
-    }, [isAuthenticated, apiRequest]);
+    }, [isAuthenticated, apiRequest, hasFetched]);
 
     return (
         <div>
