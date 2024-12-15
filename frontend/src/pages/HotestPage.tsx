@@ -42,8 +42,8 @@ const HotestPage: React.FC = () => {
             <div className="container mt-5">
                 <h1 className="mb-4">Hottest Events</h1>
                 <table className="table table-striped table-hover">
-                    <thead className="table-dark">
-                        <tr>
+                    <thead>
+                        <tr className="table-success"> {/* Apply Bootstrap success class to header row */}
                             <th>Title</th>
                             <th>Ranking</th>
                         </tr>
@@ -52,7 +52,7 @@ const HotestPage: React.FC = () => {
                         {programmes.map((programme) => (
                             <tr key={programme.event_id}>
                                 <td>{programme.title}</td>
-                                <td>{programme.likes + (programme.comments?.length||0) * 5}</td> {/* Compute ranking */}
+                                <td>{programme.likes + (programme.comments?.length || 0) * 5}</td> {/* Compute ranking */}
                             </tr>
                         ))}
                     </tbody>

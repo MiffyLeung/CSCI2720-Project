@@ -1,8 +1,9 @@
 // frontend/src/components/VenueList.tsx
-import React, { useState, useEffect } from 'react';
+
+import React from 'react';
 import { Table, Form } from 'react-bootstrap';
 import { useApi } from '../core/useApi'; // Adjust the path as needed
-import { Venue, transformVenuesListFromBackend } from '../types/Venue'; // Adjust the path as needed
+import { Venue } from '../types/Venue'; // Adjust the path as needed
 
 interface VenueListProps {
     venues: Venue[]; // Array of venues to display
@@ -27,7 +28,7 @@ const VenueList: React.FC<VenueListProps> = ({ venues, onEdit }) => {
     return (
         <Table striped bordered hover responsive>
             <thead>
-                <tr>
+                <tr className="table-success"> {/* Apply Bootstrap success color */}
                     <th>#</th>
                     <th>Location</th>
                     <th>Latitude</th>

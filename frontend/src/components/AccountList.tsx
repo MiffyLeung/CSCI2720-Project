@@ -11,8 +11,8 @@ interface AccountListProps {
 const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit }) => {
   return (
     <table className="table table-striped">
-      <thead className="table-dark">
-        <tr>
+      <thead>
+        <tr className="table-success"> {/* Apply Bootstrap success class for header */}
           <th>Username</th>
           <th>Role</th>
           <th>Actions</th>
