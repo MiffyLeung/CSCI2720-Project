@@ -45,9 +45,21 @@ export const useApi = () => {
 
         try {
             const response = await fetch(`${REACT_APP_API}${endpoint}`, requestOptions);
-            const data = await response.json();
+            let data;
+
+            try {
+                data = await response.json();
+            } catch (err) {
+                console.error('Error parsing response JSON:', err);
+                data = null; // Default to null if parsing fails
+            }
 
             if (!response.ok) {
+                const error = {
+                    status: response.status,
+                    message: data?.message || 'Request failed.',
+                    data: data?.data || null, 
+                };
                 // Handle known error codes
                 switch (response.status) {
                     case 400:
@@ -71,19 +83,19 @@ export const useApi = () => {
                         navigate('/login');
                         break;
                     case 403:
-                        alert('You do not have sufficient permissions to perform this action.');
+                        alert('You do not have sufficient permissions.');
                         navigate('/');
                         break;
                     default:
-                        if (errorCallback) errorCallback(data.message || 'Request failed');
+                        if (errorCallback) errorCallback(error);
                 }
-                throw new Error(data.message || 'Request failed.');
+                // throw new Error(data.message || 'Request failed.');
             }
 
             if (successCallback) successCallback(data.data);
             return data.data;
         } catch (error) {
-            console.error('API error:', error);
+            console.error('API Request Error:', error);
             if (errorCallback) errorCallback(error);
             throw error;
         }

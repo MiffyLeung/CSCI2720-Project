@@ -3,17 +3,20 @@
 const Programme = require('../models/ProgrammeSchema');
 const { generateDebugInfo } = require('../utils/debugUtils');
 
+// A map to store cooldown timers for likes
+const userLikeCooldown = new Map(); // Map<programmeId-userId, timestamp>
+
 /**
- * Retrieves all programmes.
- * 
+ * Retrieves all programmes with populated venue details.
+ *
  * @function getAllProgrammes
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
- * @returns {void} - Sends a JSON response with all programmes or an error message
+ * @returns {void} - Sends a JSON response with all programmes or an error message.
  */
 const getAllProgrammes = async (req, res) => {
     try {
-        const programmes = await Programme.find();
+        const programmes = await Programme.find().populate('venue', 'venue_id name coordinates');
         res.status(200).json({
             code: 'GET_ALL_PROGRAMMES_SUCCESS',
             message: 'Programmes retrieved successfully',
@@ -30,24 +33,28 @@ const getAllProgrammes = async (req, res) => {
 };
 
 /**
- * Retrieves a programme by its ID.
- * 
+ * Retrieves a programme by its event_id with populated venue details.
+ *
  * @function getProgrammeById
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {void} - Sends a JSON response with the programme data or an error message
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @returns {void} - Sends a JSON response with the programme data or an error message.
  */
 const getProgrammeById = async (req, res) => {
     try {
-        const programme = await Programme.findById(req.params.id);
+        const programme = await Programme.findOne({ event_id: req.params.id }).populate(
+            'venue',
+            'venue_id name coordinates'
+        );
+
         if (!programme) {
-            const error = new Error('Programme not found');
             return res.status(404).json({
                 code: 'PROGRAMME_NOT_FOUND',
                 message: 'Programme not found',
-                debug: generateDebugInfo(error),
+                data: null,
             });
         }
+
         res.status(200).json({
             code: 'GET_PROGRAMME_SUCCESS',
             message: 'Programme retrieved successfully',
@@ -58,18 +65,20 @@ const getProgrammeById = async (req, res) => {
         res.status(500).json({
             code: 'INTERNAL_SERVER_ERROR',
             message: 'An unexpected error occurred',
-            debug: generateDebugInfo(error),
+            data: {
+                error: generateDebugInfo(error),
+            },
         });
     }
 };
 
 /**
  * Creates a new programme (Admin Only).
- * 
+ *
  * @function createProgramme
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {void} - Sends a JSON response with the created programme or an error message
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @returns {void} - Sends a JSON response with the created programme or an error message.
  */
 const createProgramme = async (req, res) => {
     try {
@@ -91,28 +100,29 @@ const createProgramme = async (req, res) => {
 };
 
 /**
- * Updates a programme by its ID (Admin Only).
- * 
+ * Updates a programme by its event_id (Admin Only).
+ *
  * @function updateProgrammeById
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {void} - Sends a JSON response with the updated programme or an error message
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @returns {void} - Sends a JSON response with the updated programme or an error message.
  */
 const updateProgrammeById = async (req, res) => {
     try {
-        const updatedProgramme = await Programme.findByIdAndUpdate(
-            req.params.id,
+        const updatedProgramme = await Programme.findOneAndUpdate(
+            { event_id: req.params.id },
             req.body,
             { new: true }
         );
+
         if (!updatedProgramme) {
-            const error = new Error('Programme not found');
             return res.status(404).json({
                 code: 'PROGRAMME_NOT_FOUND',
                 message: 'Programme not found',
-                debug: generateDebugInfo(error),
+                debug: generateDebugInfo(new Error('Programme not found')),
             });
         }
+
         res.status(200).json({
             code: 'UPDATE_PROGRAMME_SUCCESS',
             message: 'Programme updated successfully',
@@ -129,86 +139,111 @@ const updateProgrammeById = async (req, res) => {
 };
 
 /**
- * Deletes a programme by its ID (Admin Only).
- * 
+ * Deletes a programme by its event_id (Admin Only).
+ *
  * @function deleteProgrammeById
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {void} - Sends a JSON response indicating success or an error message
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @returns {void} - Sends a JSON response indicating success or an error message.
  */
 const deleteProgrammeById = async (req, res) => {
     try {
-        const deletedProgramme = await Programme.findByIdAndDelete(req.params.id);
+        const deletedProgramme = await Programme.findOneAndDelete({ event_id: req.params.id });
+
         if (!deletedProgramme) {
-            const error = new Error('Programme not found');
             return res.status(404).json({
                 code: 'PROGRAMME_NOT_FOUND',
                 message: 'Programme not found',
-                debug: generateDebugInfo(error),
+                data: null,
             });
         }
+
         res.status(200).json({
             code: 'DELETE_PROGRAMME_SUCCESS',
             message: 'Programme deleted successfully',
+            data: null,
         });
     } catch (error) {
         console.error('Error deleting programme:', error.message);
         res.status(500).json({
             code: 'INTERNAL_SERVER_ERROR',
             message: 'An unexpected error occurred',
-            debug: generateDebugInfo(error),
+            data: {
+                error: generateDebugInfo(error),
+            },
         });
     }
 };
 
 /**
- * Like a programme by its ID.
- * 
+ * Like a programme by its event_id with rate-limiting (one like per minute).
+ *
  * @function likeProgramme
- * @param {Object} req - Express request object
- * @param {Object} req.params - Request parameters containing the programme ID
- * @param {Object} res - Express response object
- * @returns {void} - Sends a JSON response indicating success or an error message
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @returns {void} - Sends a JSON response indicating success or an error message.
  */
 const likeProgramme = async (req, res) => {
     try {
-        const programme = await Programme.findById(req.params.id);
+        const programmeEventId = req.params.id; // Use event_id from request params
+        const userId = req.user?.id || 'guest'; // Fallback for unauthenticated users
+
+        const cooldownKey = `${programmeEventId}-${userId}`;
+        const lastLikeTime = userLikeCooldown.get(cooldownKey);
+        const currentTime = Date.now();
+        const cooldownPeriod = 30000; // 30sec cooldown in milliseconds
+
+        if (lastLikeTime && currentTime - lastLikeTime < cooldownPeriod) {
+            const remainingTime = Math.ceil((cooldownPeriod - (currentTime - lastLikeTime)) / 1000);
+            return res.status(429).json({
+                code: 'LIKE_RATE_LIMITED',
+                message: `Please wait ${remainingTime} seconds before liking again.`,
+                data: {
+                    cooldown: remainingTime,
+                },
+            });
+        }
+
+        const programme = await Programme.findOne({ event_id: programmeEventId });
         if (!programme) {
-            const error = new Error('Programme not found');
             return res.status(404).json({
                 code: 'PROGRAMME_NOT_FOUND',
                 message: 'Programme not found',
-                debug: generateDebugInfo(error),
+                data: null,
             });
         }
 
         programme.likes += 1;
         await programme.save();
 
+        userLikeCooldown.set(cooldownKey, currentTime);
+
         res.status(200).json({
             code: 'PROGRAMME_LIKED_SUCCESS',
             message: 'Programme liked successfully',
-            data: programme,
+            data: {
+                likes: programme.likes,
+            },
         });
     } catch (error) {
         console.error('Error liking programme:', error.message);
         res.status(500).json({
             code: 'INTERNAL_SERVER_ERROR',
             message: 'An unexpected error occurred',
-            debug: generateDebugInfo(error),
+            data: {
+                error: generateDebugInfo(error),
+            },
         });
     }
 };
 
 /**
- * Comment on a programme by its ID.
- * 
+ * Comment on a programme by its event_id.
+ *
  * @function commentOnProgramme
- * @param {Object} req - Express request object
- * @param {Object} req.params - Request parameters containing the programme ID
- * @param {Object} req.body - Request body containing the comment
- * @param {Object} res - Express response object
- * @returns {void} - Sends a JSON response indicating success or an error message
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @returns {void} - Sends a JSON response indicating success or an error message.
  */
 const commentOnProgramme = async (req, res) => {
     try {
@@ -220,17 +255,16 @@ const commentOnProgramme = async (req, res) => {
             });
         }
 
-        const programme = await Programme.findById(req.params.id);
+        const programme = await Programme.findOne({ event_id: req.params.id });
         if (!programme) {
-            const error = new Error('Programme not found');
             return res.status(404).json({
                 code: 'PROGRAMME_NOT_FOUND',
                 message: 'Programme not found',
-                debug: generateDebugInfo(error),
+                debug: generateDebugInfo(new Error('Programme not found')),
             });
         }
 
-        programme.comment.push(comment);
+        programme.comments.push(comment);
         await programme.save();
 
         res.status(200).json({

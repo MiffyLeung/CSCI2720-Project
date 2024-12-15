@@ -45,16 +45,16 @@ router.get(
  * Like a specific programme by ID.
  * Matches route: PUT /api/programme/:id/like
  */
-router.put(
+router.post(
     '/programme/:id/like',
-    likeProgramme // Todo: Add this to programmeController if missing
+    likeProgramme
 );
 
 /**
  * Leave a comment on a specific programme by ID.
  * Matches route: PUT /api/programme/:id/comment
  */
-router.put(
+router.post(
     '/programme/:id/comment',
     commentOnProgramme // Todo: Add this to programmeController if missing
 );
@@ -66,9 +66,9 @@ router.put(
 
 /**
  * Create a new programme.
- * Matches route: PUT /api/programme
+ * Matches route: post /api/programme
  */
-router.put(
+router.post(
     '/programme',
     authorize('admin'),
     createProgramme

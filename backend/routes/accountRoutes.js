@@ -30,7 +30,7 @@ router.put(
  */
 router.get(
     '/myAccount', // Matches basePath '/api/myAccount'
-    accountController.getAccountDetails // Add this to accountController if missing
+    accountController.getAccountDetails
 );
 
 /**
@@ -38,7 +38,7 @@ router.get(
  */
 router.get(
     '/myFavorites', // Matches basePath '/api/myFavorites'
-    accountController.getFavourites // Add this to accountController if missing
+    accountController.getFavourites
 );
 
 /**
@@ -53,13 +53,13 @@ router.get(
 router.get(
     '/account/:id', // Matches basePath '/api/account/:id'
     authorize('admin'),
-    accountController.getAccountDetailsById // Add this to accountController if missing
+    accountController.getAccountDetailsById
 );
 
 router.put(
     '/account', // Matches basePath '/api/account'
     authorize('admin'),
-    accountController.createAccount // Add this to accountController if missing
+    accountController.createAccount
 );
 
 router.put(
@@ -67,6 +67,5 @@ router.put(
     authorize('admin'),
     accountController.updateAccount
 );
-
 
 module.exports = router;

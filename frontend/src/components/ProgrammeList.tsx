@@ -1,57 +1,90 @@
 // frontend/src/components/ProgrammeList.tsx
 
-import React from 'react';
-import { Table } from 'react-bootstrap'; // Import Bootstrap Table component
-import { Programme } from '../types/Programme'; // Use shared type
+import React, { useState } from 'react';
+import { Table } from 'react-bootstrap';
+import { Programme } from '../types/Programme';
+import ProgrammeInfo from './ProgrammeInfo';
+import { useAuth } from '../core/AuthContext';
 
 interface ProgrammeListProps {
-  programmes: Programme[];
-  onEdit: (programme: Programme) => void;
+  programmes: Programme[]; // List of programmes to display
+  onEdit?: (programme: Programme) => void; // Edit handler
+  onDelete?: (programme: Programme) => void; // Delete handler
 }
 
-const ProgrammeList: React.FC<ProgrammeListProps> = ({ programmes, onEdit }) => {
+/**
+ * ProgrammeList displays a list of programmes in a table format.
+ * - Admins can see "Edit" and "Delete" buttons for each row.
+ * - Clicking on a programme title opens a modal with its details.
+ */
+const ProgrammeList: React.FC<ProgrammeListProps> = ({ programmes, onEdit, onDelete }) => {
+  const { isAdmin } = useAuth();
+  const [selectedProgramme, setSelectedProgramme] = useState<Programme | null>(null);
+
   return (
     <div>
-      <Table striped bordered hover responsive> {/* Bootstrap table with responsive behavior */}
-        <thead className="table-success text-white"> {/* Bootstrap success color */}
+      <Table striped bordered hover responsive>
+        <thead className="table-success text-white">
           <tr>
             <th>Title</th>
-            <th style={{
-              width: '160px',
-              maxWidth: '160px',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}>
-              Date Range
-            </th>
+            <th>Date</th>
             <th>Presenter</th>
-            <th>Actions</th>
+            {isAdmin && (onEdit || onDelete) && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
           {programmes.map((programme) => (
             <tr key={programme.event_id}>
-              <td>{programme.title}</td>
-              <td style={{
-                width: '150px',
-                maxWidth: '150px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}>
+              <td
+                style={{ cursor: 'pointer' }}
+                onClick={() => setSelectedProgramme(programme)}
+              >
+                {programme.title}
+              </td>
+              <td
+                style={{ cursor: 'pointer', maxWidth: '180px' }}
+                onClick={() => setSelectedProgramme(programme)}
+              >
                 {programme.dateline}
               </td>
-              <td>{programme.presenter}</td>
-              <td>
-                <button className="btn btn-primary btn-sm" onClick={() => onEdit(programme)}>
-                  Edit
-                </button>
+              <td
+                style={{ cursor: 'pointer', maxWidth: '180px' }}
+                onClick={() => setSelectedProgramme(programme)}
+              >
+                {programme.presenter}
               </td>
+              {isAdmin && (onEdit || onDelete) && (
+                <td>
+                  {onEdit && (
+                    <button
+                      className="btn btn-success btn-sm me-2"
+                      onClick={() => onEdit(programme)}
+                    >
+                      Edit
+                    </button>
+                  )}
+                  {onDelete && (
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => onDelete(programme)}
+                    >
+                      Delete
+                    </button>
+                  )}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
       </Table>
+
+      {/* ProgrammeInfo Modal */}
+      {selectedProgramme && (
+        <ProgrammeInfo
+          programme={selectedProgramme}
+          onClose={() => setSelectedProgramme(null)}
+        />
+      )}
     </div>
   );
 };

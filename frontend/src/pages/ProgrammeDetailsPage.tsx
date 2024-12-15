@@ -1,40 +1,43 @@
 // frontend/src/pages/ProgrammeDetailsPage.tsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, JSX } from 'react';
 import Navbar from '../components/Navbar';
 import CommentsSection from '../components/CommentsSection';
+import LikeButton from '../components/LikeButton';
+import MapButton from '../components/MapButton';
 import { Programme } from '../types/Programme';
-import { useApi } from '../core/useApi'; // Centralized API handler
-import { useAuth } from '../core/AuthContext'; // Authentication handler
+import { useApi } from '../core/useApi';
+import Container from 'react-bootstrap/Container';
+import Card from 'react-bootstrap/Card';
 
 /**
- * A page to display the details of a specific programme.
- * It fetches the programme details based on the ID in the URL.
+ * A page to display detailed information about a specific programme.
+ *
+ * @component
+ * @example
+ * <ProgrammeDetailsPage />
  */
 const ProgrammeDetailsPage: React.FC = () => {
-    const [programme, setProgramme] = useState<Programme | null>(null); // State to hold programme details
-    const apiRequest = useApi(); // Use centralized API handler
-    const { isAuthenticated } = useAuth(); // Check authentication state
+    const [programme, setProgramme] = useState<Programme | null>(null); // State to store programme details
+    const apiRequest = useApi(); // API request hook
     const [hasFetched, setHasFetched] = useState(false); // Prevent duplicate fetches
 
     useEffect(() => {
         /**
-         * Fetch programme details based on the programme ID in the URL.
+         * Fetch the programme details by ID from the API.
          */
         const fetchProgramme = async () => {
-            if (!isAuthenticated || hasFetched) return;
+            if (hasFetched) return;
 
-            const id = window.location.pathname.split('/').pop();
+            const id = window.location.pathname.split('/').pop(); // Extract ID from URL
             if (!id) {
                 console.error('Programme ID not found in URL');
                 return;
             }
 
-            console.log('Fetching programme details...');
             try {
                 const data: Programme = await apiRequest(`/programme/${id}`);
-                console.log('Fetched programme:', data);
-                setProgramme(data); // Update state with fetched programme details
+                setProgramme(data); // Update the programme state
                 setHasFetched(true); // Mark as fetched
             } catch (error) {
                 console.error('Error fetching programme:', error);
@@ -42,53 +45,122 @@ const ProgrammeDetailsPage: React.FC = () => {
         };
 
         fetchProgramme();
-    }, [isAuthenticated, apiRequest, hasFetched]);
+    }, [apiRequest, hasFetched]);
 
+    // Render loading state if programme data is not available
     if (!programme) {
         return (
             <div>
                 <Navbar />
-                <div className="container mt-5">
-                    <div className="alert alert-info" role="alert">
-                        Loading programme details...
-                    </div>
-                </div>
+                <Container className="mt-5">
+                    <div className="alert alert-info">Loading programme details...</div>
+                </Container>
             </div>
         );
     }
 
+    /**
+     * Converts newline characters to <br /> tags for text formatting.
+     *
+     * @param {string} text - The text to process.
+     * @returns {JSX.Element[]} - The processed text with <br /> tags.
+     */
+    const nl2br = (text: string): JSX.Element[] => {
+        return text.split('\n').map((line, index) => (
+            <React.Fragment key={index}>
+                {line}
+                <br />
+            </React.Fragment>
+        ));
+    };
+
     return (
         <div>
             <Navbar />
-            <div className="container mt-5">
-                <h1 className="mb-4">{programme.title}</h1>
-                <div className="card">
-                    <div className="card-body">
-                        <p><strong>Presenter:</strong> {programme.presenter}</p>
-                        <p><strong>Type:</strong> {programme.type}</p>
-                        <p><strong>Languages:</strong> {programme.languages.join(', ')}</p>
-                        <p><strong>Date:</strong> {programme.dateline}</p>
-                        <p><strong>Duration:</strong> {programme.duration}</p>
-                        <p><strong>Price:</strong> {programme.price}</p>
-                        <p><strong>Description:</strong> {programme.description || 'No description available'}</p>
-                        <p><strong>Remarks:</strong> {programme.remarks || 'No remarks available'}</p>
-                        <p><strong>Enquiry:</strong> {programme.enquiry || 'No enquiry available'}</p>
+            <Container className="mt-5">
+                {/* Title Section with Like Button */}
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h1 className="fw-bold w-100" style={{ wordWrap: 'break-word' }}>
+                        {programme.title}
+                        <LikeButton programmeId={programme.event_id} initialLikes={programme.likes} />
+                    </h1>
+                </div>
+
+                {/* Programme Details */}
+                <Card className="shadow-sm border-0 mb-4">
+                    <Card.Body>
+                        <p>
+                            <strong>Presenter:</strong> {programme.presenter || 'N/A'}
+                        </p>
+                        <p>
+                            <strong>Type:</strong> {programme.type || 'N/A'}
+                        </p>
+                        <p>
+                            <strong>Languages:</strong>{' '}
+                            {programme.languages.join(', ') || 'N/A'}
+                        </p>
+                        <p>
+                            <strong>Date:</strong> {programme.dateline || 'N/A'}
+                        </p>
+                        <p>
+                            <strong>Duration:</strong> {programme.duration || 'N/A'}
+                        </p>
+                        <p>
+                            <strong>Price:</strong> {programme.price || 'N/A'}
+                        </p>
+                        <p>
+                            <strong>Description:</strong>{' '}
+                            {programme.description ? nl2br(programme.description) : 'No description available'}
+                        </p>
+                        <p>
+                            <strong>Remarks:</strong> {programme.remarks || 'No remarks available'}
+                        </p>
+                        <p>
+                            <strong>Enquiry:</strong> {programme.enquiry || 'No enquiry available'}
+                        </p>
+                        <p>
+                            <strong>Venue:</strong>{' '}
+                            {programme.venue?.name ? (
+                                <>
+                                    {programme.venue.name}
+                                    {programme.venue.latitude && programme.venue.longitude && (
+                                        <span className="ms-2">
+                                            <MapButton
+                                                venueName={programme.venue.name}
+                                                latitude={programme.venue.latitude}
+                                                longitude={programme.venue.longitude}
+                                            />
+                                        </span>
+                                    )}
+                                </>
+                            ) : (
+                                'Not specified'
+                            )}
+                        </p>
                         <p>
                             <strong>Event URL:</strong>{' '}
                             {programme.eventUrl ? (
-                                <a href={programme.eventUrl} target="_blank" rel="noopener noreferrer">
+                                <a
+                                    href={programme.eventUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
                                     {programme.eventUrl}
                                 </a>
                             ) : (
                                 'No event URL available'
                             )}
                         </p>
-                    </div>
-                </div>
-                <div className="mt-4">
-                    <CommentsSection programmeId={programme.event_id} />
-                </div>
-            </div>
+                    </Card.Body>
+                </Card>
+
+                {/* Comments Section */}
+                <CommentsSection
+                    initialComments={programme.comments || []} // Default to empty array
+                    programmeId={programme.event_id}
+                />
+
+            </Container>
         </div>
     );
 };
