@@ -28,9 +28,10 @@ This project focuses on solving the challenge of simplifying cultural event mana
 ## Features
 - **Account Authentication**: Secure login and API access for users and admins.
 - **Programme Management**: Search, browse, and filter cultural programme and venues dynamically.
-- **Admin Panel**: Full CRUD operations for managing user accounts, programmes and venues.
+- **Admin Panel**: Full CRUD operations for managing user accounts, programmes, and venues.
 - **Interactive Map**: Display venue locations on a map using the open-source Leaflet.js library.
 - **Responsive Design**: Ensures usability across desktop and mobile devices.
+- **Update Data**: **Admins can refresh the database with the latest data from public XML sources.**
 
 ## Installation
 Follow these steps to set up the project:
@@ -81,7 +82,8 @@ Once the project is running:
 
 1. Access the application:
    - **Frontend**: Open [http://localhost:3000](http://localhost:3000).
-   - **Backend API**: The backend runs at [http://localhost:5000](http://localhost:5000).
+   - **Backend API**: The backend runs at [http://localhost:3001](http://localhost:3001).
+       (You may change the url and port in .env)
 
 2. Log in as a user or admin:
    - **User Login**: Access basic functionalities like browsing programmes, map view and some interactive action like bookmark / like / comment etc.
@@ -90,8 +92,8 @@ Once the project is running:
 3. Explore features:
    - View Programmes(Venues) on an interactive map and edit the geolocation directly on the map.
    - Upload avatars and changing password for users and admin, it will store in the DB with binary data.
-   - Filter, Sort and view detailed on the Programme information.
-   - Import data from the most updated XML online to MangoDB.
+   - Filter, Sort and view detailed information on the Programme.
+   - **Update the database via the "Admin Menu" in the navbar.**
 
 4. Routes
 
@@ -108,6 +110,7 @@ Once the project is running:
 | Like a Programme         | `/programme/:id (Ajax)`       | `/api/programme/:id/like`                       | `POST`          |
 | Comment on Programme     | `/programme/:id (Ajax)`       | `/api/programme/:id/comment`                    | `POST`          |
 | Bookmark a Programme     | `/programme/:id (Ajax)`       | `/api/programme/:id/bookmark`                   | `POST`          |
+| Update Data              | `Admin Menu (Ajax)`           | `/api/updateData`                               | `GET`           |
 | Manage Programmes        | `/admin/programmes`           | `/api/programmes?search=STRING&orderby=FIELD`   | `GET`           |
 | Add Programme            | `/admin/programmes (Ajax)`    | `/api/programme`                                | `POST`          |
 | Edit Programme           | `/admin/programme/:id (Ajax)` | `/api/programme/:id`                            | `PATCH`         |

@@ -61,31 +61,54 @@ const parseXML = async (xmlContent) => {
 };
 
 /**
- * Upserts data into the Programme collection.
+ * Upserts data into the Programme collection and marks missing IDs as deleted.
+ * Existing likes and comments are preserved.
  * 
  * @function upsertProgrammes
  * @param {Array} programmes - Array of programme objects
  * @returns {Promise<void>}
  */
 const upsertProgrammes = async (programmes) => {
+    const newProgrammeIds = programmes.map(p => p.event_id);
+
+    // Upsert new data
     for (const programme of programmes) {
+        const existingProgramme = await Programme.findOne({ event_id: programme.event_id });
+        if (existingProgramme) {
+            // Preserve likes and comments, do not override
+            programme.likes = existingProgramme.likes || 0;
+            programme.comments = existingProgramme.comments || [];
+        } else {
+            // For new programmes, ensure likes and comments are initialized
+            programme.likes = 0;
+            programme.comments = [];
+        }
         await Programme.findOneAndUpdate(
             { event_id: programme.event_id },
             programme,
             { upsert: true, new: true }
         );
     }
-    console.log('Programmes upserted successfully.');
+
+    // Mark old programmes as deleted
+    await Programme.updateMany(
+        { event_id: { $nin: newProgrammeIds } }, // Programmes not in the new dataset
+        { deleted: true }
+    );
+    console.log('Programmes upserted and old ones marked as deleted.');
 };
 
 /**
- * Upserts data into the Venue collection.
+ * Upserts data into the Venue collection and marks missing IDs as deleted.
  * 
  * @function upsertVenues
  * @param {Array} venues - Array of venue objects
  * @returns {Promise<void>}
  */
 const upsertVenues = async (venues) => {
+    const newVenueIds = venues.map(v => v.venue_id);
+
+    // Upsert new data
     for (const venue of venues) {
         await Venue.findOneAndUpdate(
             { venue_id: venue.venue_id },
@@ -93,7 +116,33 @@ const upsertVenues = async (venues) => {
             { upsert: true, new: true }
         );
     }
-    console.log('Venues upserted successfully.');
+
+    // Mark old venues as deleted
+    await Venue.updateMany(
+        { venue_id: { $nin: newVenueIds } }, // Venues not in the new dataset
+        { deleted: true }
+    );
+    console.log('Venues upserted and old ones marked as deleted.');
+};
+
+/**
+ * Updates the event count for each venue.
+ * 
+ * @function updateVenueEventCounts
+ * @returns {Promise<void>}
+ */
+const updateVenueEventCounts = async () => {
+    console.log('Updating venue event counts...');
+    const venues = await Venue.find({});
+    for (const venue of venues) {
+        const eventCount = await Programme.countDocuments({ venue_id: venue.venue_id });
+        await Venue.findOneAndUpdate(
+            { venue_id: venue.venue_id },
+            { eventCount: eventCount },
+            { new: true }
+        );
+    }
+    console.log('Venue event counts updated.');
 };
 
 /**
@@ -129,7 +178,6 @@ const populateDB = async () => {
             eventUrl: event.tagenturle ? event.tagenturle[0] : null,
             enquiry: event.enquiry ? event.enquiry[0] : null,
             submitdate: new Date(),
-            likes: 0,
         }));
 
         await upsertProgrammes(programmes);
@@ -146,9 +194,11 @@ const populateDB = async () => {
                 latitude: venue.latitude && venue.latitude[0] ? parseFloat(venue.latitude[0]) : null,
                 longitude: venue.longitude && venue.longitude[0] ? parseFloat(venue.longitude[0]) : null,
             },
+            eventCount: 0, // Initialize with 0
         }));
 
         await upsertVenues(venues);
+        await updateVenueEventCounts();
 
         mongoose.connection.close();
         console.log('Database population completed.');
@@ -158,5 +208,11 @@ const populateDB = async () => {
     }
 };
 
-// Run the script
-populateDB();
+
+// Execute populateDB only if this script is run directly
+if (require.main === module) {
+    populateDB();
+}
+
+// Export populateDB function for external use
+module.exports = populateDB;

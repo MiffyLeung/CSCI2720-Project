@@ -1,6 +1,6 @@
 // src/App.tsx
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import ErrorPage from './pages/ErrorPage';
@@ -15,51 +15,42 @@ import VenueDetailsPage from './pages/VenueDetailsPage';
 import AdminProgrammesPage from './pages/AdminProgrammesPage';
 import AdminAccountsPage from './pages/AdminAccountsPage';
 import AdminVenuesPage from './pages/AdminVenuesPage';
-import { useAuthState } from './utils/secure';
+import { useAuth } from './core/AuthContext';
 
 const App: React.FC = () => {
-  const { isAdmin, isAuthenticated, authInitialized } = useAuthState();
+    const { isAuthenticated, isAdmin } = useAuth();
 
-  const requireAuth = (element: React.JSX.Element) => {
-    return isAuthenticated ? element : null;
-  };
+    const requireAuth = (element: React.ReactElement) =>
+        isAuthenticated ? element : <Navigate to="/login" />;
 
-  const requireAdmin = (element: React.JSX.Element) => {
-    return isAdmin ? element : null;
-  };
+    const requireAdmin = (element: React.ReactElement) =>
+        isAuthenticated && isAdmin ? element : <Navigate to="/" />;
 
-  return (
-    <Router>
-      <Routes>
-        {/* Public Route */}
-        <Route path="/login" element={<LoginPage />} />
+    return (
+        <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={isAuthenticated ? <UserDashboardPage /> : <Navigate to="/login" />} />
+            <Route path="/recent" element={requireAuth(<WhatsNewPage />)} />
+            <Route path="/hotest" element={requireAuth(<HotestPage />)} />
+            <Route path="/map" element={requireAuth(<MapViewPage />)} />
+            <Route path="/myFavorites" element={requireAuth(<MyFavoritesPage />)} />
+            <Route path="/myProfile" element={requireAuth(<MyProfilePage />)} />
+            <Route path="/programme/:id" element={requireAuth(<ProgrammeDetailsPage />)} />
+            <Route path="/venue/:id" element={requireAuth(<VenueDetailsPage />)} />
 
-        {/* Common Routes */}
-        <Route path="/recent" element={requireAuth(<WhatsNewPage />)} />
-        <Route path="/hotest" element={requireAuth(<HotestPage />)} />
-        <Route path="/map" element={requireAuth(<MapViewPage />)} />
-        <Route path="/myFavorites" element={requireAuth(<MyFavoritesPage />)} />
-        <Route path="/myProfile" element={requireAuth(<MyProfilePage />)} />
-        <Route path="/programme/:id" element={requireAuth(<ProgrammeDetailsPage />)} />
-        <Route path="/venue/:id" element={requireAuth(<VenueDetailsPage />)} />
+            {/* User-Specific Routes */}
+            <Route path="/dashboard" element={requireAuth(<UserDashboardPage />)} />
 
-        {/* User-Specific Routes */}
-        <Route path="/dashboard" element={requireAuth(<UserDashboardPage />)} />
+            {/* Admin-Specific Routes */}
+            <Route path="/admin/" element={requireAdmin(<AdminProgrammesPage />)} />
+            <Route path="/admin/programmes" element={requireAdmin(<AdminProgrammesPage />)} />
+            <Route path="/admin/accounts" element={requireAdmin(<AdminAccountsPage />)} />
+            <Route path="/admin/venues" element={requireAdmin(<AdminVenuesPage />)} />
 
-        {/* Admin-Specific Routes */}
-        <Route path="/admin/" element={requireAdmin(<AdminProgrammesPage />)} />
-        <Route path="/admin/programmes" element={requireAdmin(<AdminProgrammesPage />)} />
-        <Route path="/admin/accounts" element={requireAdmin(<AdminAccountsPage />)} />
-        <Route path="/admin/venues" element={requireAdmin(<AdminVenuesPage />)} />
-
-        {/* Home page according to different account roles */}
-        <Route path="/" element={!authInitialized ? null : isAuthenticated ? (isAdmin ? <AdminProgrammesPage /> : <UserDashboardPage />) : <Navigate to="/login" />} />
-
-        {/* Catch-All for Undefined Routes */}
-        <Route path="*" element={<ErrorPage />} />
-      </Routes>
-    </Router>
-  );
+            {/* Catch-All for Undefined Routes */}
+            <Route path="*" element={<ErrorPage />} />
+        </Routes>
+    );
 };
 
 export default App;

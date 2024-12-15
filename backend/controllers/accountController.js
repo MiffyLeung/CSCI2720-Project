@@ -24,7 +24,7 @@ const login = async (req, res) => {
         if (!account) {
             const error = new Error('User not found');
             return res.status(410).json({
-                code: 'LOGIN_USER_NOT_FOUND',
+                code: 'USER_NOT_FOUND',
                 message: 'Invalid username or password',
                 debug: generateDebugInfo(error),
             });
@@ -33,9 +33,9 @@ const login = async (req, res) => {
         // Validate the password
         const isMatch = await bcrypt.compare(password, account.password);
         if (!isMatch) {
-            const error = new Error('Invalid credentials');
-            return res.status(401).json({
-                code: 'INVALID_CREDENTIALS',
+            const error = new Error('Invalid password');
+            return res.status(410).json({
+                code: 'USER_NOT_FOUND',
                 message: 'Invalid username or password',
                 debug: generateDebugInfo(error),
             });
@@ -170,7 +170,7 @@ const changePassword = async (req, res) => {
         const isMatch = await bcrypt.compare(oldPassword, account.password);
         if (!isMatch) {
             const error = new Error('Invalid old password');
-            return res.status(401).json({
+            return res.status(410).json({
                 code: 'INVALID_OLD_PASSWORD',
                 message: 'Old password is incorrect',
                 debug: generateDebugInfo(error),

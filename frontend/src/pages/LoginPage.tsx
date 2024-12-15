@@ -1,91 +1,87 @@
 // frontend/src/pages/LoginPage.tsx
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthState } from '../utils/secure';
-import { apiRequest } from '../utils/api';
+import { useAuth } from '../core/AuthContext';
+import { useApi } from '../core/useApi';
 
+/**
+ * Login page component for user authentication.
+ */
 const LoginPage: React.FC = () => {
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  const [username, setUsername] = React.useState(isDevelopment ? 'admin' : '');
-  const [password, setPassword] = React.useState(isDevelopment ? 'password123' : '');
-  const [error, setError] = React.useState<string | null>(null);
-  const { isAuthenticated, authInitialized, isAdmin, setAuth, cleanAuth } = useAuthState();
-  const navigate = useNavigate();
+    const [username, setUsername] = useState(''); // State for username input
+    const [password, setPassword] = useState(''); // State for password input
+    const [error, setError] = useState<string | null>(null); // State for error messages
 
-  React.useEffect(() => {
-    if (authInitialized && isAuthenticated) {
-      navigate('/');
-    }
-  }, [isAuthenticated, authInitialized, navigate]);
+    const { updateAuth } = useAuth(); // Hook for authentication state
+    const apiRequest = useApi(); // Centralized API request handler
+    const navigate = useNavigate(); // React Router navigation handler
 
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
+    /**
+     * Handles the login form submission.
+     * @param e - Form event
+     */
+    const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setError(null); // Reset error state
 
-    // Send login request
-    const data = await apiRequest(
-      '/login',
-      {
-        method: 'POST',
-        body: JSON.stringify({ username, password }),
-      },
-      cleanAuth // Inject cleanAuth for handling token errors
-    );
+        apiRequest(
+            '/login',
+            {
+                method: 'POST',
+                body: JSON.stringify({ username, password }),
+            },
+            (data) => {
+                // Callback to handle successful login
+                updateAuth(data.token, data.username, data.role);
+                navigate('/recent'); // Redirect to recent programmes
+            }
+        ).catch((err) => {
+            // Handle errors during API request
+            console.error('Login error:', err);
+            setError(err instanceof Error ? err.message : 'Login failed');
+        });
+    };
 
-    try {
-      setAuth(data.token, data.username, data.role);
-      navigate('/'); // Redirect to homepage after successful login
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
-    }
-  };
-
-  return (
-    <div className="container mt-5">
-      <div className="row justify-content-center">
-        <div className="col-md-6">
-          <div className="card shadow">
-            <div className="card-body">
-              <h2 className="card-title text-center text-primary mb-4">Login</h2>
-              <form onSubmit={handleLogin}>
-                <div className="mb-3">
-                  <label htmlFor="username" className="form-label">
-                    Username
-                  </label>
-                  <input
-                    type="text"
-                    id="username"
-                    className="form-control"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                  />
+    return (
+        <div className="container mt-5">
+            <div className="row justify-content-center">
+                <div className="col-md-6">
+                    <div className="card shadow">
+                        <div className="card-body">
+                            <h2 className="card-title text-center text-primary mb-4">Login</h2>
+                            <form onSubmit={handleLogin}>
+                                <div className="mb-3">
+                                    <label className="form-label">Username</label>
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">Password</label>
+                                    <input
+                                        type="password"
+                                        className="form-control"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                {error && <div className="text-danger mb-3">{error}</div>}
+                                <button type="submit" className="btn btn-primary w-100">
+                                    Login
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-                <div className="mb-3">
-                  <label htmlFor="password" className="form-label">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    id="password"
-                    className="form-control"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                {error && <div className="alert alert-danger">{error}</div>}
-                <button type="submit" className="btn btn-primary w-100">
-                  Login
-                </button>
-              </form>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default LoginPage;

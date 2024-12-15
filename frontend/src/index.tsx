@@ -1,8 +1,9 @@
 // frontend/src/index.tsx
 
-import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from './core/AuthContext';
 import App from './App';
 
 const rootElement = document.getElementById('root');
@@ -11,7 +12,14 @@ if (rootElement) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <React.StrictMode>
-      <App />
+      <BrowserRouter future={{
+          v7_startTransition: true, 
+          v7_relativeSplatPath: true, 
+        }}>
+        <AuthProvider>
+            <App />
+        </AuthProvider>
+      </BrowserRouter>
     </React.StrictMode>
   );
 } else {

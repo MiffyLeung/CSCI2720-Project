@@ -8,6 +8,7 @@ const { logRequest, logResponse } = require('./middleware/requestLogger.js');
 const errorHandler = require('./middleware/errorHandler'); // Import the error handler middleware
 const registerRoutes = require('./utils/registerRoutes');
 const startServer = require('./utils/serverStartup');
+const adminRoutes = require('./routes/adminRoutes'); // 引入 admin 路由
 
 const app = express();
 const PORT = process.env.BACKEND_PORT || 5000;

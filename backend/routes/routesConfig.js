@@ -3,6 +3,7 @@
 const programmeRoutes = require('./programmeRoutes');
 const venueRoutes = require('./venueRoutes');
 const accountRoutes = require('./accountRoutes');
+const adminRoutes = require('./adminRoutes');
 
 /**
  * Configuration for API routes, defining base paths, routers, and individual route details.
@@ -58,6 +59,14 @@ module.exports = [
             { method: 'GET', path: '/account/:id', requiresAuth: true, adminOnly: true }, // Get account details
             { method: 'POST', path: '/account', requiresAuth: true, adminOnly: true }, // Create new account
             { method: 'PATCH', path: '/account/:id', requiresAuth: true, adminOnly: true }, // Modify an account
+        ],
+    },
+    {
+        name: 'Admin Tools',
+        basePath: '/api',
+        router: adminRoutes,
+        routes: [
+            { method: 'GET', path: '/adminRoutes',  requiresAuth: true, adminOnly: true }, // update Data
         ],
     },
 ];

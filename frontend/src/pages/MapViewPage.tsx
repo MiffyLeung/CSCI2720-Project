@@ -5,67 +5,77 @@ import VenueMap from '../components/VenueMap';
 import Navbar from '../components/Navbar';
 import VenueInfo from '../components/VenueInfo';
 import { Venue } from '../types/Venue';
-import { apiRequest } from '../utils/api'; // Centralized API handler
-import { useAuthState } from '../utils/secure'; // Authentication handler
+import { useApi } from '../core/useApi'; // Centralized API handler
+import { useAuth } from '../core/AuthContext'; // Authentication handler
 
 const MapViewPage: React.FC = () => {
-  const [venues, setVences] = useState<Venue[]>([]);
-  const { cleanAuth } = useAuthState(); // Handle token management
+    const [venues, setVenues] = useState<Venue[]>([]); // State to hold venue data
+    const apiRequest = useApi(); // Use centralized API handler
+    const { isAuthenticated } = useAuth(); // Check authentication status
 
-  useEffect(() => {
-    const fetchVences = async () => {
-      try {
-        const data = await apiRequest('/venues/forMap', {}, cleanAuth);
-        setVences(data);
-      } catch (error) {
-        console.error('Error fetching venues:', error);
-      }
+    useEffect(() => {
+        /**
+         * Fetch venues data for the map.
+         */
+        const fetchVenues = () => {
+            if (!isAuthenticated) {
+                console.error('User is not authenticated');
+                return;
+            }
+
+            apiRequest('/venues/forMap', {}, (data: Venue[]) => {
+                setVenues(data); // Update state with fetched venue data
+            }).catch((error) => {
+                console.error('Error fetching venues:', error);
+            });
+        };
+
+        fetchVenues();
+    }, [isAuthenticated, apiRequest]);
+
+    /**
+     * Handle click events on a map marker.
+     * @param venue - The clicked venue object.
+     */
+    const handleMarkerClick = (venue: Venue) => {
+        alert(`Todo: Fetch programmes for venue: ${venue.name}`);
+        // Placeholder for fetching venue-specific programmes
     };
 
-    fetchVences();
-  }, [cleanAuth]);
-
-  const handleMarkerClick = (venue: Venue) => {
-    alert('Todo: Get Venue Programmes');
-    // Ajax get `venue/${venue.id}`);
-  };
-
-  return (
-    <div>
-      <Navbar />
-      <div className="container mt-5">
-        <h1 className="mb-4">Upcoming Programmes Map</h1>
-        <div className="map-container">
-          <VenueMap
-            venues={venues.map((venue) => ({
-              id: venue.id,
-              name: venue.name,
-              latitude: venue.latitude,
-              longitude: venue.longitude,
-            }))}
-            onMarkerClick={(id: string) => {
-              const venue = venues.find((p) => p.id === id);
-              if (venue) handleMarkerClick(venue);
-            }}
-            onMarkerHover={(id: string) => {
-              const venue = venues.find((p) => p.id === id);
-              if (venue) {
-                console.log(`Hovered on: ${venue.name}`);
-              }
-            }}
-            renderPopup={(id: string) => {
-              const venue = venues.find((p) => p.id === id);
-              return venue ? (
-                <VenueInfo venue={venue} onClose={function (): void {
-                  throw new Error('Function not implemented.');
-                } } />
-              ) : null;
-            }}
-          />
+    return (
+        <div>
+            <Navbar />
+            <div className="container mt-5">
+                <h1 className="mb-4">Upcoming Programmes Map</h1>
+                <div className="map-container">
+                    <VenueMap
+                        venues={venues.map((venue) => ({
+                            id: venue.id,
+                            name: venue.name,
+                            latitude: venue.latitude,
+                            longitude: venue.longitude,
+                        }))} // Transform venues data for the map component
+                        onMarkerClick={(id: string) => {
+                            const venue = venues.find((p) => p.id === id);
+                            if (venue) handleMarkerClick(venue); // Handle marker click events
+                        }}
+                        onMarkerHover={(id: string) => {
+                            const venue = venues.find((p) => p.id === id);
+                            if (venue) {
+                                console.log(`Hovered on: ${venue.name}`); // Log hover events for debugging
+                            }
+                        }}
+                        renderPopup={(id: string) => {
+                            const venue = venues.find((p) => p.id === id);
+                            return venue ? (
+                                <VenueInfo venue={venue} onClose={() => console.log('Popup closed')} />
+                            ) : null; // Render popup information for the hovered venue
+                        }}
+                    />
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default MapViewPage;
