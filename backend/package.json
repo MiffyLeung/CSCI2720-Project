@@ -22,7 +22,7 @@
     "start": "node app.js",
     "create-accounts": "node scripts/createPrimaryAccounts.js",
     "create-accounts-with-force": "node scripts/createPrimaryAccounts.js --force-update",
-    "create-data": "node scripts/populateDB.js"
+    "update-data": "node scripts/updateData.js"
   },
   "main": "app.js",
   "devDependencies": {

@@ -26,12 +26,10 @@ const mongoose = require('mongoose');
  * - likes: Number of likes (default 0, cannot be negative).
  */
 const ProgrammeSchema = new mongoose.Schema({
-  event_id: { type: String, required: true, unique: true }, // Unique primary key
+  event_id: { type: String, required: true, unique: true },
   title: { type: String, required: true },
-  venue: { type: mongoose.Schema.Types.ObjectId, ref: 'Venue', required: true }, // Date of the most recent event
+  venue: { type: mongoose.Schema.Types.ObjectId, ref: 'Venue', required: true },
   dateline: { type: String, required: true }, // Original datetime range for display
-  dateStart: { type: Date, required: true }, // Start datetime of the programme
-  dateEnd: { type: Date, required: true }, // End datetime of the programme
   duration: { type: String }, // Length of each event
   price: { type: String }, // Price information
   description: { type: String }, // Detailed description
