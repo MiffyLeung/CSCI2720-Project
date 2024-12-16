@@ -1,26 +1,34 @@
 // backend/controllers/venueController.js
 
 const Venue = require('../models/VenueSchema');
-const { generateDebugInfo } = require('../utils/debugUtils'); // Import the debug utility
+const Account = require('../models/AccountSchema');
+const { generateDebugInfo } = require('../utils/debugUtils');
 
 /**
- * Retrieves all venues.
- *
+ * Retrieves all venues and indicates whether each venue is a favourite of the current user.
+ * 
  * @function getAllVenues
  * @param {Object} req - Express request object
+ * @param {Object} req.account - Authenticated user's account data
  * @param {Object} res - Express response object
- * @returns {void} - Sends a JSON response with all venues or an error message
+ * @returns {void} - Sends a JSON response containing all venues with isFavourite field
  */
 const getAllVenues = async (req, res) => {
     try {
+        const userId = req.account._id; // Retrieved from authenticated user's data in middleware
+        const user = await Account.findById(userId).populate('favourites'); // Fetch user's favourites
+        const favouriteVenueIds = user.favourites.map(fav => fav._id.toString());
+
         const venues = await Venue.find();
-        const transformedVenues = venues.map((venue) => ({
+        const transformedVenues = venues.map(venue => ({
             venue_id: venue.venue_id,
             name: venue.name,
             latitude: venue.coordinates?.latitude,
             longitude: venue.coordinates?.longitude,
             programmes: venue.programmes || [],
+            isFavourite: favouriteVenueIds.includes(venue._id.toString()), // Mark as favourite
         }));
+
         res.status(200).json({
             code: 'GET_ALL_VENUES_SUCCESS',
             message: 'Venues retrieved successfully',
@@ -37,26 +45,34 @@ const getAllVenues = async (req, res) => {
 };
 
 /**
- * Retrieves all venues that contain geolocation.
- *
+ * Retrieves venues for map view and indicates whether each venue is a favourite of the current user.
+ * 
  * @function getMapVenues
  * @param {Object} req - Express request object
+ * @param {Object} req.account - Authenticated user's account data
  * @param {Object} res - Express response object
- * @returns {void} - Sends a JSON response with all venues or an error message
+ * @returns {void} - Sends a JSON response containing venues with isFavourite field for map view
  */
 const getMapVenues = async (req, res) => {
     try {
+        const userId = req.account._id; // Retrieved from authenticated user's data in middleware
+        const user = await Account.findById(userId).populate('favourites'); // Fetch user's favourites
+        const favouriteVenueIds = user.favourites.map(fav => fav._id.toString());
+
         const venues = await Venue.find({
             'coordinates.latitude': { $ne: null },
             'coordinates.longitude': { $ne: null },
         });
-        const transformedVenues = venues.map((venue) => ({
+
+        const transformedVenues = venues.map(venue => ({
             venue_id: venue.venue_id,
             name: venue.name,
             latitude: venue.coordinates?.latitude,
             longitude: venue.coordinates?.longitude,
             programmes: venue.programmes || [],
+            isFavourite: favouriteVenueIds.includes(venue._id.toString()), // Mark as favourite
         }));
+
         res.status(200).json({
             code: 'GET_MAP_VENUES_SUCCESS',
             message: 'Venues with geolocation retrieved successfully',
