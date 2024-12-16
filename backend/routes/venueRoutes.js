@@ -9,6 +9,8 @@ const {
     updateVenueById,
     deleteVenueById,
     getMapVenues,
+    addVenueBookmark,
+    removeVenueBookmark,
 } = require('../controllers/venueController');
 
 const router = express.Router();
@@ -79,5 +81,17 @@ router.delete(
     authorize('admin'),
     deleteVenueById
 );
+
+/**
+ * Add a venue to the user's bookmarks.
+ * Matches route: PUT /api/venue/:id/bookmark
+ */
+router.put('/venue/:id/bookmark', addVenueBookmark);
+
+/**
+ * Remove a venue from the user's bookmarks.
+ * Matches route: DELETE /api/venue/:id/bookmark
+ */
+router.delete('/venue/:id/bookmark', removeVenueBookmark);
 
 module.exports = router;
