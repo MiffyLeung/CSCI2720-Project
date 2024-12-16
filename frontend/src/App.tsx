@@ -9,7 +9,7 @@ import HotestPage from './pages/HottestPage';
 import MapViewPage from './pages/MapViewPage';
 import MyFavoritesPage from './pages/MyFavoritesPage';
 import MyProfilePage from './pages/MyProfilePage';
-import UserDashboardPage from './pages/UserDashboardPage';
+import VenueListPage from './pages/VenueListPage';
 import ProgrammeDetailsPage from './pages/ProgrammeDetailsPage';
 import VenueDetailsPage from './pages/VenueDetailsPage';
 import AdminProgrammesPage from './pages/AdminProgrammesPage';
@@ -29,7 +29,7 @@ const App: React.FC = () => {
     return (
         <Routes>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/" element={isAuthenticated ? <UserDashboardPage /> : <Navigate to="/login" />} />
+            <Route path="/" element={isAuthenticated ? <VenueListPage /> : <Navigate to="/login" />} />
             <Route path="/recent" element={requireAuth(<WhatsNewPage />)} />
             <Route path="/hotest" element={requireAuth(<HotestPage />)} />
             <Route path="/map" element={requireAuth(<MapViewPage />)} />
@@ -39,7 +39,7 @@ const App: React.FC = () => {
             <Route path="/venue/:id" element={requireAuth(<VenueDetailsPage />)} />
 
             {/* User-Specific Routes */}
-            <Route path="/dashboard" element={requireAuth(<UserDashboardPage />)} />
+            <Route path="/dashboard" element={requireAuth(<VenueListPage />)} />
 
             {/* Admin-Specific Routes */}
             <Route path="/admin/" element={requireAdmin(<AdminProgrammesPage />)} />

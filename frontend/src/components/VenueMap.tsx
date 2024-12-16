@@ -20,7 +20,7 @@ const VenueMap: React.FC<VenueMapProps> = ({ venues }) => {
         attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
       />
       {venues.map((Venue) => (
-        <Marker key={Venue.id} position={[Venue.latitude, Venue.longitude]}>
+        <Marker key={Venue.venue_id} position={[Venue.latitude, Venue.longitude]}>
           <Popup>{Venue.name}</Popup>
         </Marker>
       ))}

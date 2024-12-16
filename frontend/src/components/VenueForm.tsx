@@ -28,25 +28,31 @@ const VenueForm: React.FC<VenueFormProps> = ({ initialData, onSave, onCancel }) 
   return (
     <form onSubmit={handleSubmit} className="needs-validation">
       {Object.keys(venueFields).map((fieldKey) => {
-        const field = fieldKey as keyof Venue;
-        const fieldMeta = venueFields[field];
-        return (
-          <div key={field} className="mb-3">
-            <label htmlFor={field} className="form-label">
-              {fieldMeta.label}
-            </label>
-            <input
-              id={field}
-              type={fieldMeta.type}
-              name={field}
-              className="form-control"
-              value={formData[field] || ''}
-              onChange={handleInputChange}
-              required={fieldMeta.required}
-            />
-          </div>
-        );
-      })}
+    const field = fieldKey as keyof Venue;
+    const fieldMeta = venueFields[field];
+
+    // Skip rendering specific fields
+    if (!fieldMeta || field === 'programmes' || field === 'isFavourite') {
+      return null;
+    }
+
+    return (
+      <div key={field} className="mb-3">
+        <label htmlFor={field} className="form-label">
+          {fieldMeta.label}
+        </label>
+        <input
+          id={field}
+          type={fieldMeta.type || 'text'} // Default to text if type is undefined
+          name={field}
+          className="form-control"
+          value={formData[field] || ''} // Ensure controlled input
+          onChange={handleInputChange}
+          required={fieldMeta.required || false}
+        />
+      </div>
+    );
+  })}
       <div className="d-flex justify-content-end gap-2">
         <button type="submit" className="btn btn-success">
           Save

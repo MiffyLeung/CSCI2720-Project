@@ -89,7 +89,7 @@ const ProgrammeInfo: React.FC<ProgrammeInfoProps> = ({ programme, onClose }) => 
               )}
               <div className="d-flex justify-content-start mt-3">
                 <Link to={`/programme/${programme.event_id}`}>
-                  <button className={`btn btn-${isDarkMode ? 'secondary' : 'primary'}`}>
+                  <button className={`btn btn-${isDarkMode ? 'secondary' : 'success'}`}>
                     View Full Details
                   </button>
                 </Link>

@@ -1,12 +1,11 @@
 // frontend/src/pages/MapViewPage.tsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import VenueMap from '../components/VenueMap';
 import Navbar from '../components/Navbar';
 import VenueInfo from '../components/VenueInfo';
 import { Venue } from '../types/Venue';
 import { useApi } from '../core/useApi'; // Centralized API handler
-import { useAuth } from '../core/AuthContext'; // Authentication handler
 
 /**
  * A page displaying a map with markers for upcoming programmes at various venues.
@@ -14,31 +13,34 @@ import { useAuth } from '../core/AuthContext'; // Authentication handler
  */
 const MapViewPage: React.FC = () => {
     const [venues, setVenues] = useState<Venue[]>([]); // State to hold venue data
-    const apiRequest = useApi(); // Use centralized API handler
-    const { isAuthenticated } = useAuth(); // Check authentication status
-    const [hasFetched, setHasFetched] = useState(false); // Prevent multiple fetches
-
+  const apiRequest = useApi(); // API handler
+  const hasFetched = useRef(false); // Track whether data has already been fetched
+  const abortController = useRef<AbortController | null>(null); // AbortController for fetch requests
+ 
     useEffect(() => {
         /**
          * Fetches venue data for the map.
          * Ensures data is only fetched once and user is authenticated.
          */
         const fetchVenues = async () => {
-            if (!isAuthenticated || hasFetched) return;
-
-            console.log('Fetching venues data...');
+            if (hasFetched.current) return; // Prevent repeated fetch
+            hasFetched.current = true; // Mark as fetched
+        
+            if (abortController.current) {
+              abortController.current.abort(); // Abort any existing requests
+            }
+            abortController.current = new AbortController();
+        
             try {
                 const data: Venue[] = await apiRequest('/venues/forMap');
-                console.log('Fetched venues:', data);
                 setVenues(data); // Update state with fetched venue data
-                setHasFetched(true); // Mark as fetched
             } catch (error) {
                 console.error('Error fetching venues:', error);
             }
         };
 
         fetchVenues();
-    }, [isAuthenticated, apiRequest, hasFetched]);
+    }, [apiRequest, hasFetched]);
 
     /**
      * Handles click events on a map marker.
@@ -57,23 +59,25 @@ const MapViewPage: React.FC = () => {
                 <div className="map-container">
                     <VenueMap
                         venues={venues.map((venue) => ({
-                            id: venue.id,
+                            venue_id: venue.venue_id,
                             name: venue.name,
                             latitude: venue.latitude,
                             longitude: venue.longitude,
+                            programmes: venue.programmes,
+                            isFavourite: venue.isFavourite,
                         }))} // Transform venues data for the map component
                         onMarkerClick={(id: string) => {
-                            const venue = venues.find((p) => p.id === id);
+                            const venue = venues.find((p) => p.venue_id === id);
                             if (venue) handleMarkerClick(venue); // Handle marker click events
                         }}
                         onMarkerHover={(id: string) => {
-                            const venue = venues.find((p) => p.id === id);
+                            const venue = venues.find((p) => p.venue_id === id);
                             if (venue) {
                                 console.log(`Hovered on: ${venue.name}`); // Log hover events for debugging
                             }
                         }}
                         renderPopup={(id: string) => {
-                            const venue = venues.find((p) => p.id === id);
+                            const venue = venues.find((p) => p.venue_id === id);
                             return venue ? (
                                 <VenueInfo venue={venue} onClose={() => console.log('Popup closed')} />
                             ) : null; // Render popup information for the hovered venue

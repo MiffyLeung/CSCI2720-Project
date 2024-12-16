@@ -49,7 +49,7 @@ export const programmeFields: Record<keyof Programme, ProgrammeField> = {
 export const getDefaultProgramme = (): Programme => ({
   event_id: '',
   title: '',
-  venue: { id: '', name: '', latitude: 0, longitude: 0 },
+  venue: { venue_id: '', name: '', latitude: 0, longitude: 0, programmes:[], isFavourite: false },
   presenter: '',
   type: '',
   dateline: '',

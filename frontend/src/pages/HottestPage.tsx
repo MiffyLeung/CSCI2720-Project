@@ -1,6 +1,6 @@
 // frontend/src/pages/HottestPage.tsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import { Programme } from '../types/Programme';
 import ProgrammeList from '../components/ProgrammeList';
@@ -19,20 +19,26 @@ const HottestPage: React.FC = () => {
   const [filteredProgrammes, setFilteredProgrammes] = useState<Programme[]>([]); // Filtered data
   const [filterQuery, setFilterQuery] = useState<string>(''); // Current filter query
   const [sortFunction, setSortFunction] = useState<((a: Programme, b: Programme) => number) | null>(null); // Current sort function
-  const apiRequest = useApi();
-  const [hasFetched, setHasFetched] = useState(false);
-
+  const apiRequest = useApi(); // API handler
+  const hasFetched = useRef(false); // Track whether data has already been fetched
+  const abortController = useRef<AbortController | null>(null); // AbortController for fetch requests
+ 
   /**
    * Fetch programmes from the server once.
    */
   useEffect(() => {
     const fetchProgrammes = async () => {
-      if (hasFetched) return;
-
+      if (hasFetched.current) return; // Prevent repeated fetch
+      hasFetched.current = true; // Mark as fetched
+  
+      if (abortController.current) {
+        abortController.current.abort(); // Abort any existing requests
+      }
+      abortController.current = new AbortController();
+  
       try {
         const data: Programme[] = await apiRequest('/programmes');
         setProgrammes(data);
-        setHasFetched(true);
       } catch (error) {
         console.error('Error fetching programmes:', error);
       }

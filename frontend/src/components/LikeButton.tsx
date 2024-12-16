@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Toast from 'react-bootstrap/Toast';
-import Cookies from 'js-cookie'; // 用來操作 Cookie
+import Cookies from 'js-cookie'; // Used for managing cookies
 import { useApi } from '../core/useApi';
 
 /**
@@ -73,9 +73,10 @@ const LikeButton: React.FC<LikeButtonProps> = ({ programmeId, initialLikes }) =>
     if (cooldown) return; // Prevent multiple clicks during cooldown
 
     try {
-      const response = await apiRequest(
-        `/programme/${programmeId}/like`,
-        { method: 'POST' },
+      await apiRequest(
+        `/programme/${programmeId}/like`, // Endpoint
+        { method: 'POST' }, // Request options
+        undefined, // Abort signal (not needed here)
         (data) => {
           setLikes(data.likes); // Update the like count
           setToastConfig({ message: 'Liked successfully! 🎉', variant: 'success' });
@@ -84,11 +85,11 @@ const LikeButton: React.FC<LikeButtonProps> = ({ programmeId, initialLikes }) =>
           const cooldownEnd = Math.floor(Date.now() / 1000) + newCooldown;
 
           // Save the cooldown expiration time in cookies
-          Cookies.set(`like_cooldown_${programmeId}`, cooldownEnd.toString(), { expires: 1 / (24 * 60 * 60) * 30 }); // Expire in 30 seconds
+          Cookies.set(`like_cooldown_${programmeId}`, cooldownEnd.toString(), { expires: 1 / (24 * 60 * 2) }); // 30 seconds
           setCooldown(newCooldown); // Set cooldown in state
         },
         (error) => {
-          if (error.cooldown) {
+          if (error?.cooldown) {
             setCooldown(error.cooldown);
             setToastConfig({
               message: `Please wait ${error.cooldown}s before liking again.`,
@@ -131,8 +132,7 @@ const LikeButton: React.FC<LikeButtonProps> = ({ programmeId, initialLikes }) =>
             left: '50%',
             transform: 'translate(-50%, -50%)',
             zIndex: 1050,
-            backgroundColor:
-              toastConfig.variant === 'success' ? '#d4edda' : '#f8d7da',
+            backgroundColor: toastConfig.variant === 'success' ? '#d4edda' : '#f8d7da',
             color: toastConfig.variant === 'success' ? '#155724' : '#721c24',
             border: `1px solid ${
               toastConfig.variant === 'success' ? '#c3e6cb' : '#f5c6cb'

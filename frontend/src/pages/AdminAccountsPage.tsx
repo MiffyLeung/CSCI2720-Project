@@ -1,6 +1,6 @@
 // frontend/src/pages/AdminAccountsPage.tsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import { Account } from '../types/Account';
 import AccountList from '../components/AccountList';
@@ -8,7 +8,6 @@ import AccountForm from '../components/AccountForm';
 import AccountFilter from '../components/AccountFilter';
 import AccountSort from '../components/AccountSort';
 import { useApi } from '../core/useApi'; // Centralized API request handler
-import { useAuth } from '../core/AuthContext'; // Authentication handling
 
 /**
  * A page to manage user accounts. Allows administrators to view,
@@ -19,9 +18,9 @@ const AdminAccountsPage: React.FC = () => {
     const [filteredAccounts, setFilteredAccounts] = useState<Account[]>([]); // State to hold filtered accounts
     const [isModalOpen, setIsModalOpen] = useState(false); // Modal state for adding/editing accounts
     const [editingAccount, setEditingAccount] = useState<Account | undefined>(undefined); // Account being edited
-    const apiRequest = useApi(); // Centralized API handler
-    const { isAuthenticated } = useAuth(); // Check authentication state
-    const [hasFetched, setHasFetched] = useState(false); // Prevent duplicate fetches
+    const apiRequest = useApi(); // API handler
+    const hasFetched = useRef(false); // Track whether data has already been fetched
+    const abortController = useRef<AbortController | null>(null); // AbortController for fetch requests
 
     useEffect(() => {
         /**
@@ -29,7 +28,13 @@ const AdminAccountsPage: React.FC = () => {
          * Ensures the user is authenticated and data is only fetched once.
          */
         const fetchAccounts = async () => {
-            if (!isAuthenticated || hasFetched) return;
+            if (hasFetched.current) return; // Prevent repeated fetch
+            hasFetched.current = true; // Mark as fetched
+
+            if (abortController.current) {
+                abortController.current.abort(); // Abort any existing requests
+            }
+            abortController.current = new AbortController();
 
             console.log('Fetching accounts...');
             try {
@@ -37,14 +42,13 @@ const AdminAccountsPage: React.FC = () => {
                 console.log('Fetched accounts:', data);
                 setAccounts(data); // Update accounts state
                 setFilteredAccounts(data); // Initialize filtered accounts
-                setHasFetched(true); // Mark as fetched
             } catch (error) {
                 console.error('Error fetching accounts:', error);
             }
         };
 
         fetchAccounts();
-    }, [isAuthenticated, apiRequest, hasFetched]);
+    }, [apiRequest, hasFetched]);
 
     /**
      * Open the modal to add or edit an account.

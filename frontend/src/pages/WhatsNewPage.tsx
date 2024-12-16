@@ -1,11 +1,10 @@
 // frontend/src/pages/WhatsNewPage.tsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Navbar from '../components/Navbar';
+import { useNavigate } from 'react-router-dom';
 import { Programme } from '../types/Programme';
 import { useApi } from '../core/useApi'; // Centralized API handler
-import { useAuth } from '../core/AuthContext'; // Authentication handler
-import { useNavigate } from 'react-router-dom';
 import LikeButton from '../components/LikeButton';
 import './WhatsNewPage.css';
 
@@ -14,16 +13,21 @@ import './WhatsNewPage.css';
  * Fetches programmes from the backend and renders them in a responsive grid layout.
  */
 const WhatsNewPage: React.FC = () => {
-    const [programmes, setProgrammes] = useState<Programme[]>([]);
-    const apiRequest = useApi();
-    const { isAuthenticated } = useAuth();
-    const [hasFetched, setHasFetched] = useState(false);
     const navigate = useNavigate();
+    const apiRequest = useApi(); // API handler
+    const hasFetched = useRef(false); // Track whether data has already been fetched
+    const abortController = useRef<AbortController | null>(null); // AbortController for fetch requests
+    const [programmes, setProgrammes] = useState<Programme[]>([]);
 
     useEffect(() => {
         const fetchProgrammes = async () => {
-            if (!isAuthenticated || hasFetched) return;
-            setHasFetched(true);
+            if (hasFetched.current) return; // Prevent repeated fetch
+            hasFetched.current = true; // Mark as fetched
+
+            if (abortController.current) {
+                abortController.current.abort(); // Abort any existing requests
+            }
+            abortController.current = new AbortController();
 
             try {
                 const data: Programme[] = await apiRequest('/programmes?sort=releaseDate_desc');
@@ -33,8 +37,8 @@ const WhatsNewPage: React.FC = () => {
             }
         };
 
-        if (!hasFetched) fetchProgrammes();
-    }, [isAuthenticated, apiRequest, hasFetched]);
+        fetchProgrammes();
+    }, [apiRequest, hasFetched]);
 
     /**
      * Converts newline characters to <br /> tags.

@@ -5,11 +5,12 @@ import { Request, Response } from 'express';
  * Venue interface matching the backend schema.
  */
 export interface Venue {
-  id: string; // Unique identifier for the venue
+  venue_id: string; // Unique identifier for the venue
   name: string; // Name of the venue
   latitude: number; // Latitude of the venue
   longitude: number; // Longitude of the venue
-  programmes?: string[]; // Optional array of Programme IDs
+  programmes?: string[]; // Relative Programme IDs
+  isFavourite: boolean;  // Bookmarked
 }
 
 /**
@@ -23,26 +24,26 @@ export interface BackendVenue {
     longitude: number;
   };
   programmes?: string[];
+  isFavourite?: boolean; 
 }
 
 /**
  * Structure for venue form fields.
  */
 export interface VenueField {
-  label: string; // Field label for the form
-  type: 'text' | 'number'; // Input type
+  label?: string; // Field label for the form
+  type?: 'text' | 'number'; // Input type
   required?: boolean; // Is the field required
 }
 
 /**
  * Metadata mapping for form fields.
  */
-export const venueFields: Record<keyof Venue, VenueField> = {
-  id: { label: 'ID', type: 'text', required: true },
+export const venueFields: Record<keyof Omit<Venue, 'programmes' | 'isFavourite'>, VenueField> & Partial<Record<'programmes' | 'isFavourite', VenueField>> = {
+  venue_id: { label: 'ID', type: 'text', required: true },
   name: { label: 'Name', type: 'text', required: true },
-  latitude: { label: 'Latitude', type: 'number'},
+  latitude: { label: 'Latitude', type: 'number' },
   longitude: { label: 'Longitude', type: 'number' },
-  programmes: { label: 'Programmes', type: 'text' }, // Programmes will be a comma-separated list
 };
 
 /**
@@ -73,11 +74,12 @@ export const deleteVenueById = (req: Request, res: Response): Response => {
  * @returns Transformed Venue object.
  */
 export const transformVenueFromBackend = (backendVenue: BackendVenue): Venue => ({
-  id: backendVenue.venue_id,
+  venue_id: backendVenue.venue_id,
   name: backendVenue.name,
   latitude: backendVenue.coordinates?.latitude || 0,
   longitude: backendVenue.coordinates?.longitude || 0,
   programmes: backendVenue.programmes || [],
+  isFavourite: false
 });
 
 /**
@@ -94,11 +96,12 @@ export const transformVenuesListFromBackend = (backendVenues: BackendVenue[]): V
  * @returns Default Venue object.
  */
 export const getDefaultVenue = (): Venue => ({
-  id: '',
+  venue_id: '',
   name: '',
   latitude: 0,
   longitude: 0,
   programmes: [],
+  isFavourite: false
 });
 
 /**

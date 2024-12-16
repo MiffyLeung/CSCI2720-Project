@@ -37,9 +37,9 @@ const LoginPage: React.FC = () => {
 
             console.log('Login successful:', data);
 
-            // Update authentication state and navigate to the recent programmes page
+            // Update authentication state and navigate to the home page
             updateAuth(data.token, data.username, data.role);
-            navigate('/recent');
+            navigate('/');
         } catch (err) {
             // Handle API errors
             console.error('Login error:', err);

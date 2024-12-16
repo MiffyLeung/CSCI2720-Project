@@ -10,16 +10,16 @@ const hashPassword = require('../middleware/hashPassword');
  * - username: Unique identifier for the account (required).
  * - password: Hashed password for authentication (required).
  * - role: Role of the account (e.g., 'admin', 'user') (required).
- * - favourites: Array of references to Programme documents (optional).
- *   - Stores the list of programmes bookmarked by the user.
- *   - References the Programme collection via ObjectId.
+ * - favourites: Array of references to venue documents (optional).
+ *   - Stores the list of venue bookmarked by the user.
+ *   - References the Venue collection via ObjectId.
  */
 
 const AccountSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, required: true },
-    favourites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Programme' }],
+    favourites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'venue' }],
 });
 
 

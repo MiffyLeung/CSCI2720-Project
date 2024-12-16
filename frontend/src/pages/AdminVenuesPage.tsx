@@ -1,13 +1,12 @@
 // frontend/src/pages/AdminVenuesPage.tsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import { Venue } from '../types/Venue';
 import VenueList from '../components/VenueList';
 import VenueForm from '../components/VenueForm';
-import VenueFilter from '../components/VenueFilter';
+import VenueSearch from '../components/VenueSearch';
 import { useApi } from '../core/useApi'; // Centralized API request handler
-import { useAuth } from '../core/AuthContext'; // Authentication handling
 
 /**
  * AdminVenuesPage provides functionality to manage venues.
@@ -19,31 +18,35 @@ const AdminVenuesPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false); // Modal state for adding/editing venues
     const [editingVenue, setEditingVenue] = useState<Venue | undefined>(undefined); // Venue being edited
     const apiRequest = useApi(); // Centralized API handler
-    const { isAuthenticated } = useAuth(); // Check user authentication
-    const [hasFetched, setHasFetched] = useState(false); // Prevent duplicate fetches
+    const hasFetched = useRef(false); // Track whether data has already been fetched
+    const abortController = useRef<AbortController | null>(null);
 
+    /**
+     * Fetch venues from the API.
+     * Ensures the user is authenticated and data is only fetched once.
+     */
     useEffect(() => {
-        /**
-         * Fetch venues from the API.
-         * Ensures the user is authenticated and data is only fetched once.
-         */
         const fetchVenues = async () => {
-            if (!isAuthenticated || hasFetched) return;
+            if (hasFetched.current) return; // Prevent repeated fetch
+            hasFetched.current = true; // Mark as fetched
 
-            console.log('Fetching venues...');
+            if (abortController.current) abortController.current.abort();
+            abortController.current = new AbortController();
+
             try {
                 const data: Venue[] = await apiRequest('/venues');
                 console.log('Fetched venues:', data);
                 setVenues(data); // Update state with fetched venues
                 setFilteredVenues(data); // Initialize filtered venues
-                setHasFetched(true); // Mark data as fetched
             } catch (error) {
                 console.error('Error fetching venues:', error);
             }
         };
 
         fetchVenues();
-    }, [isAuthenticated, apiRequest, hasFetched]);
+
+        return () => abortController.current?.abort();
+    }, [apiRequest]);
 
     /**
      * Open the modal for adding or editing a venue.
@@ -68,7 +71,7 @@ const AdminVenuesPage: React.FC = () => {
      */
     const handleSave = async (data: Venue) => {
         const method = editingVenue ? 'PUT' : 'POST';
-        const endpoint = editingVenue ? `/venues/${editingVenue.id}` : '/venues';
+        const endpoint = editingVenue ? `/venues/${editingVenue.venue_id}` : '/venues';
 
         try {
             const savedVenue: Venue = await apiRequest(endpoint, {
@@ -81,12 +84,12 @@ const AdminVenuesPage: React.FC = () => {
 
             setVenues((prevVenues) =>
                 editingVenue
-                    ? prevVenues.map((v) => (v.id === editingVenue.id ? savedVenue : v))
+                    ? prevVenues.map((v) => (v.venue_id === editingVenue.venue_id ? savedVenue : v))
                     : [...prevVenues, savedVenue]
             );
             setFilteredVenues((prevVenues) =>
                 editingVenue
-                    ? prevVenues.map((v) => (v.id === editingVenue.id ? savedVenue : v))
+                    ? prevVenues.map((v) => (v.venue_id === editingVenue.venue_id ? savedVenue : v))
                     : [...prevVenues, savedVenue]
             );
         } catch (error) {
@@ -122,7 +125,7 @@ const AdminVenuesPage: React.FC = () => {
                     Add Venue
                 </button>
                 <div className="mb-4">
-                    <VenueFilter onFilterChange={handleFilterChange} />
+                    <VenueSearch onSearch={handleFilterChange} />
                 </div>
                 <VenueList venues={filteredVenues} onEdit={openModal} />
                 {isModalOpen && (

@@ -7,44 +7,48 @@ const REACT_APP_API = process.env.REACT_APP_API || 'http://localhost:5000/api';
 
 /**
  * Custom hook to handle API requests with token-based authentication.
- * Provides error handling and supports optional callback execution after requests.
- * @returns A function to perform API requests.
+ * Supports AbortController for request cancellation, error handling, and optional callbacks.
+ *
+ * @returns {Function} A function to perform API requests with enhanced control.
  */
 export const useApi = () => {
     const { token, resetAuth } = useAuth();
     const navigate = useNavigate();
 
     /**
-     * Handles API requests with token-based authentication, error handling, and optional callbacks.
-     * @param endpoint - The API endpoint to call.
-     * @param options - Additional fetch options (e.g., method, headers, body).
-     * @param successCallback - Optional callback for handling a successful response.
-     * @param errorCallback - Optional callback for handling errors.
-     * @returns The parsed response data from the API.
-     * @throws Will throw an error if the response is not OK or if an unknown error occurs.
+     * Handles API requests with token authentication, error handling, and callbacks.
+     * @param {string} endpoint - The API endpoint.
+     * @param {RequestInit} options - Additional fetch options (e.g., method, headers, body).
+     * @param {AbortSignal} signal - Optional AbortController signal for request cancellation.
+     * @param {(responseData: any) => void} [successCallback] - Optional success callback.
+     * @param {(error: any) => void} [errorCallback] - Optional error callback.
+     * @returns {Promise<any>} The parsed response data.
+     * @throws Will throw an error if request fails or is aborted.
      */
-    const apiRequest = async (
-        endpoint: string,
-        options: RequestInit = {},
-        successCallback?: (responseData: any) => void,
-        errorCallback?: (error: any) => void
-    ): Promise<any> => {
-        const headers: Record<string, string> = {
-            'Content-Type': 'application/json',
-            ...(options.headers as Record<string, string>), // Ensure the headers are of the correct type
-        };
+const apiRequest = async (
+    endpoint: string,
+    options: RequestInit = {},
+    signal?: AbortSignal, // Ensure this is the third parameter
+    successCallback?: (responseData: any) => void,
+    errorCallback?: (error: any) => void
+): Promise<any> => {
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(options.headers as Record<string, string>),
+    };
 
-        if (token && endpoint !== '/login') {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
+    if (token && endpoint !== '/login') {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
 
-        const requestOptions: RequestInit = {
-            ...options,
-            headers,
-        };
+    const requestOptions: RequestInit = {
+        ...options,
+        headers,
+        signal, // Attach AbortController signal
+    };
 
-        try {
-            const response = await fetch(`${REACT_APP_API}${endpoint}`, requestOptions);
+    try {
+        const response = await fetch(`${REACT_APP_API}${endpoint}`, requestOptions);
             let data;
 
             try {
@@ -54,50 +58,61 @@ export const useApi = () => {
                 data = null; // Default to null if parsing fails
             }
 
-            if (!response.ok) {
+        if (!response.ok) {
                 const error = {
                     status: response.status,
                     message: data?.message || 'Request failed.',
-                    data: data?.data || null, 
+                    data: data?.data || null,
                 };
-                // Handle known error codes
-                switch (response.status) {
-                    case 400:
-                        alert('Unauthorized: No token provided. Please log in.');
-                        resetAuth();
-                        navigate('/login');
-                        break;
-                    case 401:
-                        alert('Authentication failed. Please log in again.');
-                        resetAuth();
-                        navigate('/login');
-                        break;
-                    case 410:
-                        alert('Account or Password Incorrect. Please contact support.');
-                        resetAuth();
-                        navigate('/login');
-                        break;
-                    case 423:
-                        alert('Your account has been banned.');
-                        resetAuth();
-                        navigate('/login');
-                        break;
-                    case 403:
-                        alert('You do not have sufficient permissions.');
-                        navigate('/');
-                        break;
-                    default:
-                        if (errorCallback) errorCallback(error);
-                }
-                // throw new Error(data.message || 'Request failed.');
-            }
+            handleError(response.status, error, errorCallback);
+            throw error;
+        }
 
-            if (successCallback) successCallback(data.data);
-            return data.data;
-        } catch (error) {
+        if (successCallback) successCallback(data.data);
+        return data.data;
+    } catch (error: any) {
+        if (error.name === 'AbortError') {
+            console.log('Request aborted.');
+        } else {
             console.error('API Request Error:', error);
             if (errorCallback) errorCallback(error);
-            throw error;
+        }
+        throw error;
+    }
+    };
+
+    /**
+     * Handles common error codes and invokes appropriate callbacks.
+     * @param {number} status - HTTP status code.
+     * @param {any} error - Error object.
+     * @param {(error: any) => void} [errorCallback] - Optional error callback.
+     */
+    const handleError = (status: number, error: any, errorCallback?: (error: any) => void) => {
+        switch (status) {
+            case 400:
+                alert('Bad Request. Please try again.');
+                break;
+            case 401:
+                alert('Unauthorized. Please log in again.');
+                resetAuth();
+                navigate('/login');
+                break;
+            case 403:
+                alert('Forbidden: Insufficient permissions.');
+                navigate('/');
+                break;
+            case 410:
+                alert('Invalid account or password.');
+                resetAuth();
+                navigate('/login');
+                break;
+            case 423:
+                alert('Your account has been banned.');
+                resetAuth();
+                navigate('/login');
+                break;
+            default:
+                if (errorCallback) errorCallback(error);
         }
     };
 

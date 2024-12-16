@@ -1,6 +1,6 @@
 // frontend/src/pages/AdminProgrammesPage.tsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import { Programme } from '../types/Programme';
 import ProgrammeList from '../components/ProgrammeList';
@@ -9,7 +9,6 @@ import ProgrammeCreateForm from '../components/ProgrammeCreateForm';
 import ProgrammeFilter from '../components/ProgrammeFilter';
 import ProgrammeSort from '../components/ProgrammeSort';
 import { useApi } from '../core/useApi';
-import { useAuth } from '../core/AuthContext';
 
 /**
  * AdminProgrammesPage is used to manage programmes.
@@ -26,21 +25,23 @@ const AdminProgrammesPage: React.FC = () => {
   const [sortFunction, setSortFunction] = useState<(a: Programme, b: Programme) => number>(
     () => (a: Programme, b: Programme): number => (b.submitdate || 0) - (a.submitdate || 0) // Default: Sort by submitdate descending
   ); // Current sort function
-  const apiRequest = useApi(); // API request hook
-  const { isAuthenticated } = useAuth(); // Authentication context
-  const [hasFetched, setHasFetched] = useState(false); // Ensures data is fetched only once
-
+  const apiRequest = useApi(); // API handler
+  const hasFetched = useRef(false); // Track whether data has already been fetched
+  const abortController = useRef<AbortController | null>(null); // AbortController for fetch requests
+ 
   /**
    * Fetches the list of programmes from the server.
    */
   useEffect(() => {
     const fetchProgrammes = async () => {
-      if (hasFetched) return;
-
-      if (!isAuthenticated) {
-        console.error('User is not authenticated');
-        return;
+      if (hasFetched.current) return; // Prevent repeated fetch
+      hasFetched.current = true; // Mark as fetched
+  
+      if (abortController.current) {
+        abortController.current.abort(); // Abort any existing requests
       }
+      abortController.current = new AbortController();
+  
 
       try {
         console.log('Fetching programmes...');
@@ -51,14 +52,13 @@ const AdminProgrammesPage: React.FC = () => {
         const sortedData = [...data].sort((a, b) => (b.submitdate || 0) - (a.submitdate || 0));
         setFilteredProgrammes(sortedData);
 
-        setHasFetched(true);
       } catch (error) {
         console.error('Error fetching programmes:', error);
       }
     };
 
     fetchProgrammes();
-  }, [isAuthenticated, apiRequest, hasFetched]);
+  }, [apiRequest, hasFetched]);
 
   /**
    * Opens the modal for adding or editing a programme.
