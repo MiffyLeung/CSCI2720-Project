@@ -16,7 +16,7 @@ const ProgrammeFilter: React.FC<ProgrammeFilterProps> = ({ onFilterChange }) => 
   };
 
   return (
-    <div className="mb-3">
+    <div className="me-4 d-flex flex-grow-1">
       <label htmlFor="programme-filter" className="form-label">
         Filter Programmes:
       </label>

@@ -2,7 +2,6 @@
 
 import { Venue } from './Venue';
 import { Comment } from './Comment';
-import { Language } from './Language';
 
 export interface Programme {
   event_id: string;
@@ -10,7 +9,6 @@ export interface Programme {
   venue: Venue;
   presenter: string;
   type?: string;
-  languages: Language[];
   dateline: string;
   duration: string;
   price: string;
@@ -18,6 +16,7 @@ export interface Programme {
   remarks?: string;
   enquiry?: string;
   eventUrl?: string;
+  submitdate?: number; // Newly added field
   likes: number;
   comments: Comment[];
 }
@@ -35,7 +34,6 @@ export const programmeFields: Record<keyof Programme, ProgrammeField> = {
   venue: { label: 'Venue', type: 'text', required: true },
   presenter: { label: 'Presenter', type: 'text', required: true },
   type: { label: 'Type', type: 'text' },
-  languages: { label: 'Languages', type: 'multi-select', options: ['English', 'Chinese', 'Japanese'] },
   dateline: { label: 'Dateline', type: 'text', required: true },
   duration: { label: 'Duration', type: 'text', required: true },
   price: { label: 'Price', type: 'text', required: true },
@@ -43,6 +41,7 @@ export const programmeFields: Record<keyof Programme, ProgrammeField> = {
   remarks: { label: 'Remarks', type: 'textarea' },
   enquiry: { label: 'Enquiry', type: 'text' },
   eventUrl: { label: 'Event URL', type: 'text' },
+  submitdate: { label: 'Submit Date', type: 'number' }, // Newly added field
   likes: { label: 'Likes', type: 'number' },
   comments: { label: 'Comments', type: 'textarea' },
 };
@@ -53,7 +52,6 @@ export const getDefaultProgramme = (): Programme => ({
   venue: { id: '', name: '', latitude: 0, longitude: 0 },
   presenter: '',
   type: '',
-  languages: [],
   dateline: '',
   duration: '',
   price: '',
@@ -61,6 +59,7 @@ export const getDefaultProgramme = (): Programme => ({
   remarks: '',
   enquiry: '',
   eventUrl: '',
+  submitdate: 0, // Default value for submitdate
   likes: 0,
   comments: [],
 });

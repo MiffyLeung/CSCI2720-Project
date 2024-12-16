@@ -7,18 +7,22 @@ import ProgrammeList from '../components/ProgrammeList';
 import ProgrammeEditForm from '../components/ProgrammeEditForm';
 import ProgrammeCreateForm from '../components/ProgrammeCreateForm';
 import ProgrammeFilter from '../components/ProgrammeFilter';
+import ProgrammeSort from '../components/ProgrammeSort';
 import { useApi } from '../core/useApi';
 import { useAuth } from '../core/AuthContext';
 
 /**
  * AdminProgrammesPage is used to manage programmes.
- * Admins can view, create, edit, delete, and filter programmes.
+ * Admins can view, create, edit, delete, filter, and sort programmes.
+ *
+ * @component
  */
 const AdminProgrammesPage: React.FC = () => {
   const [programmes, setProgrammes] = useState<Programme[]>([]); // List of all programmes
   const [filteredProgrammes, setFilteredProgrammes] = useState<Programme[]>([]); // Filtered programmes
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility state
   const [editingProgramme, setEditingProgramme] = useState<Programme | undefined>(undefined); // Programme for editing
+  const [filterQuery, setFilterQuery] = useState<string>(''); // Search query
   const apiRequest = useApi(); // API request hook
   const { isAuthenticated } = useAuth(); // Authentication context
   const [hasFetched, setHasFetched] = useState(false); // Ensures data is fetched only once
@@ -37,11 +41,10 @@ const AdminProgrammesPage: React.FC = () => {
 
       try {
         console.log('Fetching programmes...');
-        await apiRequest('/programmes', {}, (data: Programme[]) => {
-          setProgrammes(data);
-          setFilteredProgrammes(data); // Set both full and filtered programmes
-          setHasFetched(true);
-        });
+        const data: Programme[] = await apiRequest('/programmes');
+        setProgrammes(data);
+        setFilteredProgrammes(data); // Initialize filtered programmes
+        setHasFetched(true);
       } catch (error) {
         console.error('Error fetching programmes:', error);
       }
@@ -78,38 +81,33 @@ const AdminProgrammesPage: React.FC = () => {
       : '/programmes';
 
     try {
-      await apiRequest(
-        endpoint,
-        {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        },
-        (savedProgramme: Programme) => {
-          alert(
-            editingProgramme
-              ? 'Programme updated successfully!'
-              : 'Programme created successfully!'
-          );
-          closeModal();
+      const savedProgramme: Programme = await apiRequest(endpoint, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
 
-          // Update the programmes state
-          setProgrammes((prevProgrammes) =>
-            editingProgramme
-              ? prevProgrammes.map((p) =>
-                  p.event_id === editingProgramme.event_id ? savedProgramme : p
-                )
-              : [...prevProgrammes, savedProgramme]
-          );
+      alert(
+        editingProgramme
+          ? 'Programme updated successfully!'
+          : 'Programme created successfully!'
+      );
+      closeModal();
 
-          setFilteredProgrammes((prevProgrammes) =>
-            editingProgramme
-              ? prevProgrammes.map((p) =>
-                  p.event_id === editingProgramme.event_id ? savedProgramme : p
-                )
-              : [...prevProgrammes, savedProgramme]
-          );
-        }
+      setProgrammes((prevProgrammes) =>
+        editingProgramme
+          ? prevProgrammes.map((p) =>
+              p.event_id === editingProgramme.event_id ? savedProgramme : p
+            )
+          : [...prevProgrammes, savedProgramme]
+      );
+
+      setFilteredProgrammes((prevProgrammes) =>
+        editingProgramme
+          ? prevProgrammes.map((p) =>
+              p.event_id === editingProgramme.event_id ? savedProgramme : p
+            )
+          : [...prevProgrammes, savedProgramme]
       );
     } catch (error) {
       console.error('Error saving programme:', error);
@@ -125,18 +123,14 @@ const AdminProgrammesPage: React.FC = () => {
     if (!window.confirm(`Are you sure you want to delete "${programme.title}"?`)) return;
 
     try {
-      await apiRequest(
-        `/programme/${programme.event_id}`,
-        { method: 'DELETE' },
-        () => {
-          alert('Programme deleted successfully!');
-          setProgrammes((prev) =>
-            prev.filter((p) => p.event_id !== programme.event_id)
-          );
-          setFilteredProgrammes((prev) =>
-            prev.filter((p) => p.event_id !== programme.event_id)
-          );
-        }
+      await apiRequest(`/programme/${programme.event_id}`, { method: 'DELETE' });
+
+      alert('Programme deleted successfully!');
+      setProgrammes((prev) =>
+        prev.filter((p) => p.event_id !== programme.event_id)
+      );
+      setFilteredProgrammes((prev) =>
+        prev.filter((p) => p.event_id !== programme.event_id)
       );
     } catch (error) {
       console.error('Error deleting programme:', error);
@@ -145,22 +139,29 @@ const AdminProgrammesPage: React.FC = () => {
   };
 
   /**
-   * Handles filtering programmes based on a search query.
-   * @param query The search string used to filter programmes.
+   * Filters programmes based on the query and updates the filtered list.
+   * @param query The search query.
    */
-  const handleFilterChange = async (query: string) => {
-    if (!query) {
-      setFilteredProgrammes(programmes);
-      return;
-    }
+  const handleFilterChange = (query: string) => {
+    setFilterQuery(query);
 
-    try {
-      await apiRequest(`/programmes?search=${query}`, {}, (data: Programme[]) => {
-        setFilteredProgrammes(data);
-      });
-    } catch (error) {
-      console.error('Error filtering programmes:', error);
-    }
+    const filtered = programmes.filter(
+      (programme) =>
+        programme.title.toLowerCase().includes(query.toLowerCase()) ||
+        programme.presenter.toLowerCase().includes(query.toLowerCase()) ||
+        programme.venue.name.toLowerCase().includes(query.toLowerCase())
+    );
+
+    setFilteredProgrammes(filtered);
+  };
+
+  /**
+   * Handles sorting of programmes using a sort function.
+   * @param {(a: Programme, b: Programme) => number} sortFunction - The sort function.
+   */
+  const handleSortChange = (sortFunction: (a: Programme, b: Programme) => number) => {
+    const sortedData = [...filteredProgrammes].sort(sortFunction);
+    setFilteredProgrammes(sortedData);
   };
 
   return (
@@ -174,16 +175,17 @@ const AdminProgrammesPage: React.FC = () => {
           Add Programme
         </button>
 
-        {/* Programme Filter */}
-        <div className="mb-4">
+        {/* Programme Filter and Sort */}
+        <div className="d-flex justify-content-between mb-4">
           <ProgrammeFilter onFilterChange={handleFilterChange} />
+          <ProgrammeSort onSortChange={handleSortChange} />
         </div>
 
         {/* Programme List */}
         <ProgrammeList
           programmes={filteredProgrammes}
           onEdit={openModal}
-          onDelete={handleDelete} // Pass the delete handler
+          onDelete={handleDelete}
         />
 
         {/* Modal for Creating or Editing Programmes */}

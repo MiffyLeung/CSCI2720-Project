@@ -35,13 +35,12 @@ const ProgrammeSchema = new mongoose.Schema({
   description: { type: String }, // Detailed description
   presenter: { type: String }, // Name of the presenter
   type: { type: String }, // Programme type or category
-  languages: [{ type: String, required: true }], // Available languages
   remarks: { type: String }, // Additional remarks
   eventUrl: { type: String }, // Promotional URL
   enquiry: { type: String }, // Enquiry phone number
-  submitdate: { type: Date, required: true }, // Datetime when submitted
-  comment: [{ type: String }], // List of comments
+  submitdate: { type: Number, required: true }, // Datetime when submitted
   likes: { type: Number, default: 0, min: 0, required: true }, // Like count
+  comment: [{ type: String }], // List of comments
 });
 
 module.exports = mongoose.model('Programme', ProgrammeSchema);

@@ -87,17 +87,13 @@ const ProgrammeDetailsPage: React.FC = () => {
                 </div>
 
                 {/* Programme Details */}
-                <Card className="shadow-sm border-0 mb-4">
+                <Card className="shadow-sm border-0 mb-4" style={{background:'linear-gradient(135deg, #def8c4, #8be6c6)'}}>
                     <Card.Body>
                         <p>
                             <strong>Presenter:</strong> {programme.presenter || 'N/A'}
                         </p>
                         <p>
                             <strong>Type:</strong> {programme.type || 'N/A'}
-                        </p>
-                        <p>
-                            <strong>Languages:</strong>{' '}
-                            {programme.languages.join(', ') || 'N/A'}
                         </p>
                         <p>
                             <strong>Date:</strong> {programme.dateline || 'N/A'}

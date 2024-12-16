@@ -5,31 +5,29 @@ import Navbar from '../components/Navbar';
 import { Programme } from '../types/Programme';
 import { useApi } from '../core/useApi'; // Centralized API handler
 import { useAuth } from '../core/AuthContext'; // Authentication handler
+import { useNavigate } from 'react-router-dom';
+import LikeButton from '../components/LikeButton';
+import './WhatsNewPage.css';
 
 /**
  * A page to display the latest programmes sorted by release date.
- * Fetches programmes from the backend and renders them in a grid layout.
+ * Fetches programmes from the backend and renders them in a responsive grid layout.
  */
 const WhatsNewPage: React.FC = () => {
-    const [programmes, setProgrammes] = useState<Programme[]>([]); // State to hold programmes
-    const apiRequest = useApi(); // Use centralized API handler
-    const { isAuthenticated } = useAuth(); // Check authentication state
-    const [hasFetched, setHasFetched] = useState(false); // Prevent multiple fetches
+    const [programmes, setProgrammes] = useState<Programme[]>([]);
+    const apiRequest = useApi();
+    const { isAuthenticated } = useAuth();
+    const [hasFetched, setHasFetched] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
-        /**
-         * Fetch the latest programmes from the API.
-         * Only executes if the user is authenticated and data has not been fetched yet.
-         */
         const fetchProgrammes = async () => {
             if (!isAuthenticated || hasFetched) return;
-            setHasFetched(true); // Mark as fetched
+            setHasFetched(true);
 
-            console.log('Fetching latest programmes...');
             try {
                 const data: Programme[] = await apiRequest('/programmes?sort=releaseDate_desc');
-                console.log('Fetched programmes:', data);
-                setProgrammes(data); // Update state with fetched programmes
+                setProgrammes(data);
             } catch (error) {
                 console.error('Error fetching programmes:', error);
             }
@@ -38,22 +36,99 @@ const WhatsNewPage: React.FC = () => {
         if (!hasFetched) fetchProgrammes();
     }, [isAuthenticated, apiRequest, hasFetched]);
 
+    /**
+     * Converts newline characters to <br /> tags.
+     * @param {string} text - Text to convert.
+     * @returns {React.JSX.Element[]} - Converted text with <br /> tags.
+     */
+    const nl2br = (text: string): React.JSX.Element[] => {
+        return text.split('\n').map((line, index) => (
+            <React.Fragment key={index}>
+                {line}
+                <br />
+            </React.Fragment>
+        ));
+    };
+
+    /**
+     * Handles navigation to the ProgrammeDetailsPage.
+     * @param eventId - The event ID of the selected programme.
+     */
+    const handleCardClick = (eventId: string) => {
+        navigate(`/programme/${eventId}`);
+    };
+
     return (
         <div>
             <Navbar />
             <div className="container mt-5">
                 <h1 className="mb-4">What’s New</h1>
-                <div className="row">
+                <div className="row g-4">
                     {programmes.length > 0 ? (
                         programmes.map((programme) => (
-                            <div className="col-md-4 mb-4" key={programme.event_id}>
-                                <div className="card h-100">
+                            <div
+                                className="col-12 col-sm-6 col-lg-4 col-xxl-3"
+                                key={programme.event_id}
+                            >
+                                <div
+                                    className="card h-100 custom-card"
+                                    onClick={() => handleCardClick(programme.event_id)}
+                                >
                                     <div className="card-body">
-                                        <h5 className="card-title">{programme.title}</h5>
-                                        <p className="card-text">{programme.description}</p>
-                                        <p className="text-muted">
-                                            <strong>Release Date:</strong> {programme.dateline}
+                                        {/* Subject with 2-line truncation */}
+                                        <h5
+                                            className="card-title text-truncate-lines"
+                                            style={{
+                                                WebkitLineClamp: 2,
+                                                overflow: 'hidden',
+                                            }}
+                                        >
+                                            {programme.title}
+                                        </h5>
+
+                                        {/* Presenter */}
+                                        <p className="text-muted small mb-2">{programme.presenter}</p>
+
+                                        <hr />
+
+                                        {/* Description (max 8 lines) */}
+                                        <div
+                                            className="text-truncate-lines mb-3"
+                                            style={{
+                                                WebkitLineClamp: 8,
+                                                overflow: 'hidden',
+                                                WebkitBoxOrient: 'vertical',
+                                                display: '-webkit-box',
+                                            }}
+                                        >
+                                            {nl2br(programme.description || 'No description available')}
+                                        </div>
+
+                                        {/* Duration, Price with Labels */}
+                                        <p className="text-muted small mb-1">
+                                            <strong>Duration:</strong> {programme.duration || 'N/A'}
                                         </p>
+                                        <p className="text-muted small mb-2">
+                                            <strong>Price:</strong> {programme.price || 'N/A'}
+                                        </p>
+
+                                        {/* Date, Venue, and Like Button */}
+                                        <div className="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <p className="text-muted small mb-0">{programme.dateline}</p>
+                                                <p className="text-muted small">
+                                                    {programme.venue?.name || 'N/A'}
+                                                </p>
+                                            </div>
+                                            <div
+                                                onClick={(e) => e.stopPropagation()} // Prevent card click
+                                            >
+                                                <LikeButton
+                                                    programmeId={programme.event_id}
+                                                    initialLikes={programme.likes}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -117,7 +117,7 @@ const LikeButton: React.FC<LikeButtonProps> = ({ programmeId, initialLikes }) =>
           `(${cooldown}s)`
         ) : (
           <>
-            Like <span className="h5 text-dark fw-bold">{likes}</span> 👍
+            Like <span className="h4 text-dark fw-bold">{likes}</span>&nbsp;👍
           </>
         )}
       </button>

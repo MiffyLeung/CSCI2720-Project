@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LoginPage from './pages/LoginPage';
 import ErrorPage from './pages/ErrorPage';
 import WhatsNewPage from './pages/WhatsNewPage';
-import HotestPage from './pages/HotestPage';
+import HotestPage from './pages/HottestPage';
 import MapViewPage from './pages/MapViewPage';
 import MyFavoritesPage from './pages/MyFavoritesPage';
 import MyProfilePage from './pages/MyProfilePage';

@@ -245,23 +245,34 @@ const updateData = async () => {
         console.log('Fetching event data...');
         const eventXMLContent = await fetchXML(eventXMLUrl);
         const eventXML = await parseXML(eventXMLContent);
-        const programmes = eventXML.events.event.map(event => ({
-            event_id: event.$.id,
-            title: event.titlee[0],
-            venue_id: event.venueid[0], // Use venue_id for matching
-            dateline: event.predateE[0], // Original datetime range for display
-            duration: event.progtimee[0], // Duration of the programme
-            price: event.pricee[0], // Price information
-            description: event.desce[0], // Description of the programme
-            presenter: event.presenterorge[0], // Presenter or organizer
-            type: event.typee ? event.typee[0] : null, // Programme type
-            languages: event.languagee ? [event.languagee[0]] : [], // Languages available
-            remarks: event.remarkC ? event.remarkC[0] : null, // Additional remarks
-            eventUrl: event.tagenturle ? event.tagenturle[0] : null, // Promotional URL
-            enquiry: event.enquiry ? event.enquiry[0] : null, // Enquiry phone number
-            submitdate: new Date(), // Submission date
-        }));
-        
+        const programmes = eventXML.events.event.map(event => {
+            const rawSubmitDate = event.submitdate ? event.submitdate[0] : null;
+            let submitdate = null;
+
+            // Convert HK time (rawSubmitDate) to UNIX timestamp
+            if (rawSubmitDate) {
+                const hkDate = new Date(rawSubmitDate.replace(" ", "T") + "+08:00"); // Add timezone offset for HK
+                submitdate = Math.floor(hkDate.getTime() / 1000); // Convert to UNIX timestamp (in seconds)
+            }
+
+            return {
+                event_id: event.$.id,
+                title: event.titlee[0],
+                venue_id: event.venueid[0], // Use venue_id for matching
+                dateline: event.predateE[0], // Original datetime range for display
+                duration: event.progtimee[0], // Duration of the programme
+                price: event.pricee[0], // Price information
+                description: event.desce[0], // Description of the programme
+                presenter: event.presenterorge[0], // Presenter or organizer
+                type: event.cat2 ? event.cat2[0] : null, // Programme type
+                remarks: event.remarke ? event.remarke[0] : null, // Additional remarks
+                eventUrl: event.urle ? event.urle[0] : null, // Promotional URL
+                enquiry: event.enquiry ? event.enquiry[0] : null, // Enquiry phone number
+                submitdate: submitdate, // Converted submission date in UNIX timestamp
+            };
+        });
+
+
         await upsertProgrammes(programmes); // Upsert Programme data
 
         // Step 3: Update Venue's programmes Field

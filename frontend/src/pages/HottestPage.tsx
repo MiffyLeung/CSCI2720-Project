@@ -1,0 +1,90 @@
+// frontend/src/pages/HottestPage.tsx
+
+import React, { useEffect, useState } from 'react';
+import Navbar from '../components/Navbar';
+import { Programme } from '../types/Programme';
+import ProgrammeList from '../components/ProgrammeList';
+import ProgrammeFilter from '../components/ProgrammeFilter';
+import ProgrammeSort from '../components/ProgrammeSort';
+import { useApi } from '../core/useApi';
+
+/**
+ * HottestPage component to list programmes with filtering and sorting functionality.
+ *
+ * @component
+ * @example
+ * <HottestPage />
+ */
+const HottestPage: React.FC = () => {
+  const [programmes, setProgrammes] = useState<Programme[]>([]); // Full data
+  const [filteredProgrammes, setFilteredProgrammes] = useState<Programme[]>([]); // Filtered data
+  const [filterQuery, setFilterQuery] = useState<string>(''); // Current filter query
+  const [sortFunction, setSortFunction] = useState<((a: Programme, b: Programme) => number) | null>(null); // Current sort function
+  const apiRequest = useApi();
+  const [hasFetched, setHasFetched] = useState(false);
+
+  /**
+   * Fetch programmes from the server once.
+   */
+  useEffect(() => {
+    const fetchProgrammes = async () => {
+      if (hasFetched) return;
+
+      try {
+        const data: Programme[] = await apiRequest('/programmes');
+        setProgrammes(data);
+        setFilteredProgrammes(data); // Default filtered data
+        setHasFetched(true);
+      } catch (error) {
+        console.error('Error fetching programmes:', error);
+      }
+    };
+
+    fetchProgrammes();
+  }, [apiRequest, hasFetched]);
+
+  /**
+   * Applies filtering and sorting logic.
+   */
+  useEffect(() => {
+    let data = programmes;
+
+    // Apply filter
+    if (filterQuery) {
+      data = data.filter((programme) =>
+        programme.title.toLowerCase().includes(filterQuery.toLowerCase()) ||
+        programme.presenter.toLowerCase().includes(filterQuery.toLowerCase()) ||
+        programme.venue.name.toLowerCase().includes(filterQuery.toLowerCase())
+      );
+    }
+
+    // Apply sort
+    if (sortFunction) {
+      data = [...data].sort((a, b) => sortFunction(a, b) || 0); // Ensure valid comparison result
+    }
+
+    setFilteredProgrammes(data);
+  }, [programmes, filterQuery, sortFunction]);
+
+  return (
+    <div>
+      <Navbar />
+      <div className="container mt-5">
+        <h1 className="mb-4">Hottest Programmes</h1>
+
+        <div className="d-flex justify-content-between align-items-center">
+          <ProgrammeFilter
+            onFilterChange={(query) => setFilterQuery(query)}
+          />
+          <ProgrammeSort
+            onSortChange={(sortFn) => setSortFunction(() => sortFn)}
+          />
+        </div>
+
+        <ProgrammeList programmes={filteredProgrammes} />
+      </div>
+    </div>
+  );
+};
+
+export default HottestPage;
