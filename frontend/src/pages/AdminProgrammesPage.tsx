@@ -182,7 +182,7 @@ const AdminProgrammesPage: React.FC = () => {
         <h1 className="mb-4">Manage Programmes</h1>
 
         {/* Add Programme Button */}
-        <button className="btn btn-primary mb-4" onClick={() => openModal()}>
+        <button className="btn btn-success mb-4" onClick={() => openModal()}>
           Add Programme
         </button>
 

@@ -48,7 +48,7 @@ const VenueForm: React.FC<VenueFormProps> = ({ initialData, onSave, onCancel }) 
         );
       })}
       <div className="d-flex justify-content-end gap-2">
-        <button type="submit" className="btn btn-primary">
+        <button type="submit" className="btn btn-success">
           Save
         </button>
         <button type="button" className="btn btn-secondary" onClick={onCancel}>

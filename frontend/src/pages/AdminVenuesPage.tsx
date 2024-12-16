@@ -118,7 +118,7 @@ const AdminVenuesPage: React.FC = () => {
             <Navbar />
             <div className="container mt-5">
                 <h1 className="mb-4">Manage Venues</h1>
-                <button className="btn btn-primary mb-4" onClick={() => openModal()}>
+                <button className="btn btn-success mb-4" onClick={() => openModal()}>
                     Add Venue
                 </button>
                 <div className="mb-4">

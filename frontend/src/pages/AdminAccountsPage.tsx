@@ -136,7 +136,7 @@ const AdminAccountsPage: React.FC = () => {
             <Navbar />
             <div className="container mt-5">
                 <h1>Manage Accounts</h1>
-                <button className="btn btn-primary mb-3" onClick={() => openModal()}>
+                <button className="btn btn-success mb-3" onClick={() => openModal()}>
                     Add Account
                 </button>
                 <div className="d-flex flex-wrap gap-3">

@@ -53,7 +53,7 @@ const LoginPage: React.FC = () => {
                 <div className="col-md-6">
                     <div className="card shadow">
                         <div className="card-body">
-                            <h2 className="card-title text-center text-primary mb-4">Login</h2>
+                            <h2 className="card-title text-center text-success mb-4">Login</h2>
                             <form onSubmit={handleLogin}>
                                 <div className="mb-3">
                                     <label htmlFor="username" className="form-label">
@@ -82,7 +82,7 @@ const LoginPage: React.FC = () => {
                                     />
                                 </div>
                                 {error && <div className="text-danger mb-3">{error}</div>}
-                                <button type="submit" className="btn btn-primary w-100">
+                                <button type="submit" className="btn btn-success w-100">
                                     Login
                                 </button>
                             </form>

@@ -58,7 +58,7 @@ const VenueList: React.FC<VenueListProps> = ({ venues, onEdit }) => {
                         <td>
                             {onEdit && (
                                 <button
-                                    className="btn btn-primary btn-sm"
+                                    className="btn btn-success btn-sm"
                                     onClick={() => onEdit(venue)}
                                 >
                                     Edit

@@ -106,7 +106,7 @@ const MyProfilePage: React.FC = () => {
                             {message}
                         </div>
                     )}
-                    <button type="submit" className="btn btn-primary">
+                    <button type="submit" className="btn btn-success">
                         Update
                     </button>
                 </form>

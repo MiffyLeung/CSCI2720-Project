@@ -25,7 +25,7 @@ const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit }) => {
             <td>{account.role}</td>
             <td>
               <button
-                className="btn btn-primary btn-sm"
+                className="btn btn-success btn-sm"
                 onClick={() => onEdit(account)}
               >
                 Edit

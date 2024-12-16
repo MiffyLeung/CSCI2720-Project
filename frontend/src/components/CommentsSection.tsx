@@ -76,7 +76,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ initialComments = [],
                 disabled={isSubmitting} // Disable input when submitting
             />
             <button
-                className="btn btn-primary"
+                className="btn btn-success"
                 onClick={handleAddComment}
                 disabled={isSubmitting || !newComment.trim()} // Disable if empty or submitting
             >

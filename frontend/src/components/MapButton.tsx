@@ -42,7 +42,7 @@ const MapButton: React.FC<MapButtonProps> = ({ venueName, latitude, longitude })
 
     return (
         <>
-            <Button variant="outline-primary" size="sm" onClick={handleShow}>
+            <Button variant="outline-success" size="sm" onClick={handleShow}>
                 View on Map
             </Button>
 
