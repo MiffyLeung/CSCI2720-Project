@@ -10,10 +10,9 @@ import { useApi } from '../core/useApi';
 
 /**
  * HottestPage component to list programmes with filtering and sorting functionality.
+ * Default sorting is by Likes (descending).
  *
  * @component
- * @example
- * <HottestPage />
  */
 const HottestPage: React.FC = () => {
   const [programmes, setProgrammes] = useState<Programme[]>([]); // Full data
@@ -33,7 +32,6 @@ const HottestPage: React.FC = () => {
       try {
         const data: Programme[] = await apiRequest('/programmes');
         setProgrammes(data);
-        setFilteredProgrammes(data); // Default filtered data
         setHasFetched(true);
       } catch (error) {
         console.error('Error fetching programmes:', error);
@@ -44,7 +42,17 @@ const HottestPage: React.FC = () => {
   }, [apiRequest, hasFetched]);
 
   /**
-   * Applies filtering and sorting logic.
+   * Sets default sorting function to Likes (descending) after programmes are loaded.
+   */
+  useEffect(() => {
+    if (programmes.length > 0 && !sortFunction) {
+      const defaultSort = (a: Programme, b: Programme): number => (b.likes || 0) - (a.likes || 0);
+      setSortFunction(() => defaultSort);
+    }
+  }, [programmes, sortFunction]);
+
+  /**
+   * Applies filtering and sorting to the list of programmes.
    */
   useEffect(() => {
     let data = programmes;
@@ -73,11 +81,10 @@ const HottestPage: React.FC = () => {
         <h1 className="mb-4">Hottest Programmes</h1>
 
         <div className="d-flex justify-content-between align-items-center">
-          <ProgrammeFilter
-            onFilterChange={(query) => setFilterQuery(query)}
-          />
+          <ProgrammeFilter onFilterChange={(query) => setFilterQuery(query)} />
           <ProgrammeSort
             onSortChange={(sortFn) => setSortFunction(() => sortFn)}
+            defaultField="likes" // Default field is Likes
           />
         </div>
 

@@ -6,25 +6,30 @@ import { Programme } from '../types/Programme';
 /**
  * Props for ProgrammeSort component.
  * @interface ProgrammeSortProps
- * @property {Function} onSortChange - Callback to handle sort field and order changes.
+ * @property {Function} onSortChange - Callback to handle sort field change.
+ * @property {string} defaultField - The default selected field for sorting.
  */
 interface ProgrammeSortProps {
+  /**
+   * Callback function triggered when sort field changes.
+   * @param {(a: Programme, b: Programme) => number} sortFunction - The sorting function.
+   */
   onSortChange: (sortFunction: (a: Programme, b: Programme) => number) => void;
+  /**
+   * Default selected field for sorting.
+   */
+  defaultField: string;
 }
 
 /**
  * ProgrammeSort component to handle sorting logic.
- * Provides dropdowns for sorting by field and order, and passes the sorting logic back to the parent.
+ * Renders a dropdown to select sorting field.
  *
  * @component
- * @example
- * <ProgrammeSort onSortChange={(sortFunction) => handleSort(sortFunction)} />
  */
-const ProgrammeSort: React.FC<ProgrammeSortProps> = ({ onSortChange }) => {
+const ProgrammeSort: React.FC<ProgrammeSortProps> = ({ onSortChange, defaultField }) => {
   /**
    * Returns the sorting function based on the selected field.
-   *
-   * @function getSortFunction
    * @param {string} field - The field to sort by.
    * @returns {(a: Programme, b: Programme) => number} - The sorting function.
    */
@@ -34,41 +39,38 @@ const ProgrammeSort: React.FC<ProgrammeSortProps> = ({ onSortChange }) => {
       let valueB: any;
 
       if (field === 'likes') {
-        // Sort by likes (descending)
         valueA = a.likes || 0;
         valueB = b.likes || 0;
       } else if (field === 'comments') {
-        // Sort by comment count (descending)
         valueA = a.comments?.length || 0;
         valueB = b.comments?.length || 0;
       } else if (field === 'submitdate') {
-        // Sort by submitdate (UNIX timestamp descending)
         valueA = a.submitdate || 0;
         valueB = b.submitdate || 0;
+      } else if (field === 'title_asc') {
+        // Ascending order for Title
+        valueA = a.title.toLowerCase();
+        valueB = b.title.toLowerCase();
+        return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
+      } else if (field === 'title') {
+        // Descending order for Title
+        valueA = a.title.toLowerCase();
+        valueB = b.title.toLowerCase();
+        return valueA > valueB ? -1 : valueA < valueB ? 1 : 0;
       } else {
-        // Sort by generic field
         valueA = a[field as keyof Programme];
         valueB = b[field as keyof Programme];
       }
 
-      // Handle undefined values
       if (valueA == null) valueA = '';
       if (valueB == null) valueB = '';
 
-      // For "Title (ASC)", reverse the order for ascending sorting
-      if (field === 'title_asc') {
-        return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
-      }
-
-      // Default: descending order
-      return valueA > valueB ? -1 : valueA < valueB ? 1 : 0;
+      return valueB - valueA; // Default: descending order
     };
   };
 
   /**
    * Handles changes in the selected sort field.
-   *
-   * @function handleSortFieldChange
    * @param {React.ChangeEvent<HTMLSelectElement>} e - The change event.
    */
   const handleSortFieldChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -84,6 +86,7 @@ const ProgrammeSort: React.FC<ProgrammeSortProps> = ({ onSortChange }) => {
           id="sort-field"
           className="form-select"
           onChange={handleSortFieldChange}
+          defaultValue={defaultField} // Set default field
         >
           <option value="title_asc">Title (ASC)</option>
           <option value="title">Title (DESC)</option>

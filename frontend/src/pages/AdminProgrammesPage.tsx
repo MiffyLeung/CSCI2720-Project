@@ -23,6 +23,9 @@ const AdminProgrammesPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility state
   const [editingProgramme, setEditingProgramme] = useState<Programme | undefined>(undefined); // Programme for editing
   const [filterQuery, setFilterQuery] = useState<string>(''); // Search query
+  const [sortFunction, setSortFunction] = useState<(a: Programme, b: Programme) => number>(
+    () => (a: Programme, b: Programme): number => (b.submitdate || 0) - (a.submitdate || 0) // Default: Sort by submitdate descending
+  ); // Current sort function
   const apiRequest = useApi(); // API request hook
   const { isAuthenticated } = useAuth(); // Authentication context
   const [hasFetched, setHasFetched] = useState(false); // Ensures data is fetched only once
@@ -43,7 +46,11 @@ const AdminProgrammesPage: React.FC = () => {
         console.log('Fetching programmes...');
         const data: Programme[] = await apiRequest('/programmes');
         setProgrammes(data);
-        setFilteredProgrammes(data); // Initialize filtered programmes
+
+        // Apply default sort
+        const sortedData = [...data].sort((a, b) => (b.submitdate || 0) - (a.submitdate || 0));
+        setFilteredProgrammes(sortedData);
+
         setHasFetched(true);
       } catch (error) {
         console.error('Error fetching programmes:', error);
@@ -145,12 +152,15 @@ const AdminProgrammesPage: React.FC = () => {
   const handleFilterChange = (query: string) => {
     setFilterQuery(query);
 
-    const filtered = programmes.filter(
+    let filtered = programmes.filter(
       (programme) =>
         programme.title.toLowerCase().includes(query.toLowerCase()) ||
         programme.presenter.toLowerCase().includes(query.toLowerCase()) ||
         programme.venue.name.toLowerCase().includes(query.toLowerCase())
     );
+
+    // Apply current sort to the filtered data
+    filtered = filtered.sort(sortFunction);
 
     setFilteredProgrammes(filtered);
   };
@@ -160,6 +170,7 @@ const AdminProgrammesPage: React.FC = () => {
    * @param {(a: Programme, b: Programme) => number} sortFunction - The sort function.
    */
   const handleSortChange = (sortFunction: (a: Programme, b: Programme) => number) => {
+    setSortFunction(() => sortFunction);
     const sortedData = [...filteredProgrammes].sort(sortFunction);
     setFilteredProgrammes(sortedData);
   };
@@ -178,7 +189,10 @@ const AdminProgrammesPage: React.FC = () => {
         {/* Programme Filter and Sort */}
         <div className="d-flex justify-content-between mb-4">
           <ProgrammeFilter onFilterChange={handleFilterChange} />
-          <ProgrammeSort onSortChange={handleSortChange} />
+          <ProgrammeSort
+            onSortChange={handleSortChange}
+            defaultField="submitdate" // Default sorting field
+          />
         </div>
 
         {/* Programme List */}
