@@ -40,7 +40,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ initialComments = [],
                 body: JSON.stringify({ text: newComment }), // Send the comment text
             });
 
-            setComments((prevComments) => [...prevComments, data]); // Add the new comment to the list
+            setComments([...comments, data]); // Add the new comment to the list
             setNewComment(''); // Clear the input
         } catch (error) {
             console.error('Error adding comment:', error);
@@ -70,7 +70,10 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ initialComments = [],
             <textarea
                 className="form-control mb-2"
                 value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
+                onChange={(e) => {
+                    console.log('New comment value:', e.target.value);
+                    setNewComment(e.target.value);
+                }}
                 placeholder="Add a comment"
                 rows={4}
                 disabled={isSubmitting} // Disable input when submitting
