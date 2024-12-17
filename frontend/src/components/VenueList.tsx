@@ -1,7 +1,8 @@
 // FILEPATH: frontend/src/components/VenueList.tsx
 
 import React, { useState, useEffect } from 'react';
-import { Table, Form, Button, Modal } from 'react-bootstrap';
+import { Table, Form, Button } from 'react-bootstrap';
+import { Link } from 'react-router-dom'; // Import Link for navigation
 import VenueSort from '../components/VenueSort';
 import VenueSearch from '../components/VenueSearch';
 import VenueDistance from '../components/VenueDistance';
@@ -23,7 +24,13 @@ const HONG_KONG_BOUNDS = {
   east: 114.41,
 };
 
-const isInHongKong = (lat: number, lng: number) => {
+/**
+ * Check if the given coordinates are within Hong Kong bounds
+ * @param {number} lat - Latitude of the location
+ * @param {number} lng - Longitude of the location
+ * @returns {boolean} True if within bounds, else false
+ */
+const isInHongKong = (lat: number, lng: number): boolean => {
   return (
     lat >= HONG_KONG_BOUNDS.south &&
     lat <= HONG_KONG_BOUNDS.north &&
@@ -32,10 +39,16 @@ const isInHongKong = (lat: number, lng: number) => {
   );
 };
 
+/**
+ * Calculate the distance between two coordinates using Haversine formula
+ * @param {{ latitude: number; longitude: number }} coord1 - First coordinate
+ * @param {{ latitude: number; longitude: number }} coord2 - Second coordinate
+ * @returns {number} Distance in kilometers
+ */
 const calculateDistance = (
   coord1: { latitude: number; longitude: number },
   coord2: { latitude: number; longitude: number }
-) => {
+): number => {
   const toRad = (value: number) => (value * Math.PI) / 180;
   const R = 6371; // Earth's radius in km
   const dLat = toRad(coord2.latitude - coord1.latitude);
@@ -48,11 +61,16 @@ const calculateDistance = (
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 };
 
+/**
+ * VenueList Component - Displays a list of venues with filtering and sorting options
+ * @param {{ venues: Venue[]; onEdit?: Function; onDelete?: Function }} props - Component props
+ * @returns {JSX.Element} VenueList Component
+ */
 const VenueList: React.FC<{ venues: Venue[]; onEdit?: any; onDelete?: any }> = ({
   venues,
   onEdit,
   onDelete,
-}) => {
+}): React.JSX.Element => {
   const apiRequest = useApi();
   const [filteredVenues, setFilteredVenues] = useState<Venue[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -136,20 +154,29 @@ const VenueList: React.FC<{ venues: Venue[]; onEdit?: any; onDelete?: any }> = (
     }
 
     setFilteredVenues(result);
-  }, [venues, searchQuery, selectedCategory, distanceFilter, sortField, sortOrder, userLocation]);
+  }, [venues, searchQuery, selectedCategory, distanceFilter, userLocation]);
 
-
+  /**
+   * Add a toast message to display
+   * @param {string} text - Message to display
+   */
   const addToast = (text: string) => {
-    const newToast = { id: Date.now(), text }; // 保證每個 toast 有唯一的 ID
+    const newToast = { id: Date.now(), text };
     setToastMessages((prev) => [...prev, newToast]);
   };
 
-  
+  /**
+   * Remove a toast message by ID
+   * @param {number} id - ID of the toast to remove
+   */
   const removeToast = (id: number) => {
     setToastMessages((prev) => prev.filter((msg) => msg.id !== id));
   };
 
-  // Handle Bookmark Toggle
+  /**
+   * Handle toggling of bookmarks for venues
+   * @param {string} venueId - ID of the venue to toggle bookmark
+   */
   const handleBookmarkToggle = async (venueId: string) => {
     try {
       const venue = filteredVenues.find((v) => v.venue_id === venueId);
@@ -198,7 +225,11 @@ const VenueList: React.FC<{ venues: Venue[]; onEdit?: any; onDelete?: any }> = (
           {filteredVenues.map((venue) => (
             <tr key={venue.venue_id} onClick={() => setSelectedVenue(venue)}>
               <td>{venue.venue_id}</td>
-              <td>{venue.name}</td>
+              <td>
+                <Link to={`/venue/${venue.venue_id}`}>
+                  {venue.name}
+                </Link>
+              </td>
               <td>{`(${venue.latitude}, ${venue.longitude})`}</td>
               <td>{venue.programmes?.length || 0}</td>
               <td>
