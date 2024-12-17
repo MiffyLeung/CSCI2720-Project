@@ -28,6 +28,7 @@ const VenueListPage: React.FC = () => {
     hasFetched.current = true; // Mark as fetched
 
     if (abortController.current) {
+      console.log('Aborting previous fetch request...');
       abortController.current.abort(); // Abort any existing requests
     }
     abortController.current = new AbortController();

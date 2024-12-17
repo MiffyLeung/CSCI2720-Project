@@ -70,10 +70,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ initialComments = [],
             <textarea
                 className="form-control mb-2"
                 value={newComment}
-                onChange={(e) => {
-                    console.log('New comment value:', e.target.value);
-                    setNewComment(e.target.value);
-                }}
+                onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Add a comment"
                 rows={4}
                 disabled={isSubmitting} // Disable input when submitting
