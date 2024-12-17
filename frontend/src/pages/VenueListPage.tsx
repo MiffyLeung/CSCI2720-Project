@@ -28,7 +28,6 @@ const VenueListPage: React.FC = () => {
     hasFetched.current = true; // Mark as fetched
 
     if (abortController.current) {
-      console.log('Aborting previous fetch request...');
       abortController.current.abort(); // Abort any existing requests
     }
     abortController.current = new AbortController();
@@ -36,9 +35,8 @@ const VenueListPage: React.FC = () => {
     try {
       const data: Venue[] = await apiRequest(
         '/venues',
-        { method: 'GET', signal: abortController.current.signal },
-        undefined,
-        (error: any) => console.error('Error fetching venues:', error)
+        { method: 'GET', signal: abortController.current.signal,
+        }
       );
       setVenues(data);
     } catch (error: any) {
