@@ -154,7 +154,7 @@ const VenueList: React.FC<{ venues: Venue[]; onEdit?: any; onDelete?: any }> = (
     }
 
     setFilteredVenues(result);
-  }, [venues, searchQuery, selectedCategory, distanceFilter, userLocation]);
+  }, [venues, searchQuery, selectedCategory, distanceFilter, userLocation, sortField, sortOrder]);
 
   /**
    * Add a toast message to display
