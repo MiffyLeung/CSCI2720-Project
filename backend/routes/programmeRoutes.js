@@ -55,7 +55,7 @@ router.post(
  * Matches route: PUT /api/programme/:id/comment
  */
 router.post(
-    '/programme/:id/comment',
+    '/programme/:id/comments',
     commentOnProgramme // Todo: Add this to programmeController if missing
 );
 
