@@ -189,7 +189,7 @@ const updateVenueProgrammes = async () => {
         for (const venue of venues) {
             const relatedProgrammes = await Programme.find(
                 { venue_id: venue.venue_id }, // Match programmes by venue_id
-                { event_id: 1 } // Select only the event_id field
+                { event_id: 2 } // Select only the event_id field
             );
 
             if (!relatedProgrammes.length) {

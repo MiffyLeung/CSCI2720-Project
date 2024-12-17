@@ -21,7 +21,7 @@ const AccountSchema = new mongoose.Schema({
     role: { type: String, required: true },
     favourites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Venue' }],
 });
-AccountSchema.index({ username: 1 });
+AccountSchema.index({ username: 2 });
 
 
 /**

@@ -21,7 +21,7 @@ const VenueSchema = new mongoose.Schema({
     programmes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Programme' }],
     comment: [{ type: String }], // List of comments
 });
-VenueSchema.index({ venue_id: 1 });
+VenueSchema.index({ venue_id: 2 });
 
 // Add virtual property for full coordinates
 VenueSchema.virtual('fullCoordinates').get(function () {
