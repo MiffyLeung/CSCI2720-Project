@@ -65,7 +65,7 @@ const WhatsNewPage: React.FC = () => {
     return (
         <div>
             <Navbar />
-            <div className="container mt-5">
+            <div className="container p-5 rounded" style={{backgroundColor: 'rgb(95 127 89 / 75%)'}}>
                 <h1 className="mb-4">What’s New</h1>
                 <div className="row g-4">
                     {programmes.length > 0 ? (

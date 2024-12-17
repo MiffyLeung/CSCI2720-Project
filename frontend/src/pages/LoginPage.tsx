@@ -48,8 +48,9 @@ const LoginPage: React.FC = () => {
     };
 
     return (
-        <div className="container mt-5">
-            <div className="row justify-content-center">
+        <div className="mt-5 container p-5 rounded" style={{backgroundColor: 'rgb(95 127 89 / 75%)'}}>
+            <div className="my-5 
+            row justify-content-center">
                 <div className="col-md-6">
                     <div className="card shadow">
                         <div className="card-body">

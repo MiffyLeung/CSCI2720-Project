@@ -293,7 +293,6 @@ const addVenueBookmark = async (req, res) => {
         res.status(200).json({
             code: 'ADD_BOOKMARK_SUCCESS',
             message: 'Venue added to bookmarks successfully',
-            data: user.favourites.map(fav => fav.toString()),
         });
     } catch (error) {
         console.error('[DEBUG] Error Adding Bookmark:', error.message, error.stack);
@@ -359,7 +358,6 @@ const removeVenueBookmark = async (req, res) => {
         res.status(200).json({
             code: 'REMOVE_BOOKMARK_SUCCESS',
             message: 'Venue removed from bookmarks successfully',
-            data: user.favourites.map(fav => fav.toString()),
         });
     } catch (error) {
         console.error('[DEBUG] Error Removing Bookmark:', error.message, error.stack);

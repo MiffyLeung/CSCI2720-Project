@@ -131,3 +131,5 @@ dist
 package-lock.json
 *.zip
 .DS_Store
+.history
+.lh

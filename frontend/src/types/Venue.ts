@@ -5,6 +5,7 @@ import { Request, Response } from 'express';
  * Venue interface matching the backend schema.
  */
 export interface Venue {
+  [key: string]: any;
   venue_id: string; // Unique identifier for the venue
   name: string; // Name of the venue
   latitude: number; // Latitude of the venue

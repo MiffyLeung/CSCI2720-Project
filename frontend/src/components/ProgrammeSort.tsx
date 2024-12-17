@@ -81,7 +81,7 @@ const ProgrammeSort: React.FC<ProgrammeSortProps> = ({ onSortChange, defaultFiel
   return (
     <div className="mb-1 d-flex gap-3">
       <div>
-        <label htmlFor="sort-field" className="form-label mb-0">Sort By:</label>
+        <label htmlFor="sort-field" className="form-label fw-bold">Sort By:</label>
         <select
           id="sort-field"
           className="form-select"

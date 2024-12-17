@@ -1,113 +1,191 @@
-// frontend/src/components/VenueList.tsx
+// FILEPATH: frontend/src/components/VenueList.tsx
 
-import React, { useState } from 'react';
-import { Table, Form, Modal, Button } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Table, Form, Button, Modal } from 'react-bootstrap';
+import VenueSort from '../components/VenueSort';
+import VenueSearch from '../components/VenueSearch';
+import VenueDistance from '../components/VenueDistance';
+import VenueCategory from '../components/VenueCategory';
+import VenueInfo from './VenueInfo';
+import ToastStack, { ToastMessage } from './ToastStack';
 import { Venue } from '../types/Venue';
-import VenueInfo from './VenueInfo'; // Adjust the path to match your project structure
 import { useApi } from '../core/useApi';
 
-interface VenueListProps {
-  /**
-   * List of venues to display in the table.
-   */
-  venues: Venue[];
-  /**
-   * Optional handler for editing a venue.
-   */
-  onEdit?: (venue?: Venue) => void;
-  /**
-   * Optional handler for deleting a venue.
-   */
-  onDelete?: (venue?: Venue) => void;
-  /**
-   * Optional handler for filtering venues based on distance from the user.
-   */
-  onFilter?: (distance: number) => void;
-  /**
-   * Optional handler for searching venues by text.
-   */
-  onSearch?: (query: string) => void;
-  /**
-   * Optional handler for sorting venues.
-   */
-  onSort?: (sortBy: 'favourite' | 'events' | 'distance') => void;
-  /**
-   * Default sorting field.
-   */
-  defaultSort?: 'favourite' | 'events' | 'distance';
-}
+const DEFAULT_CENTER = {
+  latitude: 22.4133574,
+  longitude: 114.2104115,
+};
 
-/**
- * VenueList displays a list of venues in a table format.
- * - Supports displaying venue details, editing, deleting, filtering, searching, and sorting functionalities.
- * - Clicking on a row opens a modal with detailed venue information.
- * - Handles adding/removing favourite venues with immediate backend updates.
- *
- * @component
- * @param {VenueListProps} props - Props containing venue data and action handlers.
- * @returns {React.ReactElement} A table displaying the list of venues.
- */
-const VenueList: React.FC<VenueListProps> = ({
+const HONG_KONG_BOUNDS = {
+  north: 22.559,
+  south: 22.153,
+  west: 113.837,
+  east: 114.41,
+};
+
+const isInHongKong = (lat: number, lng: number) => {
+  return (
+    lat >= HONG_KONG_BOUNDS.south &&
+    lat <= HONG_KONG_BOUNDS.north &&
+    lng >= HONG_KONG_BOUNDS.west &&
+    lng <= HONG_KONG_BOUNDS.east
+  );
+};
+
+const calculateDistance = (
+  coord1: { latitude: number; longitude: number },
+  coord2: { latitude: number; longitude: number }
+) => {
+  const toRad = (value: number) => (value * Math.PI) / 180;
+  const R = 6371; // Earth's radius in km
+  const dLat = toRad(coord2.latitude - coord1.latitude);
+  const dLon = toRad(coord2.longitude - coord1.longitude);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(coord1.latitude)) *
+      Math.cos(toRad(coord2.latitude)) *
+      Math.sin(dLon / 2) ** 2;
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+};
+
+const VenueList: React.FC<{ venues: Venue[]; onEdit?: any; onDelete?: any }> = ({
   venues,
   onEdit,
   onDelete,
-  onFilter,
-  onSearch,
-  onSort,
-  defaultSort = 'favourite',
 }) => {
   const apiRequest = useApi();
+  const [filteredVenues, setFilteredVenues] = useState<Venue[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All Categories');
+  const [distanceFilter, setDistanceFilter] = useState<number | null>(null);
+  const [sortField, setSortField] = useState<string>('favourite');
+  const [sortOrder, setSortOrder] = useState<string>('desc');
+  const [userLocation, setUserLocation] = useState(DEFAULT_CENTER);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
-  const [warningMessage, setWarningMessage] = useState<string | null>(null);
+  const [toastMessages, setToastMessages] = useState<ToastMessage[]>([]);
 
-  /**
-   * Handles toggling the bookmark state of a venue.
-   * Sends the update to the backend and handles any errors.
-   * @param {string} venueId - The ID of the venue to toggle.
-   * @param {boolean} isChecked - The new bookmark state.
-   */
-  const handleBookmarkToggle = async (venueId: string, isChecked: boolean) => {
-    try {
-      await apiRequest(`/venue/${venueId}/bookmark`, {
-        method: 'PUT',
-        body: JSON.stringify({ state: isChecked ? 'on' : 'off' }),
-      });
-      console.log(`Bookmark for venue ${venueId} updated to: ${isChecked ? 'on' : 'off'}`);
-    } catch (error: any) {
-      console.error('Error updating bookmark:', error);
-      setWarningMessage('Failed to update bookmark. Please try again later.');
+  // Initialize user location
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation(
+          isInHongKong(latitude, longitude) ? position.coords : DEFAULT_CENTER
+        );
+      },
+      () => setUserLocation(DEFAULT_CENTER)
+    );
+  }, []);
+
+  // Apply all filters
+  useEffect(() => {
+    let result = [...venues];
+
+    // Search filter
+    if (searchQuery) {
+      result = result.filter((venue) =>
+        venue.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     }
+
+    // Category filter
+    if (selectedCategory && selectedCategory !== 'All Categories') {
+      result = result.filter((venue) =>
+        venue.name.toLowerCase().includes(selectedCategory.toLowerCase())
+      );
+    }
+
+    // Distance filter
+    if (distanceFilter) {
+      result = result.filter((venue) => {
+        if (!venue.latitude || !venue.longitude) return true; // Keep null coordinates
+        const distance = calculateDistance(
+          { latitude: venue.latitude, longitude: venue.longitude },
+          userLocation
+        );
+        return distance <= distanceFilter;
+      });
+    }
+
+    // Sort venues
+    if (sortField) {
+      result.sort((a, b) => {
+        if (sortField === 'distance') {
+          const distanceA = calculateDistance(
+            { latitude: a.latitude, longitude: a.longitude },
+            userLocation
+          );
+          const distanceB = calculateDistance(
+            { latitude: b.latitude, longitude: b.longitude },
+            userLocation
+          );
+          return sortOrder === 'asc' ? distanceA - distanceB : distanceB - distanceA;
+        }
+        if (sortField === 'programmes') {
+          const progA = a.programmes?.length || 0;
+          const progB = b.programmes?.length || 0;
+          return sortOrder === 'asc' ? progA - progB : progB - progA;
+        }
+        if (sortField === 'favourite') {
+          return sortOrder === 'asc'
+            ? Number(a.isFavourite) - Number(b.isFavourite)
+            : Number(b.isFavourite) - Number(a.isFavourite);
+        }
+        return 0;
+      });
+    }
+
+    setFilteredVenues(result);
+  }, [venues, searchQuery, selectedCategory, distanceFilter, sortField, sortOrder, userLocation]);
+
+
+  const addToast = (text: string) => {
+    const newToast = { id: Date.now(), text }; // 保證每個 toast 有唯一的 ID
+    setToastMessages((prev) => [...prev, newToast]);
   };
 
-  /**
-   * Opens the venue info modal for the selected venue.
-   * @param {Venue} venue - The selected venue.
-   */
-  const handleRowClick = (venue: Venue) => {
-    setSelectedVenue(venue);
+  
+  const removeToast = (id: number) => {
+    setToastMessages((prev) => prev.filter((msg) => msg.id !== id));
+  };
+
+  // Handle Bookmark Toggle
+  const handleBookmarkToggle = async (venueId: string) => {
+    try {
+      const venue = filteredVenues.find((v) => v.venue_id === venueId);
+      if (!venue) return;
+
+      const updatedState = !venue.isFavourite;
+      const method = updatedState ? 'POST' : 'DELETE';
+
+      await apiRequest(`/venue/${venueId}/bookmark`, { method });
+
+      setFilteredVenues((prev) =>
+        prev.map((v) =>
+          v.venue_id === venueId ? { ...v, isFavourite: updatedState } : v
+        )
+      );
+      addToast(`Bookmark ${updatedState ? 'added' : 'removed'} successfully!`);
+    } catch (error) {
+      addToast('Failed to update bookmark.');
+    }
   };
 
   return (
     <div>
-      {/* Optional Warning Message */}
-      {warningMessage && (
-        <Modal show onHide={() => setWarningMessage(null)}>
-          <Modal.Header closeButton>
-            <Modal.Title>Warning</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>{warningMessage}</Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => setWarningMessage(null)}>
-              OK
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      )}
+      <div className="d-flex row">
+        <VenueSearch onSearch={setSearchQuery} />
+        <VenueCategory onCategoryChange={setSelectedCategory} />
+        <VenueDistance onFilter={setDistanceFilter} />
+        <VenueSort onSortChange={(field, order) => {
+          setSortField(field);
+          setSortOrder(order);
+        }} />
+      </div>
 
-      {/* Table */}
       <Table striped bordered hover responsive>
-        <thead>
-          <tr className="table-success">
+        <thead className="table-success">
+          <tr>
             <th>ID</th>
             <th>Venue</th>
             <th>Coordinates</th>
@@ -117,64 +195,31 @@ const VenueList: React.FC<VenueListProps> = ({
           </tr>
         </thead>
         <tbody>
-          {venues.map((venue, index) => (
-            <tr
-              key={venue.venue_id}
-              onClick={() => handleRowClick(venue)} // Row click handler
-              style={{ cursor: 'pointer' }}
-            >
+          {filteredVenues.map((venue) => (
+            <tr key={venue.venue_id} onClick={() => setSelectedVenue(venue)}>
               <td>{venue.venue_id}</td>
-              <td>
-                <a
-                  href={`/venue/${venue.venue_id}`}
-                  onClick={(e) => e.stopPropagation()} // Prevent row click
-                >
-                  {venue.name}
-                </a>
-              </td>
-              <td>
-                {venue.latitude && venue.longitude
-                  ? `(${venue.latitude}, ${venue.longitude})`
-                  : ''}
-              </td>
+              <td>{venue.name}</td>
+              <td>{`(${venue.latitude}, ${venue.longitude})`}</td>
               <td>{venue.programmes?.length || 0}</td>
               <td>
                 <Form.Check
                   type="checkbox"
-                  label=""
-                  defaultChecked={venue.isFavourite}
-                  onChange={(e) => {
-                    e.stopPropagation(); // Prevent row click
-                    handleBookmarkToggle(venue.venue_id, e.target.checked);
-                  }}
+                  checked={venue.isFavourite}
+                  onChange={() => handleBookmarkToggle(venue.venue_id)}
                 />
               </td>
               {(onEdit || onDelete) && (
                 <td>
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
-                    {onEdit && (
-                      <button
-                        className="btn btn-success btn-sm"
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent row click
-                          onEdit(venue);
-                        }}
-                      >
-                        Modify
-                      </button>
-                    )}
-                    {onDelete && (
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent row click
-                          onDelete(venue);
-                        }}
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </div>
+                  {onEdit && (
+                    <Button size="sm" variant="success" onClick={() => onEdit(venue)}>
+                      Modify
+                    </Button>
+                  )}
+                  {onDelete && (
+                    <Button size="sm" variant="danger" onClick={() => onDelete(venue)}>
+                      Delete
+                    </Button>
+                  )}
                 </td>
               )}
             </tr>
@@ -182,13 +227,8 @@ const VenueList: React.FC<VenueListProps> = ({
         </tbody>
       </Table>
 
-      {/* VenueInfo Modal */}
-      {selectedVenue && (
-        <VenueInfo
-          venue={selectedVenue}
-          onClose={() => setSelectedVenue(null)}
-        />
-      )}
+      <VenueInfo venue={selectedVenue} onClose={() => setSelectedVenue(null)} />
+      <ToastStack messages={toastMessages} onRemove={removeToast} />
     </div>
   );
 };

@@ -65,7 +65,7 @@ const MyProfilePage: React.FC = () => {
     return (
         <div>
             <Navbar />
-            <div className="container mt-5">
+            <div className="container p-5 rounded" style={{backgroundColor: 'rgb(95 127 89 / 75%)'}}>
                 <h1 className="mb-4">My Profile</h1>
                 <form onSubmit={handleSubmit} className="needs-validation">
                     <div className="mb-3">

@@ -44,6 +44,8 @@ module.exports = [
             { method: 'POST', path: '/venue', requiresAuth: true, adminOnly: true }, // Create a venue
             { method: 'PATCH', path: '/venue/:id', requiresAuth: true, adminOnly: true }, // Update a venue
             { method: 'DELETE', path: '/venue/:id', requiresAuth: true, adminOnly: true }, // Delete a venue
+            { method: 'POST', path: '/venue/:id/bookmark', requiresAuth: true }, // Update a venue
+            { method: 'DELETE', path: '/venue/:id/bookmark', requiresAuth: true }, // Delete a venue
         ],
     },
     {

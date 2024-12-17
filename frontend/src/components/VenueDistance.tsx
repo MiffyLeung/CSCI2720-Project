@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Form } from 'react-bootstrap';
+import './VenueDistance.css';
 
 interface VenueDistanceProps {
   /**
@@ -20,7 +21,7 @@ interface VenueDistanceProps {
  * @returns {React.ReactElement} A React-Bootstrap slider component for filtering venues by distance.
  */
 const VenueDistance: React.FC<VenueDistanceProps> = ({ onFilter }) => {
-  const [distance, setDistance] = useState<number>(10); // Default distance is 10km
+  const [distance, setDistance] = useState<number>(50); // Default distance is 10km
 
   /**
    * Handles changes to the slider value.
@@ -34,21 +35,21 @@ const VenueDistance: React.FC<VenueDistanceProps> = ({ onFilter }) => {
   };
 
   return (
-    <div className="d-flex flex-column align-items-start position-relative">
-      <div className="mb-2 d-flex justify-content-between w-100">
+    <div className="col-6 col-md-4 col-lg-3 col-xl-2 d-flex flex-column">
+      <div>
         <span className="fw-bold">Filter by Distance</span>
-        <span style={{ position: 'absolute', right: '0px', top: '-8px' }}>
-          {distance} km
-        </span>
       </div>
       <Form.Range
+        className="form-range custom-range"
         min={1}
-        max={100}
+        max={50}
         step={1}
         value={distance}
         onChange={handleDistanceChange}
-        style={{ width: '100%' }}
       />
+      <span className="ms-auto fw-bold">
+        {distance} km
+      </span>
     </div>
   );
 };

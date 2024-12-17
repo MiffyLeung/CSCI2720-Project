@@ -1,0 +1,69 @@
+/* Custom styles for the range slider thumb */
+.custom-range {
+  height: 1.5rem; /* Adjust the overall height of the range slider */
+  padding: 0; /* Remove padding to prevent shifting */
+}
+
+.custom-range::-webkit-slider-thumb {
+  background-color: #198754; /* Success green */
+  border: 2px solid #198754;
+  border-radius: 50%; /* Ensures the thumb is circular */
+  width: 1.5rem; /* Enlarged width */
+  height: 1.5rem; /* Enlarged height */
+  cursor: pointer;
+  margin-top: -0.5rem; /* Center-align thumb on the track */
+}
+
+.custom-range::-moz-range-thumb {
+  background-color: #198754; /* Success green */
+  border: 2px solid #198754;
+  border-radius: 50%; /* Ensures the thumb is circular */
+  width: 1.5rem; /* Enlarged width */
+  height: 1.5rem; /* Enlarged height */
+  cursor: pointer;
+}
+
+.custom-range::-ms-thumb {
+  background-color: #198754; /* Success green */
+  border: 2px solid #198754;
+  border-radius: 50%; /* Ensures the thumb is circular */
+  width: 1.5rem; /* Enlarged width */
+  height: 1.5rem; /* Enlarged height */
+  cursor: pointer;
+}
+
+/* Adjust track alignment and size */
+.custom-range::-webkit-slider-runnable-track {
+  background-color: #ffffff; /* Default light gray */
+  height: 6px; /* Adjust the track height */
+  border-radius: 2px; /* Slightly rounded corners */
+  box-shadow: 0 0 3px rgb(0, 66, 33);
+  position: relative;
+}
+
+.custom-range::-moz-range-track {
+  background-color: #ffffff;
+  height: 6px;
+  border-radius: 2px;
+  box-shadow: 0 0 3px rgb(0, 66, 33);
+}
+
+.custom-range::-ms-track {
+  background-color: transparent; /* Transparent track for IE */
+  border-color: transparent;
+  border-width: 6px 0;
+  color: transparent; /* Hides the default track */
+  height: 6px;
+}
+
+.custom-range::-ms-fill-lower {
+  background-color: #ffffff;
+  border-radius: 2px;
+  box-shadow: 0 0 3px rgb(0, 66, 33);
+}
+
+.custom-range::-ms-fill-upper {
+  background-color: #ffffff;
+  border-radius: 2px;
+  box-shadow: 0 0 3px rgb(0, 66, 33);
+}

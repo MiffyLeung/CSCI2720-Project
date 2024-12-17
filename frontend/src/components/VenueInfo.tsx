@@ -4,11 +4,12 @@ import React from 'react';
 import { Venue } from '../types/Venue';
 
 interface VenueInfoProps {
-  venue: Venue;
+  venue: Venue | null;
   onClose: () => void;
 }
 
 const VenueInfo: React.FC<VenueInfoProps> = ({ venue, onClose }) => {
+  if (!venue) return null; 
   return (
     <div className="modal">
       <h2>{venue.name}</h2>

@@ -46,7 +46,7 @@ const VenueCategory: React.FC<VenueCategoryProps> = ({ onCategoryChange }) => {
   };
 
   return (
-    <div className="mb-3">
+    <div className="col-6 col-md-4 col-lg-3 col-xl-2 mb-3">
       <Form.Group controlId="venueCategory">
         <Form.Label className="fw-bold">Filter by Categories</Form.Label>
         <Form.Select value={selectedCategory} onChange={handleCategoryChange}>

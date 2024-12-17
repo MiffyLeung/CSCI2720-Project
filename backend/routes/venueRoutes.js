@@ -48,6 +48,18 @@ router.get(
 );
 
 /**
+ * Add a venue to the user's bookmarks.
+ * Matches route: POST /api/venue/:id/bookmark
+ */
+router.post('/venue/:id/bookmark', addVenueBookmark);
+
+/**
+ * Remove a venue from the user's bookmarks.
+ * Matches route: DELETE /api/venue/:id/bookmark
+ */
+router.delete('/venue/:id/bookmark', removeVenueBookmark);
+
+/**
  * Admin-only routes for venue management.
  * Protected by 'admin' authorization middleware.
  */
@@ -56,7 +68,7 @@ router.get(
  * Create a new venue.
  * Matches route: PUT /api/venue
  */
-router.put(
+router.post(
     '/venue',
     authorize('admin'),
     createVenue
@@ -64,8 +76,13 @@ router.put(
 
 /**
  * Update an existing venue by ID.
- * Matches route: PUT /api/venue/:id
+ * Matches route: PATCH /api/venue/:id
  */
+router.patch(
+    '/venue/:id',
+    authorize('admin'),
+    updateVenueById
+);
 router.put(
     '/venue/:id',
     authorize('admin'),
@@ -82,16 +99,5 @@ router.delete(
     deleteVenueById
 );
 
-/**
- * Add a venue to the user's bookmarks.
- * Matches route: PUT /api/venue/:id/bookmark
- */
-router.put('/venue/:id/bookmark', addVenueBookmark);
-
-/**
- * Remove a venue from the user's bookmarks.
- * Matches route: DELETE /api/venue/:id/bookmark
- */
-router.delete('/venue/:id/bookmark', removeVenueBookmark);
 
 module.exports = router;

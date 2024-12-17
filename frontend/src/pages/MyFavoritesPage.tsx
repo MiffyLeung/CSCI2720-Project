@@ -64,7 +64,7 @@ const MyFavoritesPage: React.FC = () => {
   return (
     <div>
       <Navbar />
-      <div className="container mt-5">
+      <div className="container p-5 rounded" style={{backgroundColor: 'rgb(95 127 89 / 75%)'}}>
         <h1 className="mb-4">My Favorites</h1>
         {favorites.length > 0 ? (
           <div className="row">

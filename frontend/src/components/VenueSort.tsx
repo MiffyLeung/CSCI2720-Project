@@ -1,51 +1,76 @@
 // frontend/src/components/VenueSort.tsx
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface VenueSortProps {
   onSortChange: (sortField: string, sortOrder: string) => void;
+  defaultField?: string;
+  defaultOrder?: string;
 }
 
-const VenueSort: React.FC<VenueSortProps> = ({ onSortChange }) => {
-  const handleSortFieldChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const sortField = e.target.value;
-    const sortOrder = (document.getElementById('sort-order') as HTMLSelectElement).value;
+const VenueSort: React.FC<VenueSortProps> = ({
+  onSortChange,
+  defaultField = 'favourite',
+  defaultOrder = 'desc',
+}) => {
+  const [sortField, setSortField] = useState<string>(defaultField);
+  const [sortOrder, setSortOrder] = useState<string>(defaultOrder);
+
+  useEffect(() => {
     onSortChange(sortField, sortOrder);
+  }, [sortField, sortOrder, onSortChange]);
+
+  const handleSortFieldChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSortField = e.target.value;
+    setSortField(newSortField);
+    onSortChange(newSortField, sortOrder);
   };
 
-  const handleSortOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const sortOrder = e.target.value;
-    const sortField = (document.getElementById('sort-field') as HTMLSelectElement).value;
-    onSortChange(sortField, sortOrder);
+  const handleSortOrderToggle = () => {
+    const newSortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortOrder(newSortOrder);
+    onSortChange(sortField, newSortOrder);
   };
 
   return (
-    <div className="mb-3">
-      <label htmlFor="sort-field" className="form-label">
-        Sort By:
-      </label>
-      <select
-        id="sort-field"
-        className="form-select"
-        onChange={handleSortFieldChange}
-        style={{ maxWidth: '200px' }}
-      >
-        <option value="name">Name</option>
-        <option value="latitude">Latitude</option>
-        <option value="longitude">Longitude</option>
-      </select>
-      <label htmlFor="sort-order" className="form-label ms-3">
-        Order:
-      </label>
-      <select
-        id="sort-order"
-        className="form-select"
-        onChange={handleSortOrderChange}
-        style={{ maxWidth: '150px' }}
-      >
-        <option value="asc">Ascending</option>
-        <option value="desc">Descending</option>
-      </select>
+    <div className="col col-md-4 col-lg-3 col-xl-2 flex-column mb-3">
+      <div className="d-flex">
+        <label htmlFor="sort-field" className="form-label me-3 fw-bold">
+          Sort By:
+        </label>
+        <div className="form-check form-switch ms-auto">
+          <input
+            className="form-check-input bg-success border-success"
+            type="checkbox"
+            id="sort-order"
+            checked={sortOrder === 'desc'}
+            onChange={handleSortOrderToggle}
+          />
+          <label htmlFor="sort-order" className="form-check-label">
+            {sortField === 'favourite'
+              ? sortOrder === 'desc'
+                ? 'Yes'
+                : 'No'
+              : sortOrder === 'asc'
+              ? 'Asc'
+              : 'Desc'}
+          </label>
+        </div>
+      </div>
+      <div>
+        <select
+          id="sort-field"
+          className="form-select"
+          value={sortField}
+          onChange={handleSortFieldChange}
+          style={{ maxWidth: '200px' }}
+        >
+          <option value="name">Name</option>
+          <option value="favourite">Favourite</option>
+          <option value="programmes">Programmes</option>
+          <option value="distance">Distance</option>
+        </select>
+      </div>
     </div>
   );
 };

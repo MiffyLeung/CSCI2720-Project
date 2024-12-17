@@ -48,7 +48,7 @@ const VenueDetailsPage: React.FC = () => {
         return (
             <div>
                 <Navbar />
-                <div className="container mt-5">
+                <div className="container p-5 rounded" style={{backgroundColor: 'rgb(95 127 89 / 75%)'}}>
                     <div className="alert alert-info" role="alert">
                         Loading venue details...
                     </div>
@@ -60,7 +60,7 @@ const VenueDetailsPage: React.FC = () => {
     return (
         <div>
             <Navbar />
-            <div className="container mt-5">
+            <div className="container p-5 rounded" style={{backgroundColor: 'rgb(95 127 89 / 75%)'}}>
                 <h1 className="mb-4">{venue.name}</h1>
                 <div className="card">
                     <div className="card-body">

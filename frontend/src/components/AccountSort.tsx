@@ -22,7 +22,7 @@ const AccountSort: React.FC<AccountSortProps> = ({ onSortChange }) => {
   return (
     <div className="mb-3">
       <div className="d-flex align-items-center gap-3">
-        <label htmlFor="sort-field" className="form-label">
+        <label htmlFor="sort-field" className="fw-bold form-label">
           Sort By:
         </label>
         <select

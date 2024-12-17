@@ -1,0 +1,42 @@
+/* frontend\src\components\ToastMessage.tsx */
+
+@keyframes slideDown {
+    0% {
+      transform: translateX(-100);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0%);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideOut {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+  }
+  
+  .toast {
+    animation: slideDown 1s ease-out,
+      toast-fade-out 1s ease-in-out 4.5s;
+  }
+  
+  .toast-container {
+    position: fixed;
+    margin-top: 100px;
+    z-index: 9999;
+  }
+  
+  .toast {
+    margin: 10px;
+    animation: 0.5s slideOut 0s 1 normal none running slideDown;
+    background-color: rgb(40, 167, 69);
+    color: rgb(255, 255, 255);
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 8px;
+  }
+  

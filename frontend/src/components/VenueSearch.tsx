@@ -36,7 +36,7 @@ const VenueSearch: React.FC<VenueSearchProps> = ({ onSearch }) => {
   };
 
   return (
-        <div className="mb-3">
+        <div className="mb-3 col">
       <label htmlFor="venue-filter" className="form-label fw-bold">
         Search Venues:
       </label>

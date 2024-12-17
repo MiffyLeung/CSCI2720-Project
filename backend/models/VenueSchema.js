@@ -9,6 +9,7 @@ const mongoose = require('mongoose');
  * - name: Name of the venue (required).
  * - coordinates: Geographical coordinates of the venue (latitude and longitude, both required).
  * - programmes: Date of the most recent programme held at the venue.
+ * - comment: List of comments for the venue.
  */
 const VenueSchema = new mongoose.Schema({
     venue_id: { type: String, required: true, unique: true }, // Unique identifier for the venue
@@ -17,7 +18,8 @@ const VenueSchema = new mongoose.Schema({
         latitude: { type: Number }, // Latitude of the venue
         longitude: { type: Number }, // Longitude of the venue
     },
-    programmes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Programme' }], 
+    programmes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Programme' }],
+    comment: [{ type: String }], // List of comments
 });
 VenueSchema.index({ venue_id: 1 });
 

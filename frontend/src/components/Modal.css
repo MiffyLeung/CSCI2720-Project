@@ -1,0 +1,25 @@
+.modal-dialog {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-width: max(280px , 50vw);
+    margin: 0;
+}
+
+.modal-content {
+    background-color: #fff;
+    color: #000;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Dark Mode Support */
+body.bg-dark .modal-content {
+    background-color: #013010;
+    color: #f1f1f1;
+}
+
+body.bg-dark .btn-close {
+    filter: invert(1);
+}
