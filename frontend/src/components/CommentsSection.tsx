@@ -40,7 +40,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ initialComments = [],
                 body: JSON.stringify({ text: newComment }), // Send the comment text
             });
 
-            setComments([...comments, data]); // Add the new comment to the list
+            setComments((prevComments) => [...prevComments, data]); // Add the new comment to the list
             setNewComment(''); // Clear the input
         } catch (error) {
             console.error('Error adding comment:', error);
