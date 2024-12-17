@@ -117,7 +117,7 @@ Once the project is running:
 | Hottest Programmes       | `/hotest`                      | `/api/programmes?type=hotest`  | `GET`           |
 | View Programme Details   | `/programme/:id`               | `/api/programme/:id`           | `GET`           |
 | Like a Programme         | `/programme/:id (Ajax)`        | `/api/programme/:id/like`      | `POST`          |
-| Comment on Programme     | `/programme/:id (Ajax)`        | `/api/programme/:id/comment`   | `POST`          |
+| Comment on Programme     | `/programme/:id (Ajax)`        | `/api/programme/:id/comments`   | `POST`          |
 | My Profile               | `/myProfile`                   | `/api/myAccount`               | `GET`           |
 | Change Password          | `/myProfile (Ajax)`            | `/api/password`                | `PATCH`         |
 | Update Data              | `Admin Menu (Ajax)`            | `/api/updateData`              | `GET`           |
