@@ -27,7 +27,7 @@ module.exports = [
             { method: 'GET', path: '/programmes', requiresAuth: true }, // List programmes with parameters (Recent / Hotest)
             { method: 'GET', path: '/programme/:id', requiresAuth: true }, // View programme in detail
             { method: 'POST', path: '/programme/:id/like', requiresAuth: true }, // User clicks like
-            { method: 'POST', path: '/programme/:id/comment', requiresAuth: true }, // User leaves comment
+            { method: 'POST', path: '/programme/:id/comments', requiresAuth: true }, // User leaves comment
             { method: 'POST', path: '/programme', requiresAuth: true, adminOnly: true }, // Create new programme
             { method: 'PATCH', path: '/programme/:id', requiresAuth: true, adminOnly: true }, // Update a programme
             { method: 'DELETE', path: '/programme/:id', requiresAuth: true, adminOnly: true }, // Delete a programme
