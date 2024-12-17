@@ -35,13 +35,12 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ initialComments = [],
 
         try {
             const data: Comment = await apiRequest(`/programme/${programmeId}/comments`, {
-    
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: newComment }), // Send the comment text
             });
-console.log("hi");
-            setComments((prevComments) => [...prevComments, data]); // Add the new comment to the list
+
+            setComments([...comments, data]); // Add the new comment to the list
             setNewComment(''); // Clear the input
         } catch (error) {
             console.error('Error adding comment:', error);
