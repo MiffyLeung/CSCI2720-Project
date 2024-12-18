@@ -117,6 +117,7 @@ const AdminVenuesPage: React.FC = () => {
                 longitude: response.data?.coordinates?.longitude ?? data.longitude,
                 programmes: response.data?.programmes || [],
                 isFavourite: data.isFavourite, // Preserve existing favorite state
+                comments:response.comments
             };
     
             // Update venue list

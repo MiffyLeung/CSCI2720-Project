@@ -41,9 +41,6 @@ const ProgrammeSort: React.FC<ProgrammeSortProps> = ({ onSortChange, defaultFiel
       if (field === 'likes') {
         valueA = a.likes || 0;
         valueB = b.likes || 0;
-      } else if (field === 'comments') {
-        valueA = a.comments?.length || 0;
-        valueB = b.comments?.length || 0;
       } else if (field === 'submitdate') {
         valueA = a.submitdate || 0;
         valueB = b.submitdate || 0;
@@ -92,7 +89,6 @@ const ProgrammeSort: React.FC<ProgrammeSortProps> = ({ onSortChange, defaultFiel
           <option value="title">Title (DESC)</option>
           <option value="submitdate">Date</option>
           <option value="likes">Likes</option>
-          <option value="comments">Comments</option>
         </select>
       </div>
     </div>

@@ -65,6 +65,7 @@ const MapViewPage: React.FC = () => {
                             longitude: venue.longitude,
                             programmes: venue.programmes,
                             isFavourite: venue.isFavourite,
+                            comments: venue.comments,
                         }))} // Transform venues data for the map component
                         onMarkerClick={(id: string) => {
                             const venue = venues.find((p) => p.venue_id === id);

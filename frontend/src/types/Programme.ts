@@ -1,7 +1,6 @@
 // frontend/src/types/Programme.ts
 
 import { Venue } from './Venue';
-import { Comment } from './Comment';
 
 export interface Programme {
   event_id: string;
@@ -18,7 +17,6 @@ export interface Programme {
   eventUrl?: string;
   submitdate?: number; // Newly added field
   likes: number;
-  comments: Comment[];
 }
 
 export interface ProgrammeField {
@@ -43,13 +41,14 @@ export const programmeFields: Record<keyof Programme, ProgrammeField> = {
   eventUrl: { label: 'Event URL', type: 'text' },
   submitdate: { label: 'Submit Date', type: 'number' }, // Newly added field
   likes: { label: 'Likes', type: 'number' },
-  comments: { label: 'Comments', type: 'textarea' },
 };
 
 export const getDefaultProgramme = (): Programme => ({
   event_id: '',
   title: '',
-  venue: { venue_id: '', name: '', latitude: 0, longitude: 0, programmes:[], isFavourite: false },
+  venue: {
+    venue_id: '', name: '', latitude: 0, longitude: 0, programmes: [], isFavourite: false, comments: []
+  },
   presenter: '',
   type: '',
   dateline: '',
@@ -61,5 +60,4 @@ export const getDefaultProgramme = (): Programme => ({
   eventUrl: '',
   submitdate: 0, // Default value for submitdate
   likes: 0,
-  comments: [],
 });

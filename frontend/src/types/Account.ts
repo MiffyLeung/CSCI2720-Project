@@ -16,7 +16,7 @@ export interface AccountField {
 export const accountFields: Record<keyof Account, AccountField> = {
   id: { label: 'ID', type: 'text', required: true },
   username: { label: 'Username', type: 'text', required: true },
-  role: { label: 'Role', type: 'select', required: true, options: ['admin', 'user'] },
+  role: { label: 'Role', type: 'select', required: true, options: ['admin', 'user', 'banned'] },
 };
 
 export const getDefaultAccount = (): Account => ({

@@ -147,8 +147,10 @@ const ProgrammeList: React.FC<ProgrammeListProps> = ({
         <ProgrammeInfo
           programme={selectedProgramme}
           onClose={() => setSelectedProgramme(null)}
+          show={true} // Add the required show prop
         />
       )}
+
     </div>
   );
 };

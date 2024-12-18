@@ -1,7 +1,7 @@
 // frontend/src/pages/VenueDetailsPage.tsx
 
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useApi } from '../core/useApi';
 import { Venue } from '../types/Venue';
 import VenueMap from '../components/VenueMap';
@@ -37,39 +37,69 @@ const VenueDetailsPage: React.FC = (): React.JSX.Element => {
         const fetchVenue = async () => {
             if (abortControllerRef.current) abortControllerRef.current.abort();
             abortControllerRef.current = new AbortController();
-
+    
             try {
-                const response: Venue = await apiRequest(`/venue/${id}`, { method: 'GET' }, abortControllerRef.current.signal);
-                setVenue(response);
+                // Send API request to get the venue details
+                const responseData: Venue = await apiRequest(`/venue/${id}`, { 
+                    method: 'GET' 
+                }, abortControllerRef.current.signal);
+    
+                // Transform comments to include 'date' in 'YYYY-MM-DD' format
+                const formattedComments = responseData.comments.map((comment) => ({
+                    ...comment,
+                    date: comment.timestamp.split('T')[0], // Extract and format date
+                }));
+    
+                // Update the venue with transformed comments
+                setVenue({
+                    ...responseData,
+                    comments: formattedComments,
+                });
             } catch (error: any) {
-                if (error.name !== 'AbortError') addToast('Failed to load venue details.');
+                if (error.name !== 'AbortError') {
+                    addToast('Failed to load venue details.');
+                    console.error('Error fetching venue:', error);
+                }
             }
         };
-
+    
         fetchVenue();
-        return () => abortControllerRef.current?.abort();
+        return () => abortControllerRef.current?.abort(); // Cleanup
     }, [id, apiRequest]);
-
+    
     const handleAddComment = async () => {
         if (!newComment.trim()) return;
+
         try {
-            const newCommentData: Comment = {
+            // Prepare the request payload
+            const newCommentData = {
                 content: newComment,
-                author: 'Anonymous',
+                author: 'Anonymous', // Default placeholder
                 date: new Date().toISOString().split('T')[0],
             };
 
-            await apiRequest(`/venue/${id}/comment`, {
+            // Send POST request to the API
+            const responseData = await apiRequest(`/venue/${id}/comment`, {
                 method: 'POST',
                 body: JSON.stringify(newCommentData),
             });
-            setComments((prev) => [...prev, newCommentData]);
+
+            const formattedComment = {
+                ...responseData,
+                date: responseData.timestamp.split('T')[0], // Convert timestamp to 'YYYY-MM-DD'
+            };
+
+            // Update comments state with transformed data
+            setComments((prev) => [...prev, formattedComment]);
+
+            // Clear input field
             setNewComment('');
             addToast('Comment added successfully!');
         } catch (error) {
             addToast('Failed to add comment.');
         }
     };
+
 
     const addToast = (text: string) => {
         const newToast = { id: Date.now(), text };
@@ -90,7 +120,7 @@ const VenueDetailsPage: React.FC = (): React.JSX.Element => {
     return (
         <div>
             <Navbar />
-            <Container className="p-5 rounded position-relative" style={{ backgroundColor: 'rgb(95 127 89 / 75%)' }}>
+            <Container className="p-5 rounded" style={{ backgroundColor: 'rgb(95 127 89 / 75%)' }}>
                 {/* Back Button */}
                 <Button
                     variant="light"
@@ -121,33 +151,41 @@ const VenueDetailsPage: React.FC = (): React.JSX.Element => {
                         <div className="mb-2">
                             <h3 className="fw-bold">Programmes</h3>
                             {venue.programmes.length > 0 ? (
-                                venue.programmes.map((programme: any, idx) => (
-                                    <div
-                                        key={idx}
-                                        role="button"
-                                        onClick={() => setSelectedProgramme(programme)}
-                                        onMouseOver={(e) => e.currentTarget.style.background = '#FFF3'}
-                                        onMouseOut={(e) => e.currentTarget.style.background = 'unset'}
-                                        className="mb-2 d-flex align-items-center rounded shadow-sm p-2" // Added class for hover
-                                        style={{ transition: 'background-color 0.3s ease' }} // Smooth transition
-                                    > <div className="w-100 p-2">
-                                            <div className="mb-0 text-truncate h5">
-                                                <div
-                                                    className="text-decoration-none d-flex"
-                                                >
-                                                    {typeof programme === 'string' ? programme : programme.title}
+                                venue.programmes.map((programme, idx) => {
+                                    // Set parent venue to programme
+                                    const updatedProgramme =
+                                        typeof programme === 'string'
+                                            ? { event_id: programme, venue: venue } // Minimal object when programme is a string
+                                            : { ...programme, venue: venue }; // Add venue to programme if it's an object
+                                    return (
+                                        <div
+                                            key={idx}
+                                            role="button"
+                                            onClick={() => setSelectedProgramme(updatedProgramme)}
+                                            onMouseOver={(e) => e.currentTarget.style.background = '#FFF3'}
+                                            onMouseOut={(e) => e.currentTarget.style.background = 'unset'}
+                                            className="mb-2 d-flex align-items-center rounded shadow-sm p-2" // Added class for hover
+                                            style={{ transition: 'background-color 0.3s ease' }} // Smooth transition
+                                        > <div className="w-100 p-2">
+                                                <div className="mb-0 text-truncate h5">
+                                                    <div
+                                                        className="text-decoration-none d-flex"
+                                                    >
+                                                        {typeof programme === 'string' ? programme : programme.title}
 
+                                                    </div>
                                                 </div>
+                                                {typeof programme !== 'string' && (
+                                                    <p className="text-warning mb-0 small text-truncate d-flex w-100">
+                                                        <TagFill className="text-info mt-1 me-1" />
+                                                        {programme.dateline}
+                                                    </p>
+                                                )}
                                             </div>
-                                            {typeof programme !== 'string' && (
-                                                <p className="text-warning mb-0 small text-truncate d-flex w-100">
-                                                    <TagFill className="text-info mt-1 me-1" />
-                                                    {programme.dateline}
-                                                </p>
-                                            )}
                                         </div>
-                                    </div>
-                                ))
+                                    )
+                                }
+                                )
                             ) : (
                                 <p>No programmes available</p>
                             )}
@@ -199,14 +237,17 @@ const VenueDetailsPage: React.FC = (): React.JSX.Element => {
                         </Col>
                     )}
                 </Row>
+                {/* Toast Messages */}
+                <ToastStack messages={toastMessages} onRemove={removeToast} />
+
                 {selectedProgramme && (
                     <ProgrammeInfo
                         programme={selectedProgramme}
                         onClose={() => setSelectedProgramme(null)}
+                        show={true} // Add the required show prop
                     />
                 )}
-                {/* Toast Messages */}
-                <ToastStack messages={toastMessages} onRemove={removeToast} />
+
             </Container>
         </div>
     );

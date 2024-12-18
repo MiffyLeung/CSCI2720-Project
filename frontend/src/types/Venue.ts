@@ -1,6 +1,7 @@
 // frontend/src/types/Venue.ts
 import { Request, Response } from 'express';
 import { Programme } from './Programme';
+import { Account } from './Account';
 
 /**
  * Venue interface matching the backend schema.
@@ -13,6 +14,13 @@ export interface Venue {
   longitude: number; // Longitude of the venue
   programmes: string[] | Programme[]; // Relative Programme IDs
   isFavourite: boolean;  // Bookmarked
+  comments:Comment[];
+}
+
+export interface Comment{
+  author: Account;
+  content: string; 
+  timestamp: string;
 }
 
 /**
@@ -27,6 +35,7 @@ export interface BackendVenue {
   };
   programmes?: string[];
   isFavourite?: boolean; 
+  comments:Comment[];
 }
 
 /**
@@ -81,7 +90,8 @@ export const transformVenueFromBackend = (backendVenue: BackendVenue): Venue => 
   latitude: backendVenue.coordinates?.latitude || 0,
   longitude: backendVenue.coordinates?.longitude || 0,
   programmes: backendVenue.programmes || [],
-  isFavourite: false
+  isFavourite: false,
+  comments: []
 });
 
 /**
@@ -103,7 +113,8 @@ export const getDefaultVenue = (): Venue => ({
   latitude: 0,
   longitude: 0,
   programmes: [],
-  isFavourite: false
+  isFavourite: false,
+  comments:[]
 });
 
 /**
