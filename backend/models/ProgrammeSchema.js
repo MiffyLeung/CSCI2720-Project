@@ -42,7 +42,7 @@ const ProgrammeSchema = new mongoose.Schema({
   likes: { type: Number, default: 0, min: 0, required: true }, // Like count
   comment: [{ type: String }], // List of comments
 });
-ProgrammeSchema.index({ event_id: 1 }, { unique: true });
+/// ProgrammeSchema.index({ event_id: 1 }, { unique: true }); - Alikhan (me) commented this line because mongodb did not work with it on my setup
 ProgrammeSchema.index({ dateStart: -1 }); 
 ProgrammeSchema.index({ likes: -1 });    
 ProgrammeSchema.index({ submitdate: -1 }); 
