@@ -268,7 +268,7 @@ const VenueList: React.FC<VenueListProps> = ({
                 )}
               </td>
               {(onEdit || onDelete) && (
-                <td>
+                <td onClick={(e) => {e.stopPropagation();}}>
                   {onEdit && (
                     <Button size="sm" variant="success" onClick={() => onEdit(venue)}>
                       Modify
