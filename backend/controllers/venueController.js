@@ -27,6 +27,7 @@ const getAllVenues = async (req, res) => {
         });
 
         const transformedVenues = venues.map(venue => ({
+            _id: venue._id, // Добавлено поле _id
             venue_id: venue.venue_id,
             name: venue.name,
             latitude: venue.coordinates?.latitude,
@@ -81,6 +82,7 @@ const getMapVenues = async (req, res) => {
         });
 
         const transformedVenues = venues.map(venue => ({
+            
             venue_id: venue.venue_id,
             name: venue.name,
             latitude: venue.coordinates?.latitude,
@@ -129,7 +131,6 @@ const getVenueById = async (req, res) => {
         }
 
         const transformedVenue = {
-            venue_id: venue.venue_id,
             name: venue.name,
             latitude: venue.coordinates?.latitude,
             longitude: venue.coordinates?.longitude,
@@ -311,6 +312,7 @@ const addVenueBookmark = async (req, res) => {
         console.log('[DEBUG] Venue Found:', venue);
 
         // Add to favourites if not already in the list
+        // Добавляем в избранное, если ещё не добавлено
         if (!user.favourites.some(fav => fav.toString() === venue._id.toString())) {
             user.favourites.push(venue._id);
             await user.save();
