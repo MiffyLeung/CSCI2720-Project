@@ -24,6 +24,14 @@ const HONG_KONG_BOUNDS = {
   east: 114.41,
 };
 
+interface VenueListProps {
+  venues: Venue[];
+  defaultField?: string;
+  order?: 'asc' | 'desc';
+  onEdit?: any;
+  onDelete?: any;
+}
+
 
 /**
  * Calculate the distance between two coordinates using Haversine formula
@@ -52,8 +60,10 @@ const calculateDistance = (
  * @param {{ venues: Venue[]; onEdit?: Function; onDelete?: Function }} props - Component props
  * @returns {JSX.Element} VenueList Component
  */
-const VenueList: React.FC<{ venues: Venue[]; onEdit?: any; onDelete?: any }> = ({
+const VenueList: React.FC<VenueListProps> = ({
   venues,
+  defaultField = 'favourite',
+  order = 'asc',
   onEdit,
   onDelete,
 }) => {
@@ -63,8 +73,8 @@ const VenueList: React.FC<{ venues: Venue[]; onEdit?: any; onDelete?: any }> = (
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All Categories');
   const [distanceFilter, setDistanceFilter] = useState<number | null>(null);
-  const [sortField, setSortField] = useState<string>('favourite');
-  const [sortOrder, setSortOrder] = useState<string>('desc');
+  const [sortField, setSortField] = useState<string>(defaultField);
+  const [sortOrder, setSortOrder] = useState<string>(order);
   const [userLocation, setUserLocation] = useState(DEFAULT_CENTER);
   const [toastMessages, setToastMessages] = useState<ToastMessage[]>([]);
 
@@ -138,11 +148,9 @@ const VenueList: React.FC<{ venues: Venue[]; onEdit?: any; onDelete?: any }> = (
             break;
           }
           default: {
-            // Compare directly for other fields
             const valueA = a[sortField]?.toString().toLowerCase() || '';
             const valueB = b[sortField]?.toString().toLowerCase() || '';
-            if (valueA < valueB) comparison = -1;
-            if (valueA > valueB) comparison = 1;
+            comparison = valueA.localeCompare(valueB);
             break;
           }
         }

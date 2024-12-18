@@ -156,7 +156,7 @@ const AppNavbar: React.FC = () => {
                                     )}
                                 </>
                             )}
-                            <Form className="d-flex align-items-center me-3 py-3">
+                            <Form className="ms-auto d-flex align-items-center me-3 py-3">
                                 <Form.Check
                                     type="switch"
                                     id="dark-mode-switch"

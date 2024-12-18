@@ -65,51 +65,63 @@ const MyProfilePage: React.FC = () => {
     };
 
     return (
-        <div>
-            <Navbar />
+        <><Navbar />
+
             <div className="profile-container">
-                <h1 className="profile-title">My Profile</h1>
-                <form onSubmit={handleSubmit} className="profile-form">
-                    <div className="form-group">
-                        <label htmlFor="name">Name</label>
-                        <input
-                            type="text"
-                            id="name"
-                            name="name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            required
-                        />
+                <div className="card shadow">
+                    <div className="card-body">
+                        <h2 className="card-title text-center text-success mb-4">Edit profile</h2>
+                        <form onSubmit={handleSubmit} className="profile-form">
+                            <div className="mb-3">
+                                <label className="form-label" htmlFor="name">
+                                    New Username
+                                </label>
+                                <input
+                                    type="text"
+                                    id="name"
+                                    name="name"
+                                    className="form-control"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="password" className="form-label">
+                                    New Password
+                                </label>
+                                <input
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    className="form-control"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <button type="submit" className="btn btn-success">
+                                Update
+                            </button>
+                        </form>
                     </div>
-                    <div className="form-group">
-                        <label htmlFor="password">Password</label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <button type="submit" className="btn btn-success">Update</button>
-                </form>
-            </div>
 
-            {/* Toast Messages */}
-            <ToastStack messages={toastMessages} onRemove={removeToast} />
+                    {/* Toast Messages */}
+                    <ToastStack messages={toastMessages} onRemove={removeToast} />
 
-            {/* Success Modal */}
-            {showModal && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <h2>Profile Updated Successfully</h2>
-                        <p>Please log in again with your new credentials.</p>
-                        <button onClick={handleModalConfirm}>OK</button>
-                    </div>
+                    {/* Success Modal */}
+                    {showModal && (
+                        <div className="modal-overlay">
+                            <div className="modal-content">
+                                <h2>Profile Updated Successfully</h2>
+                                <p>Please log in again with your new credentials.</p>
+                                <button onClick={handleModalConfirm}>OK</button>
+                            </div>
+                        </div>
+                    )}
                 </div>
-            )}
-        </div>
+            </div>
+        </>
     );
 };
 

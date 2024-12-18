@@ -220,7 +220,7 @@ const getAccountDetails = async (req, res) => {
 };
 
 /**
- * Retrieves a list of the user's bookmarked programmes.
+ * Retrieves a list of the user's bookmarked venues.
  * 
  * @function getFavourites
  * @param {Object} req - Express request object
@@ -229,28 +229,42 @@ const getAccountDetails = async (req, res) => {
  */
 const getFavourites = async (req, res) => {
     try {
-        // Assuming there's a field "favourites" in the Account schema
-        const account = await Account.findById(req.account.id).populate('favourites'); // Populate favourites if it's a reference
-        if (!account || !account.favourites) {
+        const userId = req.account._id; // Get authenticated user ID
+
+        // Fetch account and populate favourites
+        const account = await Account.findById(userId).populate('favourites');
+        if (!account || !account.favourites || account.favourites.length === 0) {
             return res.status(404).json({
                 code: 'FAVOURITES_NOT_FOUND',
                 message: 'No favourites found',
             });
         }
 
+        // Transform favourites into the required format
+        const transformedFavourites = account.favourites.map(venue => ({
+            venue_id: venue.venue_id,
+            name: venue.name,
+            latitude: venue.coordinates?.latitude || null,
+            longitude: venue.coordinates?.longitude || null,
+            programmes: venue.programmes || [],
+            isFavourite: true, // Since these are favourites
+            comments: venue.comment || [], // Include comments if available
+        }));
+
         res.status(200).json({
             code: 'GET_FAVOURITES_SUCCESS',
             message: 'Favourites retrieved successfully',
-            data: account.favourites,
+            data: transformedFavourites,
         });
     } catch (error) {
-        console.error('Error fetching favourites:', error.message);
+        console.error('[DEBUG] Error fetching favourites:', error.message, error.stack);
         res.status(500).json({
             code: 'INTERNAL_SERVER_ERROR',
             message: 'An unexpected error occurred',
         });
     }
 };
+
 
 
 /**

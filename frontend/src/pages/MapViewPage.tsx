@@ -54,7 +54,7 @@ const MapViewPage: React.FC = () => {
     return (
         <div>
             <Navbar />
-            <div className="container p-5 rounded" style={{ backgroundColor: 'rgb(95 127 89 / 75%)' }}>
+            <div className="container p-5 rounded position-relative" style={{ backgroundColor: 'rgb(95 127 89 / 75%)' }}>
                 <h1 className="mb-4">Upcoming Programmes Map</h1>
                 <div className="map-container">
                     <VenueMap type='Many'

@@ -10,6 +10,8 @@ import { Container, Row, Col, Button } from 'react-bootstrap';
 import { ArrowLeft, TagFill } from 'react-bootstrap-icons'; // Icons
 import Navbar from '../components/Navbar';
 import ProgrammeInfo from 'components/ProgrammeInfo';
+import { formatUtcToLocalDateTime } from '../core/functions';
+
 
 /**
  * Comment Interface
@@ -44,10 +46,10 @@ const VenueDetailsPage: React.FC = (): React.JSX.Element => {
                     method: 'GET' 
                 }, abortControllerRef.current.signal);
     
-                // Transform comments to include 'date' in 'YYYY-MM-DD' format
+                // Transform comments to include 'date' in 'YYYY-MM-DD HH:mm' format
                 const formattedComments = responseData.comments.map((comment) => ({
                     ...comment,
-                    date: comment.timestamp.split('T')[0], // Extract and format date
+                    date: formatUtcToLocalDateTime(comment.timestamp), // Extract and format date
                 }));
     
                 // Update the venue with transformed comments
@@ -55,6 +57,7 @@ const VenueDetailsPage: React.FC = (): React.JSX.Element => {
                     ...responseData,
                     comments: formattedComments,
                 });
+                setComments(formattedComments);
             } catch (error: any) {
                 if (error.name !== 'AbortError') {
                     addToast('Failed to load venue details.');
@@ -86,7 +89,7 @@ const VenueDetailsPage: React.FC = (): React.JSX.Element => {
 
             const formattedComment = {
                 ...responseData,
-                date: responseData.timestamp.split('T')[0], // Convert timestamp to 'YYYY-MM-DD'
+                date: formatUtcToLocalDateTime(responseData.timestamp), // Convert timestamp to 'YYYY-MM-DD'
             };
 
             // Update comments state with transformed data
@@ -120,7 +123,7 @@ const VenueDetailsPage: React.FC = (): React.JSX.Element => {
     return (
         <div>
             <Navbar />
-            <Container className="p-5 rounded" style={{ backgroundColor: 'rgb(95 127 89 / 75%)' }}>
+            <Container className="p-5 rounded position-relative" style={{ backgroundColor: 'rgb(95 127 89 / 75%)' }}>
                 {/* Back Button */}
                 <Button
                     variant="light"
@@ -142,7 +145,7 @@ const VenueDetailsPage: React.FC = (): React.JSX.Element => {
                                     Coordinates: ({venue.latitude}, {venue.longitude})
                                 </p>
                             ) : (
-                                <h4 className="text-info mb-2">Location data not available for this venue.</h4>
+                                <h4 className="text-warning fw-bold text-center mb-2">Location data not available for this venue.</h4>
                             )}
                         </div>
                         <hr />

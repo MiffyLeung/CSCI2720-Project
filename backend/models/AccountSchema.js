@@ -19,32 +19,32 @@ const AccountSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, required: true },
-    favourites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Venue' }],
+    favourites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Venue' }], // Array of venue references
 });
-///AccountSchema.index({ username: 1 }); - Alikhan (me) commented this line because mongodb did not work with it on my setup
 
+/**
+ * Pre-save hook to ensure uniqueness in the favourites array.
+ * This ensures the user cannot add duplicate venue references.
+ */
+AccountSchema.pre('save', function (next) {
+    if (this.isModified('favourites')) {
+        // Ensure uniqueness in the favourites array
+        const uniqueFavourites = [...new Set(this.favourites.map(fav => fav.toString()))];
+        this.favourites = uniqueFavourites;
+    }
+    next();
+});
 
 /**
  * Pre-save hook to hash the password before saving the account.
  * Executes only if the password field is modified.
- * 
- * @function pre-save
- * @param {Function} next - Next middleware function
- * @returns {void}
  */
 AccountSchema.pre('save', hashPassword);
-
 
 /**
  * Static method to create or update an account.
  * If the account exists and forceUpdate is true, the account is updated.
  * Otherwise, it creates a new account.
- * 
- * @function createOrUpdate
- * @param {Object} accountData - Data for the account (username, password, role)
- * @param {boolean} [forceUpdate=false] - Flag to force update an existing account
- * @returns {Promise<Object>} - Status of the operation and the account object
- * @throws {Error} - Throws an error if the operation fails
  */
 AccountSchema.statics.createOrUpdate = async function ({ username, password, role }, forceUpdate = false) {
     const account = await this.findOne({ username });

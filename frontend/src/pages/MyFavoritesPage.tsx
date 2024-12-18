@@ -1,90 +1,103 @@
-// frontend/src/pages/MyFavoritesPage.tsx
+// FILEPATH: frontend/src/pages/MyFavoritesPage.tsx
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Navbar from '../components/Navbar';
-import { Programme } from '../types/Programme';
-import { useApi } from '../core/useApi'; // Centralized API request handler
-
+import VenueList from '../components/VenueList';
+import { useApi } from '../core/useApi';
+import { Venue } from '../types/Venue';
+import { transformVenueFromBackend } from '../types/Venue';
 /**
- * MyFavoritesPage component displays a list of the user's favorite programmes.
- *
- * @component
- * @example
- * <MyFavoritesPage />
+ * MyFavoritesPage displays the user's favorite venues.
+ * It allows the user to remove bookmarked venues.
  */
 const MyFavoritesPage: React.FC = () => {
-  const [favorites, setFavorites] = useState<Programme[]>([]); // State to hold favorite programmes
-  const apiRequest = useApi(); // Use centralized API handler
-  const [hasFetched, setHasFetched] = useState(false); // Prevent multiple fetches
+  const [favorites, setFavorites] = useState<Venue[]>([]); // State to store favorite venues
+  const apiRequest = useApi();
+  const hasFetched = useRef(false);
   const abortController = useRef<AbortController | null>(null);
 
-  useEffect(() => {
-    /**
-     * Fetch the user's favorite programmes.
-     */
-    const fetchFavorites = async () => {
-      if (hasFetched) return; // Skip if already fetched or not authenticated
-      if (abortController.current) abortController.current.abort(); // Abort previous request
-      abortController.current = new AbortController(); // Create a new controller for this request
-      setHasFetched(true); // Mark as fetched
+  /**
+   * Fetch favorite venues from the API and map them to the required format.
+   */
 
-      console.log('Fetching favorite programmes...');
-      try {
-        const data: Programme[] = await apiRequest(
-          '/myFavorites',
-          { method: 'GET' },
-          abortController.current.signal, // Attach AbortSignal
-          (response) => {
-            console.log('Fetched favorites:', response);
-            setFavorites(response); // Update state with fetched favorites
-          },
-          (error) => {
-            console.error('Error fetching favorites:', error);
-          }
+  const fetchFavorites = async () => {
+    if (hasFetched.current) return;
+
+    hasFetched.current = true;
+
+    if (abortController.current) {
+      abortController.current.abort();
+    }
+    abortController.current = new AbortController();
+
+    try {
+      const response = await apiRequest(
+        '/myFavorites',
+        { method: 'GET', signal: abortController.current.signal }
+      );
+
+      console.log('Fetched Favorites Response:', response);
+
+      if (Array.isArray(response)) {
+        const mappedFavorites = response.map(transformVenueFromBackend);
+
+        // 預設根據 programmes 數量降序排序
+        const sortedFavorites = mappedFavorites.sort(
+          (a, b) => (b.programmes.length || 0) - (a.programmes.length || 0)
         );
-      } catch (error) {
-        if ((error as Error).name === 'AbortError') {
-          console.log('Fetch aborted');
-        } else {
-          console.error('Unexpected error:', error);
-        }
-      }
-    };
 
+        setFavorites(sortedFavorites);
+      } else {
+        console.warn('Unexpected API response structure:', response);
+        setFavorites([]);
+      }
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.log('Fetch aborted.');
+      } else {
+        console.error('Fetch error:', error);
+      }
+    }
+  };
+
+
+  /**
+   * Remove a venue from bookmarks.
+   * @param {string} venueId - The ID of the venue to remove.
+   */
+  const removeBookmark = async (venueId: string) => {
+    try {
+      await apiRequest(`/venue/${venueId}/bookmark`, { method: 'DELETE' });
+      setFavorites((prev) => prev.filter((venue) => venue.venue_id !== venueId));
+    } catch (error: any) {
+      console.error('Error removing bookmark:', error);
+    }
+  };
+
+  // Fetch favorites on component mount
+  useEffect(() => {
     fetchFavorites();
 
-    // Cleanup on component unmount
     return () => {
       if (abortController.current) {
         abortController.current.abort();
       }
     };
-  }, [apiRequest, hasFetched]);
+  }, []);
 
   return (
     <div>
       <Navbar />
-      <div className="container p-5 rounded" style={{backgroundColor: 'rgb(95 127 89 / 75%)'}}>
-        <h1 className="mb-4">My Favorites</h1>
+      <div className="container p-5 rounded position-relative" style={{ backgroundColor: 'rgb(95 127 89 / 75%)' }}>
+        <h1 className="mb-4">My Favorite Venues</h1>
         {favorites.length > 0 ? (
-          <div className="row">
-            {favorites.map((programme) => (
-              <div className="col-md-4 mb-4" key={programme.event_id}>
-                <div className="card">
-                  <div className="card-body">
-                    <h5 className="card-title">{programme.title}</h5>
-                    <p className="card-text">
-                      <strong>Dateline:</strong> {programme.dateline}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <VenueList
+            venues={favorites}
+            defaultField="programmes"
+            order="desc"
+          />
         ) : (
-          <div className="alert alert-info" role="alert">
-            You have no favorite programmes yet.
-          </div>
+          <div>No favorite venues found.</div>
         )}
       </div>
     </div>

@@ -114,7 +114,12 @@ const getMapVenues = async (req, res) => {
  */
 const getVenueById = async (req, res) => {
     try {
-        const venue = await Venue.findOne({ venue_id: req.params.id }).populate('programmes');
+        const venue = await Venue.findOne({ venue_id: req.params.id })
+            .populate('programmes') // Populate programmes
+            .populate({
+                path: 'comment.author', // Populate author in comments
+                select: 'username', // Select only the username field
+            });
         if (!venue) {
             return res.status(404).json({
                 code: 'VENUE_NOT_FOUND',
@@ -131,7 +136,7 @@ const getVenueById = async (req, res) => {
             programmes: venue.programmes || [],
             comments: venue.comment.map(c => ({
                 _id: c._id, // Include comment ID for deletion
-                author: c.author,
+                author: c.author?.username || 'Anonymous',
                 content: c.content,
                 timestamp: c.timestamp,
             })),
@@ -358,12 +363,9 @@ const removeVenueBookmark = async (req, res) => {
             });
         }
 
-        console.log('[DEBUG] User Data:', {
-            userId: userId.toString(),
-            favourites: user.favourites.map(fav => fav.toString()),
-        });
+        console.log('[DEBUG] User Favourites Before:', user.favourites);
 
-        // Use venue_id to query
+        // Find the venue by venue_id
         const venue = await Venue.findOne({ venue_id: id });
         if (!venue) {
             console.error('[DEBUG] Venue Not Found:', id);
@@ -373,15 +375,26 @@ const removeVenueBookmark = async (req, res) => {
             });
         }
 
-        // Remove from favourites if it exists in the list
-        user.favourites = user.favourites.filter(fav => fav.toString() !== venue._id.toString());
+        // Compare by venue_id instead of ObjectId
+        const initialLength = user.favourites.length;
+        user.favourites = user.favourites.filter(fav => fav.venue_id !== id);
+
+        if (user.favourites.length === initialLength) {
+            console.log('[DEBUG] Venue Not in Favourites:', id);
+            return res.status(400).json({
+                code: 'VENUE_NOT_IN_FAVOURITES',
+                message: 'Venue is not in favourites',
+            });
+        }
+
         await user.save();
 
-        console.log('[DEBUG] Updated Favourites:', user.favourites);
+        console.log('[DEBUG] Updated Favourites After:', user.favourites);
 
         res.status(200).json({
             code: 'REMOVE_BOOKMARK_SUCCESS',
             message: 'Venue removed from bookmarks successfully',
+            favourites: user.favourites,
         });
     } catch (error) {
         console.error('[DEBUG] Error Removing Bookmark:', error.message, error.stack);
@@ -392,6 +405,8 @@ const removeVenueBookmark = async (req, res) => {
         });
     }
 };
+
+
 
 /**
  * Adds a new comment to a venue by its venue_id.

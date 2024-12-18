@@ -138,7 +138,7 @@ const AdminAccountsPage: React.FC = () => {
     return (
         <div>
             <Navbar />
-            <div className="container p-5 rounded" style={{backgroundColor: 'rgb(95 127 89 / 75%)'}}>
+            <div className="container p-5 rounded position-relative" style={{backgroundColor: 'rgb(95 127 89 / 75%)'}}>
                 <h1>Manage Accounts</h1>
                 <button className="btn btn-success mb-3" onClick={() => openModal()}>
                     Add Account

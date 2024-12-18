@@ -18,7 +18,7 @@ export interface Venue {
 }
 
 export interface Comment{
-  author: Account;
+  author: string;
   content: string; 
   timestamp: string;
 }
@@ -90,8 +90,8 @@ export const transformVenueFromBackend = (backendVenue: BackendVenue): Venue => 
   latitude: backendVenue.coordinates?.latitude || 0,
   longitude: backendVenue.coordinates?.longitude || 0,
   programmes: backendVenue.programmes || [],
-  isFavourite: false,
-  comments: []
+  isFavourite: backendVenue.isFavourite ?? false, 
+  comments: backendVenue.comments || [] 
 });
 
 /**
