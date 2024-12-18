@@ -42,6 +42,9 @@ const ProgrammeSchema = new mongoose.Schema({
   likes: { type: Number, default: 0, min: 0, required: true }, // Like count
   comment: [{ type: String }], // List of comments
 });
-ProgrammeSchema.index({ event_id: 1 });
+ProgrammeSchema.index({ event_id: 1 }, { unique: true });
+ProgrammeSchema.index({ dateStart: -1 }); 
+ProgrammeSchema.index({ likes: -1 });    
+ProgrammeSchema.index({ submitdate: -1 }); 
 
 module.exports = mongoose.model('Programme', ProgrammeSchema);

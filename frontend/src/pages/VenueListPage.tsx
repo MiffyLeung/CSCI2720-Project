@@ -67,7 +67,7 @@ const VenueListPage: React.FC = () => {
   return (
     <div>
       <Navbar />
-      <div className="container p-5 rounded" style={{ backgroundColor: 'rgb(144 201 133 / 50%)' }}>
+      <div className="container p-5 rounded" style={{ backgroundColor: 'rgb(95 127 89 / 75%)' }}>
         <h1 className="mb-4">Venue Lists</h1>
         {venues.length > 0 ? (
           <VenueList venues={venues} />

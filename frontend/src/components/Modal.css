@@ -4,14 +4,14 @@
     justify-content: center;
     min-height: 100vh;
     min-width: max(280px , 50vw);
-    margin: 0;
+    margin: auto;
 }
 
 .modal-content {
     background-color: #fff;
     color: #000;
     border-radius: 8px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0px 4px 8px rgba(255, 255, 255, 0.5);
 }
 
 /* Dark Mode Support */

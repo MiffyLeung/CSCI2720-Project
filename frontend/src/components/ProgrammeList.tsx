@@ -99,15 +99,11 @@ const ProgrammeList: React.FC<ProgrammeListProps> = ({
               </td>
 
               {/* Ranking column */}
-              <td className="text-center align-middle" style={{ whiteSpace: 'pre-line' }}>
+              <td className="text-center h4 align-middle" style={{ whiteSpace: 'pre-line' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
                   <div>
                     <span className="fw-bold">{programme.likes}</span>{' '}
                     <span role="img" aria-label="likes">👍</span>
-                  </div>
-                  <div>
-                    <span className="fw-bold">{programme.comments?.length || 0}</span>{' '}
-                    <span role="img" aria-label="comments">💬</span>
                   </div>
                 </div>
               </td>

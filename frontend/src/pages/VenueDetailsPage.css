@@ -1,0 +1,4 @@
+/* Add hover effect with a light background */
+.bg-light-hover:hover {
+    background-color: #f8f9fa; /* Light grey background */
+}

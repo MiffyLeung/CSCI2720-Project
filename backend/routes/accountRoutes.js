@@ -6,6 +6,9 @@ const accountController = require('../controllers/accountController');
 
 const router = express.Router();
 
+// User registration route
+router.post('/register', accountController.register);
+
 /**
  * Public route for user login.
  */

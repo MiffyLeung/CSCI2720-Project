@@ -1,5 +1,6 @@
 // frontend/src/types/Venue.ts
 import { Request, Response } from 'express';
+import { Programme } from './Programme';
 
 /**
  * Venue interface matching the backend schema.
@@ -10,7 +11,7 @@ export interface Venue {
   name: string; // Name of the venue
   latitude: number; // Latitude of the venue
   longitude: number; // Longitude of the venue
-  programmes?: string[]; // Relative Programme IDs
+  programmes: string[] | Programme[]; // Relative Programme IDs
   isFavourite: boolean;  // Bookmarked
 }
 

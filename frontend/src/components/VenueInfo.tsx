@@ -2,20 +2,27 @@
 
 import React from 'react';
 import { Venue } from '../types/Venue';
+import { Link } from 'react-router-dom';
+import { Search } from 'react-bootstrap-icons';
 
 interface VenueInfoProps {
-  venue: Venue | null;
-  onClose: () => void;
+  venue: Venue;
 }
 
-const VenueInfo: React.FC<VenueInfoProps> = ({ venue, onClose }) => {
-  if (!venue) return null; 
+const VenueInfo: React.FC<VenueInfoProps> = ({ venue }) => {
   return (
-    <div className="modal">
-      <h2>{venue.name}</h2>
-      <p>Latitude: {venue.latitude}</p>
-      <p>Longitude: {venue.longitude}</p>
-      <button onClick={onClose}>Close</button>
+    <div className="p-1 flex text-center">
+      <h4 className="mt-2">
+        <Link className="link-success" to={`/venue/${venue.venue_id}`}>
+          {venue.name}
+        </Link>
+      </h4>
+      <p className="pt-1">
+        <Link className="btn btn-outline-success" to={`/venue/${venue.venue_id}`}>
+        <Search className="me-1" />
+          Details
+        </Link>
+      </p>
     </div>
   );
 };

@@ -25,10 +25,21 @@ const Modal: React.FC<ModalProps> = ({
 }) => {
   if (!show) return null;
 
+  /**
+   * Handle click on the modal background.
+   * Close the modal only if the click is outside the modal content.
+   */
+  const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose(); // Trigger onClose when clicking the background
+    }
+  };
+
   return (
     <div
       className="modal fade show d-flex justify-content-center align-items-center"
       style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+      onClick={handleBackgroundClick} // Attach the event handler
     >
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">

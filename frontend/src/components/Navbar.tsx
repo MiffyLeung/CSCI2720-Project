@@ -5,6 +5,7 @@ import { Container, Nav, Navbar, NavDropdown, Form, Alert } from 'react-bootstra
 import { LinkContainer } from 'react-router-bootstrap';
 import { useAuth } from '../core/AuthContext';
 import { useApi } from '../core/useApi';
+import './Navbar.css';
 import { useNavigate } from 'react-router-dom';
 
 /**

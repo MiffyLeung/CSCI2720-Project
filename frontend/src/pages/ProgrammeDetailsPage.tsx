@@ -1,15 +1,16 @@
 // frontend/src/pages/ProgrammeDetailsPage.tsx
 
 import React, { useEffect, useState, JSX } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import CommentsSection from '../components/CommentsSection';
 import LikeButton from '../components/LikeButton';
 import MapButton from '../components/MapButton';
 import { Programme } from '../types/Programme';
 import { useApi } from '../core/useApi';
 import Container from 'react-bootstrap/Container';
 import Card from 'react-bootstrap/Card';
-
+import { Button } from 'react-bootstrap';
+import { ArrowLeft } from 'react-bootstrap-icons';
 /**
  * A page to display detailed information about a specific programme.
  *
@@ -21,7 +22,7 @@ const ProgrammeDetailsPage: React.FC = () => {
     const [programme, setProgramme] = useState<Programme | null>(null); // State to store programme details
     const apiRequest = useApi(); // API request hook
     const [hasFetched, setHasFetched] = useState(false); // Prevent duplicate fetches
-
+    const navigate = useNavigate();
     useEffect(() => {
         /**
          * Fetch the programme details by ID from the API.
@@ -73,7 +74,7 @@ const ProgrammeDetailsPage: React.FC = () => {
             </React.Fragment>
         ));
     };
-
+    const goBack = () => navigate(-1);
     return (
         <div>
             <Navbar />
@@ -87,7 +88,7 @@ const ProgrammeDetailsPage: React.FC = () => {
                 </div>
 
                 {/* Programme Details */}
-                <Card className="shadow-sm border-0 mb-4" style={{background:'linear-gradient(135deg, #def8c4, #8be6c6)'}}>
+                <Card className="shadow border-0 mb-4" style={{ background: 'linear-gradient(135deg, rgb(222, 248, 196), rgb(196 255 234 / 75%))' }}>
                     <Card.Body>
                         <p>
                             <strong>Presenter:</strong> {programme.presenter || 'N/A'}
@@ -147,15 +148,16 @@ const ProgrammeDetailsPage: React.FC = () => {
                                 'No event URL available'
                             )}
                         </p>
+                        <Button
+                            variant="light"
+                            onClick={goBack}
+                            className="m-auto d-flex align-items-center btn btn-dark"
+                        >
+                            <ArrowLeft className="me-2" />
+                            Back
+                        </Button>
                     </Card.Body>
                 </Card>
-
-                {/* Comments Section */}
-                <CommentsSection
-                    initialComments={programme.comments || []} // Default to empty array
-                    programmeId={programme.event_id}
-                />
-
             </Container>
         </div>
     );

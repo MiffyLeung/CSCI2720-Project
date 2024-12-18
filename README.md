@@ -108,6 +108,7 @@ Once the project is running:
 | **Feature**              | **Frontend Route**             | **Backend API Route**          | **HTTP Method** |
 |--------------------------|--------------------------------|--------------------------------|-----------------|
 | Login                    | `/login`                       | `/api/login`                   | `POST`          |
+| Register                 | `/register`                    | `/api/register`                | `POST`          |
 | Dashboard (Venue List)   | `/`                            | `/api/venues`                  | `GET`           |
 | Map View                 | `/map`                         | `/api/venues`                  | `GET`           |
 | Bookmark a Venue         | `/ or /map or venue/:id (Ajax)`| `/api/venue/:id/bookmark`      | `POST`          |

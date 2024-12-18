@@ -5,8 +5,11 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Venue } from 'types/Venue';
+import { Link } from 'react-router-dom';
+import VenueInfo from './VenueInfo';
 
 export interface VenueMapProps {
+  type: 'One' | 'Many';
   venues: Venue[];
   onMarkerClick: (id: string) => void;
   onMarkerHover?: (id: string) => void;
@@ -43,7 +46,7 @@ const userLocationIcon = new L.Icon({
   iconAnchor: [16, 32], // Position the icon properly on the map
 });
 
-const VenueMap: React.FC<VenueMapProps> = ({ venues }) => {
+const VenueMap: React.FC<VenueMapProps> = ({ type, venues }) => {
   const [mapCenter, setMapCenter] = useState<[number, number]>(DEFAULT_CENTER);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
 
@@ -67,18 +70,20 @@ const VenueMap: React.FC<VenueMapProps> = ({ venues }) => {
   }, []);
 
   return (
-    <MapContainer center={mapCenter} zoom={11} style={{ height: '600px', width: '100%' }}>
+    <MapContainer center={mapCenter} zoom={11} style={{ minHeight: '500px', width: '100%' }}>
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
       />
       {venues.map((venue) => (
         <Marker key={venue.venue_id} position={[venue.latitude, venue.longitude]}>
-          <Popup>{venue.name}</Popup>
+          <Popup>
+            <VenueInfo venue={venue} />
+          </Popup>
         </Marker>
       ))}
         <Marker position={mapCenter} icon={userLocationIcon}>
-          <Popup>You are here</Popup>
+          <Popup><h4 className="p-2 text-success">You are here</h4></Popup>
         </Marker>
     </MapContainer>
   );

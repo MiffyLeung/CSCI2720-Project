@@ -13,10 +13,10 @@ import { useApi } from '../core/useApi'; // Centralized API handler
  */
 const MapViewPage: React.FC = () => {
     const [venues, setVenues] = useState<Venue[]>([]); // State to hold venue data
-  const apiRequest = useApi(); // API handler
-  const hasFetched = useRef(false); // Track whether data has already been fetched
-  const abortController = useRef<AbortController | null>(null); // AbortController for fetch requests
- 
+    const apiRequest = useApi(); // API handler
+    const hasFetched = useRef(false); // Track whether data has already been fetched
+    const abortController = useRef<AbortController | null>(null); // AbortController for fetch requests
+
     useEffect(() => {
         /**
          * Fetches venue data for the map.
@@ -25,12 +25,12 @@ const MapViewPage: React.FC = () => {
         const fetchVenues = async () => {
             if (hasFetched.current) return; // Prevent repeated fetch
             hasFetched.current = true; // Mark as fetched
-        
+
             if (abortController.current) {
-              abortController.current.abort(); // Abort any existing requests
+                abortController.current.abort(); // Abort any existing requests
             }
             abortController.current = new AbortController();
-        
+
             try {
                 const data: Venue[] = await apiRequest('/venues/forMap');
                 setVenues(data); // Update state with fetched venue data
@@ -54,10 +54,10 @@ const MapViewPage: React.FC = () => {
     return (
         <div>
             <Navbar />
-            <div className="container p-5 rounded" style={{backgroundColor: 'rgb(95 127 89 / 75%)'}}>
+            <div className="container p-5 rounded" style={{ backgroundColor: 'rgb(95 127 89 / 75%)' }}>
                 <h1 className="mb-4">Upcoming Programmes Map</h1>
                 <div className="map-container">
-                    <VenueMap
+                    <VenueMap type='Many'
                         venues={venues.map((venue) => ({
                             venue_id: venue.venue_id,
                             name: venue.name,
@@ -79,7 +79,7 @@ const MapViewPage: React.FC = () => {
                         renderPopup={(id: string) => {
                             const venue = venues.find((p) => p.venue_id === id);
                             return venue ? (
-                                <VenueInfo venue={venue} onClose={() => console.log('Popup closed')} />
+                                <VenueInfo venue={venue} />
                             ) : null; // Render popup information for the hovered venue
                         }}
                     />

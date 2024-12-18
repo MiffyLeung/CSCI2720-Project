@@ -347,8 +347,66 @@ const createAccount = async (req, res) => {
     }
 };
 
+/**
+ * Handles user self-registration.
+ * Validates username uniqueness and creates a new account with "user" role by default.
+ * 
+ * @function register
+ * @param {Object} req - Express request object
+ * @param {Object} req.body - Request body containing username and password
+ * @param {Object} res - Express response object
+ * @returns {void} - Sends a JSON response indicating success or failure
+ */
+const register = async (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        // Validate input fields
+        if (!username || !password) {
+            return res.status(400).json({
+                code: 'MISSING_FIELDS',
+                message: 'Username and password are required.',
+            });
+        }
+
+        // Check if the username already exists
+        const existingAccount = await Account.findOne({ username });
+        if (existingAccount) {
+            return res.status(409).json({
+                code: 'ACCOUNT_EXISTS',
+                message: 'Username already exists. Please choose another one.',
+            });
+        }
+
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create a new account with default role "user"
+        const newAccount = new Account({ 
+            username, 
+            password: hashedPassword, 
+            role: 'user' // Default role for self-registered users
+        });
+        await newAccount.save();
+
+        res.status(201).json({
+            code: 'REGISTER_SUCCESS',
+            message: 'Registration successful.',
+            data: { id: newAccount._id, username: newAccount.username, role: newAccount.role },
+        });
+    } catch (error) {
+        console.error('Error during registration:', error.message);
+        res.status(500).json({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'An unexpected error occurred during registration.',
+            debug: generateDebugInfo(error),
+        });
+    }
+};
+
 module.exports = {
     login,
+    register,
     listAccounts,
     updateAccount,
     changePassword,

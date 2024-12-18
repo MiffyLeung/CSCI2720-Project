@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Table, Form, Button } from 'react-bootstrap';
-import { Link } from 'react-router-dom'; // Import Link for navigation
+import { Link, useNavigate } from 'react-router-dom';
+import { Film, Heart, HeartFill } from 'react-bootstrap-icons';
 import VenueSort from '../components/VenueSort';
 import VenueSearch from '../components/VenueSearch';
 import VenueDistance from '../components/VenueDistance';
 import VenueCategory from '../components/VenueCategory';
-import VenueInfo from './VenueInfo';
 import ToastStack, { ToastMessage } from './ToastStack';
 import { Venue } from '../types/Venue';
 import { useApi } from '../core/useApi';
@@ -24,20 +24,6 @@ const HONG_KONG_BOUNDS = {
   east: 114.41,
 };
 
-/**
- * Check if the given coordinates are within Hong Kong bounds
- * @param {number} lat - Latitude of the location
- * @param {number} lng - Longitude of the location
- * @returns {boolean} True if within bounds, else false
- */
-const isInHongKong = (lat: number, lng: number): boolean => {
-  return (
-    lat >= HONG_KONG_BOUNDS.south &&
-    lat <= HONG_KONG_BOUNDS.north &&
-    lng >= HONG_KONG_BOUNDS.west &&
-    lng <= HONG_KONG_BOUNDS.east
-  );
-};
 
 /**
  * Calculate the distance between two coordinates using Haversine formula
@@ -56,8 +42,8 @@ const calculateDistance = (
   const a =
     Math.sin(dLat / 2) ** 2 +
     Math.cos(toRad(coord1.latitude)) *
-      Math.cos(toRad(coord2.latitude)) *
-      Math.sin(dLon / 2) ** 2;
+    Math.cos(toRad(coord2.latitude)) *
+    Math.sin(dLon / 2) ** 2;
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 };
 
@@ -70,8 +56,9 @@ const VenueList: React.FC<{ venues: Venue[]; onEdit?: any; onDelete?: any }> = (
   venues,
   onEdit,
   onDelete,
-}): React.JSX.Element => {
+}) => {
   const apiRequest = useApi();
+  const navigate = useNavigate(); // To navigate to venue detail
   const [filteredVenues, setFilteredVenues] = useState<Venue[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All Categories');
@@ -79,41 +66,38 @@ const VenueList: React.FC<{ venues: Venue[]; onEdit?: any; onDelete?: any }> = (
   const [sortField, setSortField] = useState<string>('favourite');
   const [sortOrder, setSortOrder] = useState<string>('desc');
   const [userLocation, setUserLocation] = useState(DEFAULT_CENTER);
-  const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [toastMessages, setToastMessages] = useState<ToastMessage[]>([]);
 
-  // Initialize user location
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
         setUserLocation(
-          isInHongKong(latitude, longitude) ? position.coords : DEFAULT_CENTER
+          latitude >= HONG_KONG_BOUNDS.south && latitude <= HONG_KONG_BOUNDS.north &&
+            longitude >= HONG_KONG_BOUNDS.west && longitude <= HONG_KONG_BOUNDS.east
+            ? position.coords
+            : DEFAULT_CENTER
         );
       },
       () => setUserLocation(DEFAULT_CENTER)
     );
   }, []);
 
-  // Apply all filters
   useEffect(() => {
     let result = [...venues];
 
-    // Search filter
     if (searchQuery) {
       result = result.filter((venue) =>
         venue.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
-    // Category filter
     if (selectedCategory && selectedCategory !== 'All Categories') {
       result = result.filter((venue) =>
         venue.name.toLowerCase().includes(selectedCategory.toLowerCase())
       );
     }
 
-    // Distance filter
     if (distanceFilter) {
       result = result.filter((venue) => {
         if (!venue.latitude || !venue.longitude) return true; // Keep null coordinates
@@ -128,33 +112,47 @@ const VenueList: React.FC<{ venues: Venue[]; onEdit?: any; onDelete?: any }> = (
     // Sort venues
     if (sortField) {
       result.sort((a, b) => {
-        if (sortField === 'distance') {
-          const distanceA = calculateDistance(
-            { latitude: a.latitude, longitude: a.longitude },
-            userLocation
-          );
-          const distanceB = calculateDistance(
-            { latitude: b.latitude, longitude: b.longitude },
-            userLocation
-          );
-          return sortOrder === 'asc' ? distanceA - distanceB : distanceB - distanceA;
+        let comparison = 0;
+
+        switch (sortField) {
+          case 'distance': {
+            const distanceA = calculateDistance(
+              { latitude: a.latitude, longitude: a.longitude },
+              userLocation
+            );
+            const distanceB = calculateDistance(
+              { latitude: b.latitude, longitude: b.longitude },
+              userLocation
+            );
+            comparison = distanceA - distanceB;
+            break;
+          }
+          case 'programmes': {
+            const progA = a.programmes?.length || 0;
+            const progB = b.programmes?.length || 0;
+            comparison = progA - progB;
+            break;
+          }
+          case 'favourite': {
+            comparison = Number(a.isFavourite) - Number(b.isFavourite);
+            break;
+          }
+          default: {
+            // Compare directly for other fields
+            const valueA = a[sortField]?.toString().toLowerCase() || '';
+            const valueB = b[sortField]?.toString().toLowerCase() || '';
+            if (valueA < valueB) comparison = -1;
+            if (valueA > valueB) comparison = 1;
+            break;
+          }
         }
-        if (sortField === 'programmes') {
-          const progA = a.programmes?.length || 0;
-          const progB = b.programmes?.length || 0;
-          return sortOrder === 'asc' ? progA - progB : progB - progA;
-        }
-        if (sortField === 'favourite') {
-          return sortOrder === 'asc'
-            ? Number(a.isFavourite) - Number(b.isFavourite)
-            : Number(b.isFavourite) - Number(a.isFavourite);
-        }
-        return 0;
+
+        return sortOrder === 'asc' ? comparison : -comparison;
       });
     }
 
     setFilteredVenues(result);
-  }, [venues, searchQuery, selectedCategory, distanceFilter, userLocation]);
+  }, [venues, searchQuery, selectedCategory, distanceFilter, sortField, sortOrder, userLocation]);
 
   /**
    * Add a toast message to display
@@ -192,9 +190,12 @@ const VenueList: React.FC<{ venues: Venue[]; onEdit?: any; onDelete?: any }> = (
           v.venue_id === venueId ? { ...v, isFavourite: updatedState } : v
         )
       );
-      addToast(`Bookmark ${updatedState ? 'added' : 'removed'} successfully!`);
-    } catch (error) {
-      addToast('Failed to update bookmark.');
+      setToastMessages((prev) => [
+        ...prev,
+        { id: Date.now(), text: `Bookmark ${updatedState ? 'added' : 'removed'}` },
+      ]);
+    } catch {
+      setToastMessages((prev) => [...prev, { id: Date.now(), text: 'Failed to update bookmark' }]);
     }
   };
 
@@ -223,21 +224,40 @@ const VenueList: React.FC<{ venues: Venue[]; onEdit?: any; onDelete?: any }> = (
         </thead>
         <tbody>
           {filteredVenues.map((venue) => (
-            <tr key={venue.venue_id} onClick={() => setSelectedVenue(venue)}>
+            <tr
+              key={venue.venue_id}
+              className="align-middle"
+              style={{ transition: 'transform 0.2s' }}
+              onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.01)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1.0)'}
+              onClick={() => navigate(`/venue/${venue.venue_id}`)} // Navigate to venue detail
+              role="button"
+            >
               <td>{venue.venue_id}</td>
               <td>
-                <Link to={`/venue/${venue.venue_id}`}>
+                <Link to={`/venue/${venue.venue_id}`} className="text-decoration-none">
                   {venue.name}
                 </Link>
               </td>
               <td>{`(${venue.latitude}, ${venue.longitude})`}</td>
-              <td>{venue.programmes?.length || 0}</td>
-              <td>
-                <Form.Check
-                  type="checkbox"
-                  checked={venue.isFavourite}
-                  onChange={() => handleBookmarkToggle(venue.venue_id)}
-                />
+              <td className="text-center text-primary h4">
+                {venue.programmes?.length || 0}
+                <Film className="ms-2" />
+              </td>
+              <td
+                className="text-center h3 text-danger"
+                role="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleBookmarkToggle(venue.venue_id);
+                }}
+                style={{ cursor: 'pointer' }}
+              >
+                {venue.isFavourite ? (
+                  <HeartFill />
+                ) : (
+                  <Heart />
+                )}
               </td>
               {(onEdit || onDelete) && (
                 <td>
@@ -258,8 +278,7 @@ const VenueList: React.FC<{ venues: Venue[]; onEdit?: any; onDelete?: any }> = (
         </tbody>
       </Table>
 
-      <VenueInfo venue={selectedVenue} onClose={() => setSelectedVenue(null)} />
-      <ToastStack messages={toastMessages} onRemove={removeToast} />
+      <ToastStack messages={toastMessages} onRemove={(id) => setToastMessages((prev) => prev.filter((msg) => msg.id !== id))} />
     </div>
   );
 };

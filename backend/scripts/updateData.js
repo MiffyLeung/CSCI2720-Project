@@ -5,7 +5,7 @@ const xml2js = require('xml2js'); // For XML parsing
 const mongoose = require('mongoose');
 const Programme = require('../models/ProgrammeSchema');
 const Venue = require('../models/VenueSchema');
-
+const MetaData = require('../models/MetaDataSchema');
 /**
  * Connects to the MongoDB database using the MONGO_URI from .env.
  * 
@@ -69,32 +69,34 @@ const parseXML = async (xmlContent) => {
  * @returns {Promise<void>}
  */
 const upsertProgrammes = async (programmes) => {
-    const newProgrammeIds = programmes.map(p => p.event_id);
+    const newProgrammeIds = programmes.map((p) => p.event_id);
 
     for (const programmeData of programmes) {
         try {
-            // Find the corresponding Venue
             const venue = await Venue.findOne({ venue_id: programmeData.venue_id });
             if (!venue) {
                 console.error(`Venue not found for venue_id: ${programmeData.venue_id}`);
                 continue;
             }
 
-            // Replace venue_id with Venue's ObjectId
             programmeData.venue = venue._id;
-            delete programmeData.venue_id;
 
-            // Preserve existing likes and comments
             const existingProgramme = await Programme.findOne({ event_id: programmeData.event_id });
+
             if (existingProgramme) {
-                programmeData.likes = existingProgramme.likes || 0;
-                programmeData.comments = existingProgramme.comments || [];
+                // Preserve manually updated fields if the new data is NIL
+                programmeData.title = programmeData.title || existingProgramme.title;
+                programmeData.description = programmeData.description || existingProgramme.description;
+                programmeData.dateline = programmeData.dateline || existingProgramme.dateline;
+                programmeData.submitdate = programmeData.submitdate || existingProgramme.submitdate;
+                programmeData.likes = existingProgramme.likes; // Always preserve likes
             } else {
+                // For new programmes, initialize likes and comments
                 programmeData.likes = 0;
                 programmeData.comments = [];
             }
 
-            // Upsert the Programme
+            // Upsert programme data
             await Programme.findOneAndUpdate(
                 { event_id: programmeData.event_id },
                 programmeData,
@@ -105,7 +107,6 @@ const upsertProgrammes = async (programmes) => {
         }
     }
 
-    // Mark old programmes as deleted
     await Programme.updateMany(
         { event_id: { $nin: newProgrammeIds } },
         { deleted: true }
@@ -113,6 +114,7 @@ const upsertProgrammes = async (programmes) => {
 
     console.log('Programmes upserted and old ones marked as deleted.');
 };
+
 
 
 
@@ -214,6 +216,26 @@ const updateVenueProgrammes = async () => {
 };
 
 /**
+ * Updates the last update timestamp in the MetaData collection.
+ * 
+ * @function updateLastUpdateTime
+ * @returns {Promise<void>}
+ */
+const updateLastUpdateTime = async () => {
+    try {
+        const now = new Date();
+        await MetaData.findOneAndUpdate(
+            { key: 'lastUpdateTime' }, 
+            { value: now, updatedAt: now }, 
+            { upsert: true, new: true }
+        );
+        console.log(`Last update time recorded: ${now}`);
+    } catch (error) {
+        console.error('Error updating last update time:', error.message);
+    }
+};
+
+/**
  * Populates the database with programme and venue data from online XML files.
  * 
  * @function updateData
@@ -229,16 +251,15 @@ const updateData = async () => {
         const venueXMLContent = await fetchXML(venueXMLUrl);
         const venueXML = await parseXML(venueXMLContent);
         const venues = venueXML.venues.venue.map(venue => ({
-            venue_id: venue.$.id.trim(), // Ensure venue_id is clean
+            venue_id: venue.$.id.trim(),
             name: venue.venuee[0],
-            description: venue.venuec[0],
             coordinates: {
-                latitude: venue.latitude && venue.latitude[0] ? parseFloat(venue.latitude[0]) : null,
-                longitude: venue.longitude && venue.longitude[0] ? parseFloat(venue.longitude[0]) : null,
+                latitude: venue.latitude?.[0] ? parseFloat(venue.latitude[0]) : null,
+                longitude: venue.longitude?.[0] ? parseFloat(venue.longitude[0]) : null,
             },
             programmes: [], // Initialize with an empty array
         }));
-        await upsertVenues(venues); // Upsert Venue data
+        await upsertVenues(venues);
 
         // Step 2: Process Programme Data
         const eventXMLUrl = 'https://www.lcsd.gov.hk/datagovhk/event/events.xml';
@@ -246,14 +267,10 @@ const updateData = async () => {
         const eventXMLContent = await fetchXML(eventXMLUrl);
         const eventXML = await parseXML(eventXMLContent);
         const programmes = eventXML.events.event.map(event => {
-            const rawSubmitDate = event.submitdate ? event.submitdate[0] : null;
-            let submitdate = null;
-
-            // Convert HK time (rawSubmitDate) to UNIX timestamp
-            if (rawSubmitDate) {
-                const hkDate = new Date(rawSubmitDate.replace(" ", "T") + "+08:00"); // Add timezone offset for HK
-                submitdate = Math.floor(hkDate.getTime() / 1000); // Convert to UNIX timestamp (in seconds)
-            }
+            const rawSubmitDate = event.submitdate?.[0] || null;
+            const submitdate = rawSubmitDate
+                ? Math.floor(new Date(`${rawSubmitDate.replace(" ", "T")}+08:00`).getTime() / 1000)
+                : null;
 
             return {
                 event_id: event.$.id,
@@ -271,32 +288,18 @@ const updateData = async () => {
                 submitdate: submitdate, // Converted submission date in UNIX timestamp
             };
         });
-
-
-        await upsertProgrammes(programmes); // Upsert Programme data
+        await upsertProgrammes(programmes);
 
         // Step 3: Update Venue's programmes Field
-        console.log('Updating venue programmes...');
-        const allVenues = await Venue.find({}); // Fetch all venues
-        for (const venue of allVenues) {
-            // Find all Programmes linked to this Venue
-            const programmesForVenue = await Programme.find(
-                { venue: venue._id }, // Match by Venue's ObjectId
-                { _id: 1 } // Only retrieve the Programme's ObjectId
-            );
+        await updateVenueProgrammes();
 
-            // Update Venue's programmes field with the array of Programme ObjectIds
-            venue.programmes = programmesForVenue.map(p => p._id);
-            await venue.save();
+        // Step 4: Record the last update time
+        await updateLastUpdateTime();
 
-            console.log(`Updated programmes for venue_id: ${venue.venue_id}`);
-        }
-        console.log('Venue programmes updated.');
-
-        console.log('Database population completed.');
+        console.log('Database population and metadata update completed.');
     } catch (error) {
         console.error('Error populating database:', error.message);
-        process.exit(1); // Exit process with failure
+        process.exit(1);
     }
 };
 

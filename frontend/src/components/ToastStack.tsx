@@ -38,7 +38,7 @@ const ToastStack: React.FC<ToastStackProps> = ({ messages, onRemove }) => {
   };
 
   return (
-    <ToastContainer position="top-start" className="p-3" style={{ maxWidth: '400px' }}>
+    <ToastContainer position="bottom-start" className="p-3" style={{ maxWidth: '400px' }}>
       {visibleToasts.map((toast) => (
         <Toast
           key={toast.id}

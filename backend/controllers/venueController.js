@@ -1,6 +1,7 @@
 // backend/controllers/venueController.js
 
 const Venue = require('../models/VenueSchema');
+const Programme = require('../models/ProgrammeSchema');
 const Account = require('../models/AccountSchema');
 const { generateDebugInfo } = require('../utils/debugUtils');
 
@@ -15,18 +16,29 @@ const { generateDebugInfo } = require('../utils/debugUtils');
  */
 const getAllVenues = async (req, res) => {
     try {
-        const userId = req.account._id; // Retrieved from authenticated user's data in middleware
-        const user = await Account.findById(userId).populate('favourites'); // Fetch user's favourites
+        const userId = req.account._id;
+        const user = await Account.findById(userId).populate('favourites');
         const favouriteVenueIds = user.favourites.map(fav => fav._id.toString());
 
-        const venues = await Venue.find();
+        // Retrieve all venues and populate programmes with only titles
+        const venues = await Venue.find().populate({
+            path: 'programmes',
+            select: 'title -_id',
+        });
+
         const transformedVenues = venues.map(venue => ({
             venue_id: venue.venue_id,
             name: venue.name,
             latitude: venue.coordinates?.latitude,
             longitude: venue.coordinates?.longitude,
-            programmes: venue.programmes || [],
-            isFavourite: favouriteVenueIds.includes(venue._id.toString()), // Mark as favourite
+            programmes: venue.programmes.map(prog => prog.title),
+            isFavourite: favouriteVenueIds.includes(venue._id.toString()),
+            comments: venue.comment.map(c => ({
+                _id: c._id, // Include comment ID for deletion
+                author: c.author,
+                content: c.content,
+                timestamp: c.timestamp,
+            })),
         }));
 
         res.status(200).json({
@@ -59,9 +71,13 @@ const getMapVenues = async (req, res) => {
         const user = await Account.findById(userId).populate('favourites'); // Fetch user's favourites
         const favouriteVenueIds = user.favourites.map(fav => fav._id.toString());
 
+        // Retrieve venues with valid coordinates and populate programmes with titles
         const venues = await Venue.find({
             'coordinates.latitude': { $ne: null },
             'coordinates.longitude': { $ne: null },
+        }).populate({
+            path: 'programmes',
+            select: 'title -_id', // Only select the 'title' field
         });
 
         const transformedVenues = venues.map(venue => ({
@@ -69,8 +85,8 @@ const getMapVenues = async (req, res) => {
             name: venue.name,
             latitude: venue.coordinates?.latitude,
             longitude: venue.coordinates?.longitude,
-            programmes: venue.programmes || [],
-            isFavourite: favouriteVenueIds.includes(venue._id.toString()), // Mark as favourite
+            programmes: venue.programmes.map(prog => prog.title), // Map titles only
+            isFavourite: favouriteVenueIds.includes(venue._id.toString()),
         }));
 
         res.status(200).json({
@@ -98,7 +114,7 @@ const getMapVenues = async (req, res) => {
  */
 const getVenueById = async (req, res) => {
     try {
-        const venue = await Venue.findOne({ venue_id: req.params.id });
+        const venue = await Venue.findOne({ venue_id: req.params.id }).populate('programmes');
         if (!venue) {
             return res.status(404).json({
                 code: 'VENUE_NOT_FOUND',
@@ -106,13 +122,21 @@ const getVenueById = async (req, res) => {
                 data: null,
             });
         }
+
         const transformedVenue = {
             venue_id: venue.venue_id,
             name: venue.name,
             latitude: venue.coordinates?.latitude,
             longitude: venue.coordinates?.longitude,
             programmes: venue.programmes || [],
+            comments: venue.comment.map(c => ({
+                _id: c._id, // Include comment ID for deletion
+                author: c.author,
+                content: c.content,
+                timestamp: c.timestamp,
+            })),
         };
+
         res.status(200).json({
             code: 'GET_VENUE_SUCCESS',
             message: 'Venue retrieved successfully',
@@ -369,6 +393,108 @@ const removeVenueBookmark = async (req, res) => {
     }
 };
 
+/**
+ * Adds a new comment to a venue by its venue_id.
+ */
+const addVenueComment = async (req, res) => {
+    const { id } = req.params; // venue_id
+    const { content } = req.body; // Expect content from request body
+
+    // Use authenticated account as author
+    const authorId = req.account._id; // Extract user ID from req.account
+    const authorName = req.account.username; // Extract username (if needed)
+
+    if (!content) {
+        return res.status(400).json({
+            code: 'BAD_REQUEST',
+            message: 'Content is required to add a comment.',
+        });
+    }
+
+    try {
+        const venue = await Venue.findOne({ venue_id: id });
+        if (!venue) {
+            return res.status(404).json({
+                code: 'VENUE_NOT_FOUND',
+                message: 'Venue not found.',
+            });
+        }
+
+        // Create new comment
+        const newComment = {
+            author: authorId,   // Use user ID
+            content,
+            timestamp: new Date(), // Current timestamp
+        };
+
+        // Add comment to the venue
+        venue.comment.push(newComment);
+        await venue.save();
+
+        res.status(201).json({
+            code: 'ADD_COMMENT_SUCCESS',
+            message: 'Comment added successfully.',
+            data: {
+                author: authorName,  // Optionally return username
+                content: newComment.content,
+                timestamp: newComment.timestamp,
+            },
+        });
+    } catch (error) {
+        console.error('Error adding comment:', error.message);
+        res.status(500).json({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'An unexpected error occurred.',
+            debug: generateDebugInfo(error),
+        });
+    }
+};
+
+
+/**
+ * Removes a specific comment from a venue.
+ */
+const removeVenueComment = async (req, res) => {
+    const { id, commentId } = req.params; // Venue ID and comment ID
+
+    try {
+        const venue = await Venue.findOne({ venue_id: id });
+        if (!venue) {
+            return res.status(404).json({
+                code: 'VENUE_NOT_FOUND',
+                message: 'Venue not found.',
+            });
+        }
+
+        // Filter out the comment to be removed
+        const initialCommentCount = venue.comment.length;
+        venue.comment = venue.comment.filter(c => c._id.toString() !== commentId);
+
+        // Check if a comment was actually removed
+        if (venue.comment.length === initialCommentCount) {
+            return res.status(404).json({
+                code: 'COMMENT_NOT_FOUND',
+                message: 'Comment not found.',
+            });
+        }
+
+        await venue.save();
+
+        res.status(200).json({
+            code: 'REMOVE_COMMENT_SUCCESS',
+            message: 'Comment removed successfully.',
+            data: { removedCommentId: commentId },
+        });
+    } catch (error) {
+        console.error('Error removing comment:', error.message);
+        res.status(500).json({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'An unexpected error occurred.',
+            debug: generateDebugInfo(error),
+        });
+    }
+};
+
 
 module.exports = {
     getAllVenues,
@@ -379,4 +505,6 @@ module.exports = {
     deleteVenueById,
     addVenueBookmark,
     removeVenueBookmark,
+    addVenueComment,
+    removeVenueComment
 };

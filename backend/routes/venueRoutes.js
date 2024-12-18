@@ -11,6 +11,8 @@ const {
     getMapVenues,
     addVenueBookmark,
     removeVenueBookmark,
+    addVenueComment,
+    removeVenueComment,
 } = require('../controllers/venueController');
 
 const router = express.Router();
@@ -60,9 +62,21 @@ router.post('/venue/:id/bookmark', addVenueBookmark);
 router.delete('/venue/:id/bookmark', removeVenueBookmark);
 
 /**
+ * Add a user comment to a venue.
+ * Matches route: POST /api/venue/:id/comment
+ */
+router.post('/venue/:id/comment', addVenueComment);
+
+
+/**
  * Admin-only routes for venue management.
  * Protected by 'admin' authorization middleware.
  */
+/**
+ * Remove a user comment from a venue.
+ * Matches route: DELETE /api/venue/:id/comment
+ */
+router.delete('/venue/:id/comment', removeVenueComment);
 
 /**
  * Create a new venue.
