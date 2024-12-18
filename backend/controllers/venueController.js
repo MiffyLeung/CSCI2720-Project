@@ -27,6 +27,7 @@ const getAllVenues = async (req, res) => {
         });
 
         const transformedVenues = venues.map(venue => ({
+            _id: venue._id, // Добавлено поле _id
             venue_id: venue.venue_id,
             name: venue.name,
             latitude: venue.coordinates?.latitude,
@@ -81,6 +82,7 @@ const getMapVenues = async (req, res) => {
         });
 
         const transformedVenues = venues.map(venue => ({
+            _id: venue._id, // Добавлено поле _id
             venue_id: venue.venue_id,
             name: venue.name,
             latitude: venue.coordinates?.latitude,
@@ -290,11 +292,11 @@ const addVenueBookmark = async (req, res) => {
 
         console.log('[DEBUG] User Data:', {
             userId: userId.toString(),
-            favourites: user.favourites.map(fav => fav.toString()),
+            favourites: user.favourites.map(fav => fav._id.toString()),
         });
 
         // Use venue_id to query
-        const venue = await Venue.findOne({ venue_id: id });
+        const venue = await Venue.findById(id);
         if (!venue) {
             console.error('[DEBUG] Venue Not Found:', id);
             return res.status(404).json({
@@ -306,12 +308,17 @@ const addVenueBookmark = async (req, res) => {
         console.log('[DEBUG] Venue Found:', venue);
 
         // Add to favourites if not already in the list
-        if (!user.favourites.some(fav => fav.toString() === venue._id.toString())) {
+        // Добавляем в избранное, если ещё не добавлено
+        if (!user.favourites.some(fav => fav._id.toString() === venue._id.toString())) {
             user.favourites.push(venue._id);
             await user.save();
             console.log('[DEBUG] Updated Favourites:', user.favourites);
         } else {
             console.log('[DEBUG] Venue Already in Favourites:', id);
+            return res.status(400).json({
+                code: 'ALREADY_FAVOURITE',
+                message: 'Venue is already in favourites',
+            });
         }
 
         res.status(200).json({
@@ -360,11 +367,11 @@ const removeVenueBookmark = async (req, res) => {
 
         console.log('[DEBUG] User Data:', {
             userId: userId.toString(),
-            favourites: user.favourites.map(fav => fav.toString()),
+            favourites: user.favourites.map(fav => fav._id.toString()),
         });
 
         // Use venue_id to query
-        const venue = await Venue.findOne({ venue_id: id });
+        const venue = await Venue.findById(id);
         if (!venue) {
             console.error('[DEBUG] Venue Not Found:', id);
             return res.status(404).json({
@@ -374,7 +381,14 @@ const removeVenueBookmark = async (req, res) => {
         }
 
         // Remove from favourites if it exists in the list
-        user.favourites = user.favourites.filter(fav => fav.toString() !== venue._id.toString());
+        const initialFavouritesCount = user.favourites.length;
+        user.favourites = user.favourites.filter(fav => fav._id.toString() !== venue._id.toString());
+        if (user.favourites.length === initialFavouritesCount) {
+            return res.status(400).json({
+                code: 'NOT_FAVOURITE',
+                message: 'Venue is not in favourites',
+            });
+        }
         await user.save();
 
         console.log('[DEBUG] Updated Favourites:', user.favourites);
