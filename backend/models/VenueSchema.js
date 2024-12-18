@@ -31,7 +31,7 @@ const VenueSchema = new mongoose.Schema({
     comment: [CommentSchema],                               // Array of structured comments
 });
 
-VenueSchema.index({ venue_id: 1 });
+///VenueSchema.index({ venue_id: 1 }); - Alikhan (me) commented this line because mongodb did not work with it on my setup
 
 /**
  * Virtual property for full coordinates.
