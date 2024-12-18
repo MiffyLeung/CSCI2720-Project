@@ -145,51 +145,44 @@ const updateAccount = async (req, res) => {
 };
 
 /**
- * Changes the password for an account.
- * 
- * @function changePassword
+ * Changes the name and password for an authenticated account using createOrUpdate.
+ *
  * @param {Object} req - Express request object
- * @param {Object} req.body - Request body containing accountId, oldPassword, and newPassword
+ * @param {Object} req.body - Request body containing name and password
+ * @param {Object} req.account - Authenticated user's account
  * @param {Object} res - Express response object
- * @returns {void} - Sends a JSON response indicating success or an error message
  */
-const changePassword = async (req, res) => {
-    const { accountId, oldPassword, newPassword } = req.body;
+const changeMyAccount = async (req, res) => {
+    const { name, password } = req.body;
 
     try {
-        const account = await Account.findById(accountId);
-        if (!account) {
-            const error = new Error('Account not found');
+        if (!req.account) {
             return res.status(410).json({
                 code: 'USER_NOT_FOUND',
                 message: 'Account not found',
-                debug: generateDebugInfo(error),
             });
         }
 
-        const isMatch = await bcrypt.compare(oldPassword, account.password);
-        if (!isMatch) {
-            const error = new Error('Invalid old password');
-            return res.status(410).json({
-                code: 'INVALID_OLD_PASSWORD',
-                message: 'Old password is incorrect',
-                debug: generateDebugInfo(error),
-            });
-        }
+        const updatedData = {
+            username: name || req.account.username,
+            password: password || req.account.password,
+            role: req.account.role, // Keep the current role unchanged
+        };
 
-        account.password = await bcrypt.hash(newPassword, 10); // Hash the new password
-        await account.save();
+        // Use createOrUpdate to handle the update
+        const { status, account } = await Account.createOrUpdate(updatedData, true);
+
+        console.log(`Account ${status}:`, account);
 
         res.status(200).json({
-            code: 'CHANGE_PASSWORD_SUCCESS',
-            message: 'Password changed successfully',
+            code: 'CHANGE_ACCOUNT_SUCCESS',
+            message: 'Account details updated successfully',
         });
     } catch (error) {
-        console.error('Error changing password:', error.message);
+        console.error('Error updating account:', error.message);
         res.status(500).json({
             code: 'INTERNAL_SERVER_ERROR',
             message: 'An unexpected error occurred',
-            debug: generateDebugInfo(error),
         });
     }
 };
@@ -409,7 +402,7 @@ module.exports = {
     register,
     listAccounts,
     updateAccount,
-    changePassword,
+    changeMyAccount,
     getAccountDetails,
     getFavourites,
     getAccountDetailsById,

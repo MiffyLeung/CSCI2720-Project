@@ -21,11 +21,11 @@ router.post(
 router.use(authenticate);
 
 /**
- * Route for users to change their own password.
+ * Route for users to change their own password or username.
  */
 router.put(
-    '/password', // Matches basePath '/api/password'
-    accountController.changePassword
+    '/myAccount', // Matches basePath '/api/myAccount' with PUT
+    accountController.changeMyAccount
 );
 
 /**
