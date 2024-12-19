@@ -1,28 +1,33 @@
 // frontend/src/components/Navbar.tsx
 
 import React, { useState, useEffect } from 'react';
-import { Container, Nav, Navbar, NavDropdown, Form, Alert } from 'react-bootstrap';
+import { Container, Nav, Navbar, NavDropdown, Form, Alert, ProgressBar } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import { useAuth } from '../core/AuthContext';
 import { useApi } from '../core/useApi';
-import './Navbar.css';
+import Modal from './Modal'; // Reusable modal component
 import { useNavigate } from 'react-router-dom';
+import './Navbar.css';
+import { formatUtcToLocalDateTime } from 'core/functions';
 
 /**
  * AppNavbar displays the navigation bar with links, user menu, and admin options.
+ * Includes functionality for confirming and tracking data updates with progress indicators.
  */
 const AppNavbar: React.FC = () => {
     const { isAuthenticated, isAdmin, resetAuth, username } = useAuth();
     const apiRequest = useApi();
     const navigate = useNavigate();
 
-    const [isDarkMode, setIsDarkMode] = useState(() => {
-        return localStorage.getItem('theme') === 'dark';
-    });
+    const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
     const [loading, setLoading] = useState(false);
+    const [progress, setProgress] = useState(0);
     const [message, setMessage] = useState<string | null>(null);
     const [messageType, setMessageType] = useState<'success' | 'danger' | null>(null);
-    const [isWideScreen, setIsWideScreen] = useState(window.innerWidth > 1200); // State for screen width
+    const [showModal, setShowModal] = useState(false);
+    const [lastUpdate, setLastUpdate] = useState<string | null>(null);
+    const [fetchingLastUpdate, setFetchingLastUpdate] = useState(false);
+    const [isWideScreen, setIsWideScreen] = useState(window.innerWidth > 1200);
 
     // Update screen width state on resize
     useEffect(() => {
@@ -36,25 +41,56 @@ const AppNavbar: React.FC = () => {
         localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
     }, [isDarkMode]);
 
+    const toggleTheme = () => {
+        setIsDarkMode((prev) => !prev);
+    };
+
     const handleLogout = () => {
         resetAuth();
         alert('You have been logged out.');
         navigate('/login');
     };
 
-    const toggleTheme = () => {
-        setIsDarkMode((prev) => !prev);
+    const fetchLastUpdate = async () => {
+        setFetchingLastUpdate(true);
+        try {
+            const response = await apiRequest('/dataLastUpdateAt', { method: 'GET' });
+            setLastUpdate(formatUtcToLocalDateTime(response.updatedAt || 'Unknown'));
+        } catch (error) {
+            console.error('Failed to fetch last update:', error);
+            setLastUpdate('Error fetching update time');
+        } finally {
+            setFetchingLastUpdate(false);
+        }
+    };
+
+    /**
+     * Handles data update confirmation and progress tracking.
+     */
+    const handleConfirmUpdate = async () => {
+        setShowModal(true);
+        setLastUpdate(null);
+        await fetchLastUpdate();
     };
 
     const handleUpdateData = async () => {
+        setShowModal(false);
         setLoading(true);
+        setProgress(0);
         setMessage(null);
         setMessageType(null);
+
         try {
+            const interval = setInterval(() => {
+                setProgress((prev) => (prev < 90 ? prev + 10 : prev));
+            }, 500);
+
             const response = await apiRequest('/updateData', { method: 'GET' });
+            clearInterval(interval);
+            setProgress(100);
             setMessage(response.message || 'Data updated successfully.');
             setMessageType('success');
-        } catch (error: unknown) {
+        } catch (error) {
             setMessage(error instanceof Error ? error.message : 'An unknown error occurred.');
             setMessageType('danger');
         } finally {
@@ -130,11 +166,8 @@ const AppNavbar: React.FC = () => {
                                             <LinkContainer to="/admin/accounts">
                                                 <Nav.Link className="px-2">Manage Accounts</Nav.Link>
                                             </LinkContainer>
-                                            <Nav.Link
-                                                onClick={handleUpdateData}
-                                                className="px-2"
-                                            >
-                                                {loading ? 'Updating...' : 'Update Data'}
+                                            <Nav.Link onClick={handleConfirmUpdate} className="px-2">
+                                                Update Data
                                             </Nav.Link>
                                         </div>
                                     ) : (
@@ -166,7 +199,6 @@ const AppNavbar: React.FC = () => {
                                     className="me-2"
                                 />
                             </Form>
-
                             {isAuthenticated && (
                                 <NavDropdown
                                     title={
@@ -182,12 +214,10 @@ const AppNavbar: React.FC = () => {
                                         <NavDropdown.Item>My Profile</NavDropdown.Item>
                                     </LinkContainer>
                                     <LinkContainer to="/myFavorites">
-                                        <NavDropdown.Item>My Favourites</NavDropdown.Item>
+                                        <NavDropdown.Item>My Favorites</NavDropdown.Item>
                                     </LinkContainer>
                                     <NavDropdown.Divider />
-                                    <NavDropdown.Item onClick={handleLogout}>
-                                        Logout
-                                    </NavDropdown.Item>
+                                    <NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
                                 </NavDropdown>
                             )}
                         </Nav>
@@ -197,15 +227,26 @@ const AppNavbar: React.FC = () => {
 
             {message && (
                 <Container className="mt-3">
-                    <Alert
-                        variant={messageType || 'info'}
-                        onClose={() => setMessage(null)}
-                        dismissible
-                    >
+                    <Alert variant={messageType || 'info'} dismissible onClose={() => setMessage(null)}>
                         {message}
                     </Alert>
                 </Container>
             )}
+
+            {loading && (
+                <Container className="mt-3">
+                    <ProgressBar now={progress} label={`${progress}%`} animated striped />
+                </Container>
+            )}
+
+            <Modal title="Update Data" show={showModal} onClose={() => setShowModal(false)} onSave={handleUpdateData}>
+                {fetchingLastUpdate ? (
+                    <p>Loading last update information...</p>
+                ) : (
+                    <p>Last update was on: {lastUpdate}</p>
+                )}
+                <p>Do you want to proceed with updating the data?</p>
+            </Modal>
         </>
     );
 };

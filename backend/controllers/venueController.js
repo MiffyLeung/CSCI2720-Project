@@ -82,7 +82,6 @@ const getMapVenues = async (req, res) => {
         });
 
         const transformedVenues = venues.map(venue => ({
-            
             venue_id: venue.venue_id,
             name: venue.name,
             latitude: venue.coordinates?.latitude,
@@ -365,7 +364,6 @@ const removeVenueBookmark = async (req, res) => {
             });
         }
 
-        console.log('[DEBUG] User Favourites Before:', user.favourites);
 
         // Find the venue by venue_id
         const venue = await Venue.findOne({ venue_id: id });
@@ -390,8 +388,6 @@ const removeVenueBookmark = async (req, res) => {
         }
 
         await user.save();
-
-        console.log('[DEBUG] Updated Favourites After:', user.favourites);
 
         res.status(200).json({
             code: 'REMOVE_BOOKMARK_SUCCESS',

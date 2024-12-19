@@ -80,6 +80,7 @@ const upsertProgrammes = async (programmes) => {
             }
 
             programmeData.venue = venue._id;
+            delete programmeData.venue_id;
 
             const existingProgramme = await Programme.findOne({ event_id: programmeData.event_id });
 
@@ -93,7 +94,6 @@ const upsertProgrammes = async (programmes) => {
             } else {
                 // For new programmes, initialize likes and comments
                 programmeData.likes = 0;
-                programmeData.comments = [];
             }
 
             // Upsert programme data
@@ -119,7 +119,7 @@ const upsertProgrammes = async (programmes) => {
 
 
 /**
- * Upserts data into the Venue collection and marks missing IDs as deleted.
+ * Upserts data into the Venue collection and ensures geolocations are only updated when valid.
  * 
  * @function upsertVenues
  * @param {Array} venues - Array of venue objects
@@ -147,7 +147,12 @@ const upsertVenues = async (venues) => {
             } else {
                 // Update existing venue data (non-array fields only)
                 venue.name = venueData.name;
-                venue.coordinates = venueData.coordinates;
+
+                // Only update coordinates if the new data is valid (not null)
+                if (venueData.coordinates.latitude !== null && venueData.coordinates.longitude !== null) {
+                    venue.coordinates = venueData.coordinates;
+                }
+
                 console.log(`Updating existing venue: ${venueData.venue_id}`);
             }
 
@@ -190,30 +195,33 @@ const updateVenueProgrammes = async () => {
         // Update each venue with related programme IDs
         for (const venue of venues) {
             const relatedProgrammes = await Programme.find(
-                { venue_id: venue.venue_id }, // Match programmes by venue_id
-                { event_id: 1 } // Select only the event_id field
+                { venue: venue._id }, // Match programmes by venue object reference
+                { _id: 1 } // Select only the _id field (ObjectId)
             );
 
             if (!relatedProgrammes.length) {
                 console.log(`No programmes found for venue_id: ${venue.venue_id}`);
+                continue;
             }
 
-            const programmeIds = relatedProgrammes.map(p => p.event_id);
+            // Map the related programme IDs (ObjectIds)
+            const programmeIds = relatedProgrammes.map(p => p._id);
 
             await Venue.findOneAndUpdate(
-                { venue_id: venue.venue_id },
+                { _id: venue._id }, // Match by the venue's unique object ID
                 { programmes: programmeIds }, // Update the programmes array
                 { new: true } // Return the updated document
             );
 
-            console.log(`Updated programmes for venue_id: ${venue.venue_id}`);
-        }
+            console.log(`Updated programmes for venue_id: ${venue.venue_id}, total: ${programmeIds.length}`);
+       }
 
         console.log('Venue programmes updated.');
     } catch (error) {
         console.error('Error updating venue programmes:', error.message);
     }
 };
+
 
 /**
  * Updates the last update timestamp in the MetaData collection.

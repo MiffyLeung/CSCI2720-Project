@@ -71,7 +71,8 @@ module.exports = [
         basePath: '/api',
         router: adminRoutes,
         routes: [
-            { method: 'GET', path: '/adminRoutes',  requiresAuth: true, adminOnly: true }, // update Data
+            { method: 'GET', path: '/dataLastUpdateAt',  requiresAuth: true, adminOnly: true }, // Get the time of last data update
+            { method: 'GET', path: '/updateData',  requiresAuth: true, adminOnly: true }, // update Data
         ],
     },
 ];

@@ -1,0 +1,393 @@
+db.venues.updateOne(
+    { venue_id: "104" },
+    { $set: { coordinates: { latitude: 22.297811, longitude: 114.172992 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "105" },
+    { $set: { coordinates: { latitude: 22.358441, longitude: 114.107877 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "101" },
+    { $set: { coordinates: { latitude: 22.445897, longitude: 114.001228 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "106" },
+    { $set: { coordinates: { latitude: 22.372082, longitude: 114.114315 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "107" },
+    { $set: { coordinates: { latitude: 22.341640, longitude: 114.200163 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "108" },
+    { $set: { coordinates: { latitude: 22.387800, longitude: 113.979942 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "109" },
+    { $set: { coordinates: { latitude: 22.337194, longitude: 114.162434 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "110" },
+    { $set: { coordinates: { latitude: 22.263847, longitude: 114.188253 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "111" },
+    { $set: { coordinates: { latitude: 22.313079, longitude: 114.170547 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "112" },
+    { $set: { coordinates: { latitude: 22.282742, longitude: 114.223168 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "113" },
+    { $set: { coordinates: { latitude: 22.446280, longitude: 114.033272 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "1720" },
+    { $set: { coordinates: { latitude: 22.461480, longitude: 114.002390 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "357" },
+    { $set: { coordinates: { latitude: 22.338314, longitude: 114.189797 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "4662" },
+    { $set: { coordinates: { latitude: 22.266383, longitude: 114.247847 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "53" },
+    { $set: { coordinates: { latitude: 22.249715, longitude: 114.152792 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "54" },
+    { $set: { coordinates: { latitude: 22.248560, longitude: 114.154516 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "55" },
+    { $set: { coordinates: { latitude: 22.372800, longitude: 113.977643 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "56" },
+    { $set: { coordinates: { latitude: 22.266383, longitude: 114.238683 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "57" },
+    { $set: { coordinates: { latitude: 22.208690, longitude: 114.028084 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "58" },
+    { $set: { coordinates: { latitude: 22.283614, longitude: 114.162169 } } }
+);
+
+db.venues.updateOne(
+    { venue_id: "3210299" },
+    { $set: { coordinates: { latitude: 22.277703, longitude: 114.179587 } } } // Queen Elizabeth Stadium
+);
+
+db.venues.updateOne(
+    { venue_id: "6824" },
+    { $set: { coordinates: { latitude: 22.301936, longitude: 114.179050 } } } // Hong Kong Coliseum
+);
+
+db.venues.updateOne(
+    { venue_id: "6210513" },
+    { $set: { coordinates: { latitude: 22.284000, longitude: 114.191000 } } } // Hong Kong Central Library (G/F Lecture Theatre)
+);
+
+db.venues.updateOne(
+    { venue_id: "8186" },
+    { $set: { coordinates: { latitude: 22.360760, longitude: 114.129265 } } } // Black Box Theatre, Kwai Tsing Theatre
+);
+
+db.venues.updateOne(
+    { venue_id: "6210646" },
+    { $set: { coordinates: { latitude: 22.284000, longitude: 114.191000 } } } // Hong Kong Central Library (G/F Exhibition Gallery)
+);
+
+db.venues.updateOne(
+    { venue_id: "59" },
+    { $set: { coordinates: { latitude: 22.287190, longitude: 114.192660 } } } // Electric Road Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "599" },
+    { $set: { coordinates: { latitude: 22.287190, longitude: 113.942375 } } } // Tung Chung Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "60" },
+    { $set: { coordinates: { latitude: 22.319230, longitude: 114.174470 } } } // Fa Yuen Street Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "61" },
+    { $set: { coordinates: { latitude: 22.496930, longitude: 114.136170 } } } // Fanling Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "62" },
+    { $set: { coordinates: { latitude: 22.284130, longitude: 114.191320 } } } // Hong Kong Central Library
+);
+
+db.venues.updateOne(
+    { venue_id: "63" },
+    { $set: { coordinates: { latitude: 22.303100, longitude: 114.187180 } } } // Hung Hom Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "64" },
+    { $set: { coordinates: { latitude: 22.329330, longitude: 114.189300 } } } // Kowloon City Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "65" },
+    { $set: { coordinates: { latitude: 22.329330, longitude: 114.188650 } } } // Kowloon Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "66" },
+    { $set: { coordinates: { latitude: 22.337300, longitude: 114.150490 } } } // Lai Chi Kok Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "67" },
+    { $set: { coordinates: { latitude: 22.307700, longitude: 114.237800 } } } // Lam Tin Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "68" },
+    { $set: { coordinates: { latitude: 22.378480, longitude: 114.189610 } } } // Lek Yuen Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "6858" },
+    { $set: { coordinates: { latitude: 22.305750, longitude: 114.253370 } } } // Tiu Keng Leng Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "69" },
+    { $set: { coordinates: { latitude: 22.277250, longitude: 114.178400 } } } // Lockhart Road Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "70" },
+    { $set: { coordinates: { latitude: 22.336250, longitude: 114.179150 } } } // Lok Fu Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "71" },
+    { $set: { coordinates: { latitude: 22.341360, longitude: 114.189760 } } } // Lung Hing Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "72" },
+    { $set: { coordinates: { latitude: 22.264610, longitude: 113.997430 } } } // Mui Wo Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "73" },
+    { $set: { coordinates: { latitude: 22.341170, longitude: 114.204760 } } } // Ngau Chi Wan Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "74" },
+    { $set: { coordinates: { latitude: 22.314600, longitude: 114.222170 } } } // Ngau Tau Kok Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "7434" },
+    { $set: { coordinates: { latitude: 22.488110, longitude: 114.139210 } } } // Fanling South Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "75" },
+    { $set: { coordinates: { latitude: 22.356110, longitude: 114.129510 } } } // North Kwai Chung Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "76" },
+    { $set: { coordinates: { latitude: 22.209410, longitude: 114.118720 } } } // North Lamma Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "77" },
+    { $set: { coordinates: { latitude: 22.288870, longitude: 114.195900 } } } // North Point Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "7744" },
+    { $set: { coordinates: { latitude: 22.378330, longitude: 114.195510 } } } // Yuen Chau Kok Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "8265" },
+    { $set: { coordinates: { latitude: 22.330560, longitude: 114.159860 } } } // Sham Shui Po Public Library
+);
+db.venues.updateOne(
+    { venue_id: "11" },
+    { $set: { coordinates: { latitude: 22.301936, longitude: 114.179050 } } } // Hong Kong Coliseum
+);
+
+db.venues.updateOne(
+    { venue_id: "78" },
+    { $set: { coordinates: { latitude: 22.330145, longitude: 114.166425 } } } // Shek Kip Mei Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "79" },
+    { $set: { coordinates: { latitude: 22.281590, longitude: 113.922011 } } } // Peng Chau Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "80" },
+    { $set: { coordinates: { latitude: 22.341750, longitude: 114.146990 } } } // Po On Road Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "81" },
+    { $set: { coordinates: { latitude: 22.266270, longitude: 114.135510 } } } // Pok Fu Lam Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "811" },
+    { $set: { coordinates: { latitude: 22.426540, longitude: 114.229000 } } } // Ma On Shan Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "82" },
+    { $set: { coordinates: { latitude: 22.289250, longitude: 114.216380 } } } // Quarry Bay Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "826517385" },
+    { $set: { coordinates: { latitude: 22.330560, longitude: 114.159860 } } } // Sham Shui Po Public Library (Central Library Area)
+);
+
+db.venues.updateOne(
+    { venue_id: "83" },
+    { $set: { coordinates: { latitude: 22.379890, longitude: 114.272790 } } } // Sai Kung Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "84" },
+    { $set: { coordinates: { latitude: 22.288210, longitude: 114.239300 } } } // Lei Yue Mun Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "85" },
+    { $set: { coordinates: { latitude: 22.337080, longitude: 114.201490 } } } // San Po Kong Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "86" },
+    { $set: { coordinates: { latitude: 22.315030, longitude: 114.234670 } } } // Sau Mau Ping Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "87" },
+    { $set: { coordinates: { latitude: 22.546210, longitude: 114.192180 } } } // Sha Tau Kok Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "88" },
+    { $set: { coordinates: { latitude: 22.382980, longitude: 114.191430 } } } // Sha Tin Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "89" },
+    { $set: { coordinates: { latitude: 22.286430, longitude: 114.134430 } } } // Shek Tong Tsui Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "90" },
+    { $set: { coordinates: { latitude: 22.373000, longitude: 114.119710 } } } // Shek Wai Kok Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "91" },
+    { $set: { coordinates: { latitude: 22.500340, longitude: 114.125710 } } } // Sheung Shui Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "92" },
+    { $set: { coordinates: { latitude: 22.308820, longitude: 114.226570 } } } // Shui Wo Street Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "93" },
+    { $set: { coordinates: { latitude: 22.339500, longitude: 114.233100 } } } // Shun Lee Estate Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "94" },
+    { $set: { coordinates: { latitude: 22.282440, longitude: 114.134100 } } } // Smithfield Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "95" },
+    { $set: { coordinates: { latitude: 22.357670, longitude: 114.129800 } } } // South Kwai Chung Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "96" },
+    { $set: { coordinates: { latitude: 22.204250, longitude: 114.118210 } } } // South Lamma Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "969" },
+    { $set: { coordinates: { latitude: 22.219000, longitude: 114.212510 } } } // Stanley Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "97" },
+    { $set: { coordinates: { latitude: 22.388010, longitude: 113.978570 } } } // Tai Hing Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "98" },
+    { $set: { coordinates: { latitude: 22.319580, longitude: 114.163730 } } } // Tai Kok Tsui Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "99" },
+    { $set: { coordinates: { latitude: 22.251240, longitude: 113.864290 } } } // Tai O Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "777" },
+    { $set: { coordinates: { latitude: 22.419983, longitude: 114.205007 } } } // CUHK University Library
+);
+
+db.venues.updateOne(
+    { venue_id: "100" },
+    { $set: { coordinates: { latitude: 22.450180, longitude: 114.164470 } } } // Tai Po Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "102" },
+    { $set: { coordinates: { latitude: 22.316580, longitude: 114.185790 } } } // To Kwa Wan Public Library
+);
+
+db.venues.updateOne(
+    { venue_id: "103" },
+    { $set: { coordinates: { latitude: 22.315920, longitude: 114.261170 } } } // Tseung Kwan O Public Library
+);

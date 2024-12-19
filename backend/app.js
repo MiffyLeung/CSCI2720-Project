@@ -8,7 +8,8 @@ const { logRequest, logResponse } = require('./middleware/requestLogger.js');
 const errorHandler = require('./middleware/errorHandler'); // Import the error handler middleware
 const registerRoutes = require('./utils/registerRoutes');
 const startServer = require('./utils/serverStartup');
-const adminRoutes = require('./routes/adminRoutes'); // 引入 admin 路由
+const adminRoutes = require('./routes/adminRoutes');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.BACKEND_PORT || 5000;
@@ -34,6 +35,11 @@ app.use(logRequest); // Log incoming requests
 app.use(logResponse); // Log outgoing responses
 
 /**
+ * Setup static path for frontend production built
+ */
+app.use(express.static(path.join(__dirname, '../frontend/build')));
+
+/**
  * Routes: Register all application routes.
  */
 registerRoutes(app);
@@ -42,11 +48,18 @@ registerRoutes(app);
  * Middleware: Handle unknown routes with a specific status code.
  * Sends an HTTP 451 status for "Unavailable For Legal Reasons".
  */
-app.use((req, res, next) => {
+app.use('/api/*', (req, res, next) => {
     res.status(451).json({
         code: 'ROUTE_NOT_FOUND',
         message: 'API route not found',
     });
+});
+
+/**
+ * Redirect all other request to index.html
+ */
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
 });
 
 /**

@@ -11,6 +11,8 @@
 ## Project Overview
 This repository contains the project for the **CSCI2720** course, developed by **Group 5 (2024R1)**. The project aims to create a user-friendly web application for managing cultural programmes. It adheres to the course requirements and guidelines, demonstrating collaborative efforts and technical implementation.
 
+**[Demo site (Temporary for development)](http://221.127.139.125:8088/)**
+
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [Features](#features)
@@ -84,6 +86,7 @@ To streamline development, the `concurrently` library is used to run both fronte
 6. Start the Frontend application by `npm run start-frontend`
    and Backend server by `npm run start-backend`
    Or, you can simply start up both by `npm start`
+   **(Note: If you have got the frontent built verions, you can just start the backend with `npm run start-backend` and type the url http://localhost:3001/ to start up )**
 
 ## Usage
 Once the project is running:
@@ -121,6 +124,7 @@ Once the project is running:
 | Comment on Programme     | `/programme/:id (Ajax)`        | `/api/programme/:id/comment`   | `POST`          |
 | My Profile               | `/myProfile`                   | `/api/myAccount`               | `GET`           |
 | Change Password          | `/myProfile (Ajax)`            | `/api/password`                | `PATCH`         |
+| Get Last Update Time     | `Admin Menu (Ajax)`            | `/api/dataLastUpdateAt`        | `GET`           |
 | Update Data              | `Admin Menu (Ajax)`            | `/api/updateData`              | `GET`           |
 | Manage Programmes        | `/admin/programmes`            | `/api/programmes`              | `GET`           |
 | Add Programme            | `/admin/programmes (Ajax)`     | `/api/programme`               | `POST`          |
@@ -175,4 +179,4 @@ This project was collaboratively developed by **Group 5 (2024R1)** for the **CSC
 | **ZHUMAGALEYEV Alikhan** | Documentation and testing               |
 
 ## License
-This project is licensed under the [MIT License](LICENSE). Feel free to use, modify, and distribute as needed.
+This project is now licensed under the [GNU Affero General Public License v3.0](https://www.gnu.org/licenses/agpl-3.0.html) to ensure open collaboration, including server-side modifications.
