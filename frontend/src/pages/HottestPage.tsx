@@ -66,9 +66,9 @@ const HottestPage: React.FC = () => {
     // Apply filter
     if (filterQuery) {
       data = data.filter((programme) =>
-        programme.title.toLowerCase().includes(filterQuery.toLowerCase()) ||
-        programme.presenter.toLowerCase().includes(filterQuery.toLowerCase()) ||
-        programme.venue.name.toLowerCase().includes(filterQuery.toLowerCase())
+        (programme.title && programme.title.toLowerCase().includes(filterQuery.toLowerCase())) ||
+        (programme.presenter && programme.presenter.toLowerCase().includes(filterQuery.toLowerCase())) ||
+        (programme.venue?.name && programme.venue.name.toLowerCase().includes(filterQuery.toLowerCase()))
       );
     }
 

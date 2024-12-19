@@ -28,7 +28,7 @@ const AdminProgrammesPage: React.FC = () => {
   const apiRequest = useApi(); // API handler
   const hasFetched = useRef(false); // Track whether data has already been fetched
   const abortController = useRef<AbortController | null>(null); // AbortController for fetch requests
- 
+
   /**
    * Fetches the list of programmes from the server.
    */
@@ -36,12 +36,12 @@ const AdminProgrammesPage: React.FC = () => {
     const fetchProgrammes = async () => {
       if (hasFetched.current) return; // Prevent repeated fetch
       hasFetched.current = true; // Mark as fetched
-  
+
       if (abortController.current) {
         abortController.current.abort(); // Abort any existing requests
       }
       abortController.current = new AbortController();
-  
+
 
       try {
         console.log('Fetching programmes...');
@@ -104,16 +104,16 @@ const AdminProgrammesPage: React.FC = () => {
       setProgrammes((prevProgrammes) =>
         editingProgramme
           ? prevProgrammes.map((p) =>
-              p.event_id === editingProgramme.event_id ? savedProgramme : p
-            )
+            p.event_id === editingProgramme.event_id ? savedProgramme : p
+          )
           : [...prevProgrammes, savedProgramme]
       );
 
       setFilteredProgrammes((prevProgrammes) =>
         editingProgramme
           ? prevProgrammes.map((p) =>
-              p.event_id === editingProgramme.event_id ? savedProgramme : p
-            )
+            p.event_id === editingProgramme.event_id ? savedProgramme : p
+          )
           : [...prevProgrammes, savedProgramme]
       );
     } catch (error) {
@@ -154,9 +154,9 @@ const AdminProgrammesPage: React.FC = () => {
 
     let filtered = programmes.filter(
       (programme) =>
-        programme.title.toLowerCase().includes(query.toLowerCase()) ||
-        programme.presenter.toLowerCase().includes(query.toLowerCase()) ||
-        programme.venue.name.toLowerCase().includes(query.toLowerCase())
+        (programme.title && programme.title.toLowerCase().includes(filterQuery.toLowerCase())) ||
+        (programme.presenter && programme.presenter.toLowerCase().includes(filterQuery.toLowerCase())) ||
+        (programme.venue?.name && programme.venue.name.toLowerCase().includes(filterQuery.toLowerCase()))
     );
 
     // Apply current sort to the filtered data
@@ -178,7 +178,7 @@ const AdminProgrammesPage: React.FC = () => {
   return (
     <div>
       <Navbar />
-      <div className="container p-5 rounded position-relative" style={{backgroundColor: 'rgb(95 127 89 / 75%)'}}>
+      <div className="container p-5 rounded position-relative" style={{ backgroundColor: 'rgb(95 127 89 / 75%)' }}>
         <h1 className="mb-4">Manage Programmes</h1>
 
         {/* Add Programme Button */}

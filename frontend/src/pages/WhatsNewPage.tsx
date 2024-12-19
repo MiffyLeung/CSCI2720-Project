@@ -121,7 +121,7 @@ const WhatsNewPage: React.FC = () => {
                                             <div>
                                                 <p className="text-muted small mb-0">{programme.dateline}</p>
                                                 <p className="text-muted small">
-                                                    {programme.venue?.name || 'N/A'}
+                                                    {programme?.venue?.name || 'N/A'}
                                                 </p>
                                             </div>
                                             <div

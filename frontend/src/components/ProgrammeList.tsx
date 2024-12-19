@@ -95,7 +95,7 @@ const ProgrammeList: React.FC<ProgrammeListProps> = ({
 
               {/* Venue column */}
               <td className="text-center align-middle">
-                {programme.venue?.name || 'N/A'}
+                {programme?.venue?.name || 'N/A'}
               </td>
 
               {/* Ranking column */}
