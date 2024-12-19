@@ -82,7 +82,7 @@ const AdminProgrammesPage: React.FC = () => {
    * @param data The programme data to save.
    */
   const handleSave = async (data: Programme) => {
-    const method = editingProgramme ? 'PUT' : 'POST';
+    const method = editingProgramme ? 'PATCH' : 'POST';
     const endpoint = editingProgramme
       ? `/programme/${editingProgramme.event_id}`
       : '/programmes';

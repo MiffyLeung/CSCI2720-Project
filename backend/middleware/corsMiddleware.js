@@ -8,7 +8,7 @@ const cors = require('cors');
  * The configuration allows requests from the frontend URL specified in the environment variables.
  * If no URL is provided, it defaults to allowing requests from all origins (`*`).
  * 
- * Allowed HTTP methods: GET, POST, PUT, DELETE, OPTIONS.
+ * Allowed HTTP methods: GET, POST, PUT, DELETE, 'PATCH', OPTIONS.
  * Allowed headers: Content-Type, Authorization.
  * 
  * @function configureCORS
@@ -20,7 +20,7 @@ const configureCORS = () => {
     return cors({
         origin: allowedOrigins, // Specify allowed origin(s)
         credentials: true,      // Allow cookies and credentials
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], // Allowed HTTP methods
         allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
     });
 };

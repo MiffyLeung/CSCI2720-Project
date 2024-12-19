@@ -132,9 +132,8 @@ Once the project is running:
 | Delete Venue             | `/admin/venue/:id (Ajax)`      | `/api/venue/:id`               | `DELETE`        |
 | Manage Accounts          | `/admin/accounts`              | `/api/accounts`                | `GET`           |
 | View Account Details     | `/admin/account/:id`           | `/api/account/:id`             | `GET`           |
-| Create Account           | `/admin/accounts (Ajax)`       | `/api/accounts`                | `POST`          |
-| Edit Account             | `/admin/account/:id (Ajax)`    | `/api/accounts/:id`            | `PATCH`         |
-| Ban Account              | `/admin/account/:id (Ajax)`    | `/api/accounts/:id/ban`        | `PATCH`         |
+| Create Account           | `/admin/accounts (Ajax)`       | `/api/account`                 | `POST`          |
+| Edit Account             | `/admin/account/:id (Ajax)`    | `/api/account/:id`             | `PATCH`         |
 
 
 ## Data Source

@@ -80,7 +80,7 @@ router.delete('/venue/:id/comment', removeVenueComment);
 
 /**
  * Create a new venue.
- * Matches route: PUT /api/venue
+ * Matches route: POST /api/venue
  */
 router.post(
     '/venue',
@@ -93,11 +93,6 @@ router.post(
  * Matches route: PATCH /api/venue/:id
  */
 router.patch(
-    '/venue/:id',
-    authorize('admin'),
-    updateVenueById
-);
-router.put(
     '/venue/:id',
     authorize('admin'),
     updateVenueById

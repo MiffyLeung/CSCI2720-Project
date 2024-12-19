@@ -43,7 +43,7 @@ router.get(
 
 /**
  * Like a specific programme by ID.
- * Matches route: PUT /api/programme/:id/like
+ * Matches route: POST /api/programme/:id/like
  */
 router.post(
     '/programme/:id/like',
@@ -52,7 +52,7 @@ router.post(
 
 /**
  * Leave a comment on a specific programme by ID.
- * Matches route: PUT /api/programme/:id/comment
+ * Matches route: POST /api/programme/:id/comment
  */
 router.post(
     '/programme/:id/comment',
@@ -76,9 +76,9 @@ router.post(
 
 /**
  * Update a specific programme by ID.
- * Matches route: PUT /api/programme/:id
+ * Matches route: PATCH /api/programme/:id
  */
-router.put(
+router.patch(
     '/programme/:id',
     authorize('admin'),
     updateProgrammeById

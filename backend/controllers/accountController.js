@@ -3,6 +3,7 @@
 const Account = require('../models/AccountSchema');
 const { generateToken } = require('../utils/tokenUtils');
 const { generateDebugInfo } = require('../utils/debugUtils'); // Import the debug utility
+
 const bcrypt = require('bcrypt');
 
 /**
@@ -101,41 +102,46 @@ const listAccounts = async (req, res) => {
 };
 
 /**
- * Updates account information (Admin only).
- * 
+ * Updates part of account information (Admin only).
+ *
  * @function updateAccount
  * @param {Object} req - Express request object
- * @param {Object} req.body - Request body containing accountId and updates
- * @param {Object} res - Express response object
- * @returns {void} - Sends a JSON response with the updated account or an error message
+ * @param {Object} req.body - Request body containing updates for username, role, or password.
+ * @param {Object} req.params - Express route parameters containing accountId.
+ * @param {Object} res - Express response object.
+ * @returns {void} - Sends a JSON response with the updated account or an error message.
  */
 const updateAccount = async (req, res) => {
-    const { accountId, updates } = req.body;
+    const { username, role, password } = req.body;
+    const { accountId } = req.params;
 
     try {
-        // Ensure "banned" is handled as a special case
-        if (updates.role && updates.role === 'banned') {
+
+        // Log special cases like banning
+        if (role === 'banned') {
             console.log(`Banning account with ID: ${accountId}`);
         }
-
-        // Update the account with the provided data
-        const account = await Account.findByIdAndUpdate(accountId, updates, { new: true });
+        
+        // Update the account
+        const account = await Account.findById(accountId);
         if (!account) {
-            const error = new Error('Account not found');
             return res.status(410).json({
                 code: 'USER_NOT_FOUND',
                 message: 'Account not found',
-                debug: generateDebugInfo(error),
             });
         }
-
+        if (username) account.username = username;
+        if (password) account.password = password; 
+        if (role) account.role = role; 
+        await account.save();
+        
         res.status(200).json({
             code: 'UPDATE_USER_SUCCESS',
             message: 'Account updated successfully',
             data: account,
         });
     } catch (error) {
-        console.error('Error updating account:', error.message);
+        console.error(`Error updating account with ID ${accountId}:`, error.message);
         res.status(500).json({
             code: 'INTERNAL_SERVER_ERROR',
             message: 'An unexpected error occurred',
@@ -145,7 +151,46 @@ const updateAccount = async (req, res) => {
 };
 
 /**
- * Changes the name and password for an authenticated account using createOrUpdate.
+ * Deletes an account by its ID (Admin only).
+ *
+ * @function deleteAccount
+ * @param {Object} req - Express request object
+ * @param {Object} req.params - Express route parameters containing accountId.
+ * @param {Object} res - Express response object.
+ * @returns {void} - Sends a JSON response with the status of the deletion.
+ */
+const deleteAccount = async (req, res) => {
+    const { accountId } = req.params;
+
+    try {
+        // Attempt to delete the account
+        const account = await Account.findByIdAndDelete(accountId);
+
+        if (!account) {
+            return res.status(410).json({
+                code: 'USER_NOT_FOUND',
+                message: 'Account not found',
+                debug: `Account ID ${accountId} does not exist`,
+            });
+        }
+
+        res.status(200).json({
+            code: 'DELETE_USER_SUCCESS',
+            message: 'Account deleted successfully',
+            data: { accountId },
+        });
+    } catch (error) {
+        console.error(`Error deleting account with ID ${accountId}:`, error.message);
+        res.status(500).json({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'An unexpected error occurred',
+            debug: error.message,
+        });
+    }
+};
+
+/**
+ * Changes the name and password for an authenticated account.
  *
  * @param {Object} req - Express request object
  * @param {Object} req.body - Request body containing name and password
@@ -156,36 +201,40 @@ const changeMyAccount = async (req, res) => {
     const { name, password } = req.body;
 
     try {
+        // Check if the authenticated account exists
         if (!req.account) {
+            return res.status(410).json({
+                code: 'USER_NOT_FOUND',
+                message: 'Authenticated account not found',
+            });
+        }
+
+        const account = await Account.findById(req.account._id);
+        if (!account) {
             return res.status(410).json({
                 code: 'USER_NOT_FOUND',
                 message: 'Account not found',
             });
         }
-
-        const updatedData = {
-            username: name || req.account.username,
-            password: password || req.account.password,
-            role: req.account.role, // Keep the current role unchanged
-        };
-
-        // Use createOrUpdate to handle the update
-        const { status, account } = await Account.createOrUpdate(updatedData, true);
-
-        console.log(`Account ${status}:`, account);
-
+        if (name) account.username = name;
+        if (password) account.password = password; 
+        await account.save();
+        
         res.status(200).json({
             code: 'CHANGE_ACCOUNT_SUCCESS',
             message: 'Account details updated successfully',
+            data: account, // Optionally return the updated account details
         });
     } catch (error) {
         console.error('Error updating account:', error.message);
         res.status(500).json({
             code: 'INTERNAL_SERVER_ERROR',
             message: 'An unexpected error occurred',
+            debug: error.message, // Optional for debugging
         });
     }
 };
+
 
 /**
  * Retrieves details of the authenticated user's account.
@@ -335,8 +384,7 @@ const createAccount = async (req, res) => {
         }
 
         // Create and save the new account
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newAccount = new Account({ username, password: hashedPassword, role });
+        const newAccount = new Account({ username, password, role });
         await newAccount.save();
 
         res.status(201).json({
@@ -385,13 +433,10 @@ const register = async (req, res) => {
             });
         }
 
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
         // Create a new account with default role "user"
         const newAccount = new Account({ 
             username, 
-            password: hashedPassword, 
+            password, 
             role: 'user' // Default role for self-registered users
         });
         await newAccount.save();
@@ -416,6 +461,7 @@ module.exports = {
     register,
     listAccounts,
     updateAccount,
+    deleteAccount,
     changeMyAccount,
     getAccountDetails,
     getFavourites,

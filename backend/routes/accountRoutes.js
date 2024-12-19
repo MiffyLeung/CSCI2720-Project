@@ -23,8 +23,8 @@ router.use(authenticate);
 /**
  * Route for users to change their own password or username.
  */
-router.put(
-    '/myAccount', // Matches basePath '/api/myAccount' with PUT
+router.patch(
+    '/myAccount', // Matches basePath '/api/myAccount' with patch
     accountController.changeMyAccount
 );
 
@@ -59,16 +59,22 @@ router.get(
     accountController.getAccountDetailsById
 );
 
-router.put(
+router.post(
     '/account', // Matches basePath '/api/account'
     authorize('admin'),
     accountController.createAccount
 );
 
-router.put(
-    '/account/:id', // Matches basePath '/api/account/:id'
+router.patch(
+    '/account/:accountId', // Matches basePath PATCH '/api/account/:accountId'
     authorize('admin'),
     accountController.updateAccount
+);
+
+router.delete(
+    '/account/:accountId', // Matches basePath DELETE '/api/account/:accountId'
+    authorize('admin'),
+    accountController.deleteAccount
 );
 
 module.exports = router;

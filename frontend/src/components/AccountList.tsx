@@ -6,9 +6,10 @@ import { Account } from '../types/Account';
 interface AccountListProps {
   accounts: Account[];
   onEdit: (account: Account) => void;
+  onDelete: (account: Account) => void;
 }
 
-const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit }) => {
+const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit, onDelete }) => {
   return (
     <table className="table table-striped">
       <thead>
@@ -20,7 +21,7 @@ const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit }) => {
       </thead>
       <tbody>
         {accounts.map((account) => (
-          <tr key={account.id}>
+          <tr key={account.username}>
             <td>{account.username}</td>
             <td>{account.role}</td>
             <td>
@@ -30,6 +31,12 @@ const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit }) => {
               >
                 Edit
               </button>
+              <button
+                className="btn btn-danger btn-sm ms-2"
+                onClick={() => onDelete(account)}
+            >
+                Delete
+            </button>
             </td>
           </tr>
         ))}

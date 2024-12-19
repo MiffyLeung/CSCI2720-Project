@@ -2,168 +2,146 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import Navbar from '../components/Navbar';
-import { Account } from '../types/Account';
 import AccountList from '../components/AccountList';
-import AccountForm from '../components/AccountForm';
-import AccountFilter from '../components/AccountFilter';
+import AccountSearch from '../components/AccountSearch';
 import AccountSort from '../components/AccountSort';
-import { useApi } from '../core/useApi'; // Centralized API request handler
+import AccountCategory from '../components/AccountCategory';
+import AccountForm from '../components/AccountForm';
+import { Account } from '../types/Account';
+import { useApi } from '../core/useApi';
 
-/**
- * A page to manage user accounts. Allows administrators to view,
- * filter, sort, add, and edit accounts.
- */
 const AdminAccountsPage: React.FC = () => {
-    const [accounts, setAccounts] = useState<Account[]>([]); // State to hold all accounts
-    const [filteredAccounts, setFilteredAccounts] = useState<Account[]>([]); // State to hold filtered accounts
-    const [isModalOpen, setIsModalOpen] = useState(false); // Modal state for adding/editing accounts
-    const [editingAccount, setEditingAccount] = useState<Account | undefined>(undefined); // Account being edited
-    const apiRequest = useApi(); // API handler
-    const hasFetched = useRef(false); // Track whether data has already been fetched
-    const abortController = useRef<AbortController | null>(null); // AbortController for fetch requests
+    const [accounts, setAccounts] = useState<Account[]>([]);
+    const [filteredAccounts, setFilteredAccounts] = useState<Account[]>([]);
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [category, setCategory] = useState<string>('');
+    const [sortOrder, setSortOrder] = useState<string>('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingAccount, setEditingAccount] = useState<Account | undefined>();
+    const apiRequest = useApi();
+    const hasFetched = useRef(false);
+    const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
-        /**
-         * Fetch all accounts from the API.
-         * Ensures the user is authenticated and data is only fetched once.
-         */
         const fetchAccounts = async () => {
-            if (hasFetched.current) return; // Prevent repeated fetch
-            hasFetched.current = true; // Mark as fetched
+            if (hasFetched.current) return;
+            hasFetched.current = true;
 
-            if (abortController.current) {
-                abortController.current.abort(); // Abort any existing requests
-            }
-            abortController.current = new AbortController();
-
-            console.log('Fetching accounts...');
             try {
                 const data: Account[] = await apiRequest('/accounts');
-                console.log('Fetched accounts:', data);
-                setAccounts(data); // Update accounts state
-                setFilteredAccounts(data); // Initialize filtered accounts
+                setAccounts(data);
+                setFilteredAccounts(data);
             } catch (error) {
                 console.error('Error fetching accounts:', error);
             }
         };
 
         fetchAccounts();
-    }, [apiRequest, hasFetched]);
-
-    /**
-     * Open the modal to add or edit an account.
-     * @param account Optional account to edit; if not provided, the modal is used for adding.
-     */
-    const openModal = (account?: Account) => {
-        setEditingAccount(account);
-        setIsModalOpen(true);
-    };
-
-    /**
-     * Close the modal and reset the editing account state.
-     */
-    const closeModal = () => {
-        setEditingAccount(undefined);
-        setIsModalOpen(false);
-    };
-
-    /**
-     * Handle saving an account (either adding or editing).
-     * @param data The account data to save.
-     */
+    }, [apiRequest]);
     const handleSave = async (data: Account) => {
-        const method = editingAccount ? 'PUT' : 'POST';
-        const endpoint = editingAccount ? `/accounts/${editingAccount.id}` : '/accounts';
+        const method = editingAccount ? 'PATCH' : 'POST';
+        const endpoint = editingAccount ? `/account/${editingAccount._id}` : '/account';
+        const { _id, __v, favourites, ...reqBody } = data;
 
         try {
             const savedAccount: Account = await apiRequest(endpoint, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
+                body: JSON.stringify(reqBody),
             });
+
             alert(editingAccount ? 'Account updated successfully!' : 'Account created successfully!');
             closeModal();
 
-            // Update state based on whether it's an edit or a new addition
             setAccounts((prevAccounts) =>
                 editingAccount
-                    ? prevAccounts.map((u) => (u.id === editingAccount.id ? savedAccount : u))
+                    ? prevAccounts.map((u) => (u.username === editingAccount.username ? savedAccount : u))
                     : [...prevAccounts, savedAccount]
             );
-            setFilteredAccounts((prevAccounts) =>
-                editingAccount
-                    ? prevAccounts.map((u) => (u.id === editingAccount.id ? savedAccount : u))
-                    : [...prevAccounts, savedAccount]
-            );
+            applyFiltersAndSort();
         } catch (error) {
             console.error('Error saving account:', error);
             alert('Failed to save account.');
         }
     };
 
-    /**
-     * Handle filtering accounts based on a search query.
-     * @param query The search query to filter accounts.
-     */
-    const handleFilterChange = async (query: string) => {
-        if (!query) {
-            setFilteredAccounts(accounts); // Reset filter when query is empty
-            return;
+    const applyFiltersAndSort = () => {
+        let result = [...accounts];
+
+        // Apply search filter
+        if (searchQuery) {
+            result = result.filter((account) =>
+                account.username.toLowerCase().includes(searchQuery.toLowerCase())
+            );
         }
 
-        try {
-            const data: Account[] = await apiRequest(`/accounts?search=${query}`);
-            setFilteredAccounts(data); // Update filtered accounts
-        } catch (error) {
-            console.error('Error filtering accounts:', error);
+        // Apply category filter
+        if (category) {
+            result = result.filter((account) => account.role === category);
         }
+
+        // Apply sorting
+        if (sortOrder) {
+            result.sort((a, b) =>
+                sortOrder === 'asc'
+                    ? a.username.localeCompare(b.username)
+                    : b.username.localeCompare(a.username)
+            );
+        }
+
+        setFilteredAccounts(result);
     };
 
-    /**
-     * Handle sorting accounts based on a field and order.
-     * @param sortField The field to sort by.
-     * @param sortOrder The order of sorting (ascending/descending).
-     */
-    const handleSortChange = async (sortField: string, sortOrder: string) => {
-        try {
-            const data: Account[] = await apiRequest(
-                `/accounts?sortField=${sortField}&sortOrder=${sortOrder}`
-            );
-            setFilteredAccounts(data); // Update sorted accounts
-        } catch (error) {
-            console.error('Error sorting accounts:', error);
+    const handleFilterChange = (query: string) => {
+        if (debounceTimeoutRef.current) {
+            clearTimeout(debounceTimeoutRef.current);
         }
+
+        debounceTimeoutRef.current = setTimeout(() => {
+            setSearchQuery(query);
+            applyFiltersAndSort();
+        }, 300);
+    };
+
+    const handleCategoryChange = (selectedCategory: string) => {
+        setCategory(selectedCategory);
+        applyFiltersAndSort();
+    };
+
+    const handleSortChange = (sortField: string, sortOrder: string) => {
+        setSortOrder(sortOrder);
+        applyFiltersAndSort();
+    };
+
+    const openModal = (account?: Account) => {
+        setEditingAccount(account);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setEditingAccount(undefined);
+        setIsModalOpen(false);
     };
 
     return (
         <div>
             <Navbar />
-            <div className="container p-5 rounded position-relative" style={{backgroundColor: 'rgb(95 127 89 / 75%)'}}>
+            <div className="container p-5 rounded position-relative" style={{ backgroundColor: 'rgb(95 127 89 / 75%)' }}>
                 <h1>Manage Accounts</h1>
-                <button className="btn btn-success mb-3" onClick={() => openModal()}>
-                    Add Account
-                </button>
-                <div className="d-flex flex-wrap gap-3">
-                    <AccountFilter onFilterChange={handleFilterChange} />
-                    <AccountSort onSortChange={handleSortChange} />
+                <button className="btn btn-success mb-3" onClick={() => openModal()}>Add Account</button>
+                <div className="d-flex flex-wrap gap-3 align-items-center">
+                    <AccountSearch onFilterChange={handleFilterChange} />
+                    <AccountCategory onCategoryChange={handleCategoryChange} currentCategory={category} />
+                    <AccountSort onSortChange={handleSortChange} currentSortOrder={sortOrder} />
                 </div>
-                <AccountList accounts={filteredAccounts} onEdit={openModal} />
+                <AccountList accounts={filteredAccounts} onEdit={openModal} onDelete={() => { }} />
                 {isModalOpen && (
-                    <div
-                        className="modal fade show d-block"
-                        style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-                    >
+                    <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                         <div className="modal-dialog">
                             <div className="modal-content">
                                 <div className="modal-header">
-                                    <h5 className="modal-title">
-                                        {editingAccount ? 'Edit Account' : 'Add Account'}
-                                    </h5>
-                                    <button
-                                        type="button"
-                                        className="btn-close"
-                                        onClick={closeModal}
-                                    ></button>
+                                    <h5 className="modal-title">{editingAccount ? 'Edit Account' : 'Add Account'}</h5>
+                                    <button type="button" className="btn-close" onClick={closeModal}></button>
                                 </div>
                                 <div className="modal-body">
                                     <AccountForm

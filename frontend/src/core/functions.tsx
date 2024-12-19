@@ -22,7 +22,7 @@ export const formatUtcToLocalDateTime = (utcTime: string): string => {
     const formattedDate = new Intl.DateTimeFormat('default', options)
         .format(date)
         .replace(',', '') // Remove the comma if present
-        .replace(/(\d+)\/(\d+)\/(\d+)/, '$3-$1-$2'); // Adjust to YYYY-MM-DD format
+        .replace(/(\d+)\/(\d+)\/(\d+)/, '$3-$2-$1'); // Adjust to YYYY-MM-DD format
 
     return formattedDate;
 };

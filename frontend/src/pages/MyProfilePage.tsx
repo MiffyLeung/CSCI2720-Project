@@ -11,7 +11,7 @@ import './MyProfilePage.css';
  * MyProfilePage allows authenticated users to view and update their profile details.
  */
 const MyProfilePage: React.FC = () => {
-    const { isAuthenticated, resetAuth } = useAuth();
+    const { isAuthenticated, resetAuth, username } = useAuth();
     const apiRequest = useApi();
     const [name, setName] = useState<string>('');
     const [password, setPassword] = useState<string>('');
@@ -41,7 +41,7 @@ const MyProfilePage: React.FC = () => {
         apiRequest(
             '/myAccount',
             {
-                method: 'PUT',
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, password }),
             },
@@ -81,7 +81,7 @@ const MyProfilePage: React.FC = () => {
                                     id="name"
                                     name="name"
                                     className="form-control"
-                                    value={name}
+                                    defaultValue={username || ''}
                                     onChange={(e) => setName(e.target.value)}
                                     required
                                 />
@@ -95,9 +95,9 @@ const MyProfilePage: React.FC = () => {
                                     id="password"
                                     name="password"
                                     className="form-control"
+                                    placeholder='Keep it blank if no changes are needed.'
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    required
                                 />
                             </div>
                             <button type="submit" className="btn btn-success">

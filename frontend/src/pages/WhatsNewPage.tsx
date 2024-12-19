@@ -31,7 +31,8 @@ const WhatsNewPage: React.FC = () => {
 
             try {
                 const data: Programme[] = await apiRequest('/programmes?sort=releaseDate_desc');
-                setProgrammes(data);
+                const sortedData = data.sort((a, b) => (b.submitdate || 0) - (a.submitdate || 0));
+                setProgrammes(sortedData);
             } catch (error) {
                 console.error('Error fetching programmes:', error);
             }

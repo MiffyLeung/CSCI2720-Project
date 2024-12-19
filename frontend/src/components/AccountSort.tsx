@@ -4,47 +4,59 @@ import React from 'react';
 
 interface AccountSortProps {
   onSortChange: (sortField: string, sortOrder: string) => void;
+  currentSortOrder: string;
 }
 
-const AccountSort: React.FC<AccountSortProps> = ({ onSortChange }) => {
-  const handleSortFieldChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const sortField = e.target.value;
-    const sortOrder = (document.getElementById('sort-order') as HTMLSelectElement).value;
-    onSortChange(sortField, sortOrder);
-  };
-
-  const handleSortOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const sortOrder = e.target.value;
-    const sortField = (document.getElementById('sort-field') as HTMLSelectElement).value;
-    onSortChange(sortField, sortOrder);
+const AccountSort: React.FC<AccountSortProps> = ({ onSortChange, currentSortOrder }) => {
+  const handleSortOrderChange = (sortOrder: string) => {
+    onSortChange('username', sortOrder); // Always sort by username
   };
 
   return (
     <div className="mb-3">
-      <div className="d-flex align-items-center gap-3">
-        <label htmlFor="sort-field" className="fw-bold form-label">
-          Sort By:
+      <label className="form-label fw-bold text-center w-100">Sort by username:</label>
+      <div className="btn-group w-100" role="group">
+        {/* Ascending */}
+        <input
+          type="radio"
+          className="btn-check"
+          id="sort-asc"
+          name="sortOrder"
+          value="asc"
+          checked={currentSortOrder === 'asc'}
+          onChange={() => handleSortOrderChange('asc')}
+        />
+        <label className="btn btn-outline-light" htmlFor="sort-asc">
+          Asc
         </label>
-        <select
-          id="sort-field"
-          className="form-select"
-          onChange={handleSortFieldChange}
-        >
-          <option value="username">Username</option>
-          <option value="email">Email</option>
-          <option value="role">Role</option>
-        </select>
-        <label htmlFor="sort-order" className="form-label">
-          Order:
+
+        {/* None */}
+        <input
+          type="radio"
+          className="btn-check"
+          id="sort-none"
+          name="sortOrder"
+          value=""
+          checked={currentSortOrder === ''}
+          onChange={() => handleSortOrderChange('')}
+        />
+        <label className="btn btn-outline-light" htmlFor="sort-none">
+          None
         </label>
-        <select
-          id="sort-order"
-          className="form-select"
-          onChange={handleSortOrderChange}
-        >
-          <option value="asc">Ascending</option>
-          <option value="desc">Descending</option>
-        </select>
+
+        {/* Descending */}
+        <input
+          type="radio"
+          className="btn-check"
+          id="sort-desc"
+          name="sortOrder"
+          value="desc"
+          checked={currentSortOrder === 'desc'}
+          onChange={() => handleSortOrderChange('desc')}
+        />
+        <label className="btn btn-outline-light" htmlFor="sort-desc">
+          Desc
+        </label>
       </div>
     </div>
   );

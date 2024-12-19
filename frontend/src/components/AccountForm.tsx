@@ -1,6 +1,5 @@
-// frontend/src/components/AccountForm.tsx
-
 import React, { useState } from 'react';
+import { Form, Button, ButtonGroup, ToggleButton } from 'react-bootstrap';
 import { Account, accountFields, getDefaultAccount } from '../types/Account';
 
 interface AccountFormProps {
@@ -12,9 +11,8 @@ interface AccountFormProps {
 const AccountForm: React.FC<AccountFormProps> = ({ initialData, onSave, onCancel }) => {
   const [formData, setFormData] = useState<Account>(initialData || getDefaultAccount());
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+  const handleInputChange = (field: keyof Account, value: string) => {
+    setFormData({ ...formData, [field]: value });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -23,50 +21,52 @@ const AccountForm: React.FC<AccountFormProps> = ({ initialData, onSave, onCancel
   };
 
   return (
-    <form onSubmit={handleSubmit} className="needs-validation">
+    <Form onSubmit={handleSubmit}>
       {Object.keys(accountFields).map((fieldKey) => {
         const field = fieldKey as keyof Account;
         const fieldMeta = accountFields[field];
         return (
-          <div key={field} className="mb-3">
-            <label className="form-label">{fieldMeta.label}</label>
+          <Form.Group key={field} className="mb-3">
+            <Form.Label className='me-2'>{fieldMeta.label}</Form.Label>
             {fieldMeta.type === 'select' ? (
-              <select
-                name={field}
-                className="form-select"
-                value={formData[field]}
-                onChange={handleInputChange}
-                required={fieldMeta.required}
-              >
-                <option value="">Select {fieldMeta.label}</option>
+              <ButtonGroup>
                 {fieldMeta.options?.map((option) => (
-                  <option key={option} value={option}>
+                  <ToggleButton
+                    key={option}
+                    id={`${field}-${option}`}
+                    type="radio"
+                    variant={formData[field] === option ? 'success' : 'outline-success'}
+                    name={field}
+                    value={option}
+                    checked={formData[field] === option}
+                    onChange={() => handleInputChange(field, option)}
+                  >
                     {option}
-                  </option>
+                  </ToggleButton>
                 ))}
-              </select>
+              </ButtonGroup>
             ) : (
-              <input
+              <Form.Control
                 type={fieldMeta.type}
-                className="form-control"
                 name={field}
                 value={formData[field]}
-                onChange={handleInputChange}
+                onChange={(e) => handleInputChange(field, e.target.value)}
+                placeholder={fieldMeta.placeholder}
                 required={fieldMeta.required}
               />
             )}
-          </div>
+          </Form.Group>
         );
       })}
       <div className="d-flex justify-content-end gap-2">
-        <button type="submit" className="btn btn-success">
+        <Button type="submit" variant="success">
           Save
-        </button>
-        <button type="button" className="btn btn-secondary" onClick={onCancel}>
+        </Button>
+        <Button type="button" variant="secondary" onClick={onCancel}>
           Cancel
-        </button>
+        </Button>
       </div>
-    </form>
+    </Form>
   );
 };
 

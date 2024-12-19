@@ -1,3 +1,5 @@
+// backend\middleware\hashPassword.js
+
 const bcrypt = require('bcrypt');
 
 /**

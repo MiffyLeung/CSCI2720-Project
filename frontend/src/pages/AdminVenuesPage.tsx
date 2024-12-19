@@ -89,7 +89,7 @@ const AdminVenuesPage: React.FC = () => {
      * Handle saving a venue.
      */
     const handleSave = async (data: Venue) => {
-        const method = editingVenue ? 'PUT' : 'POST';
+        const method = editingVenue ? 'PATCH' : 'POST';
         const endpoint = editingVenue ? `/venue/${editingVenue.venue_id}` : '/venue';
     
         // Prepare the payload: only send required fields
@@ -150,7 +150,7 @@ const AdminVenuesPage: React.FC = () => {
         if (!confirmDelete) return;
 
         try {
-            await apiRequest(`/venues/${confirmDelete.venue_id}`, { method: 'DELETE' });
+            await apiRequest(`/venue/${confirmDelete.venue_id}`, { method: 'DELETE' });
             addToast('Venue deleted successfully!');
             setVenues((prevVenues) =>
                 prevVenues.filter((v) => v.venue_id !== confirmDelete.venue_id)
